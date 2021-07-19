@@ -1,0 +1,19 @@
+# Build vpcctl binary
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9 as vpc-builder
+WORKDIR /build
+RUN git clone https://github.com/openshift/cloud-provider-vpc-controller && \
+    cd cloud-provider-vpc-controller && \
+    make build-linux
+
+# Build IBM cloud controller manager binary
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.9 as ccm-builder
+WORKDIR /build
+COPY . .
+RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o ibm-cloud-controller-manager .
+
+# Assemble the final image
+FROM registry.ci.openshift.org/ocp/4.9:base
+LABEL description="IBM Cloud Controller Manager"
+COPY --from=vpc-builder /build/cloud-provider-vpc-controller/vpcctl-linux /bin/vpcctl
+COPY --from=ccm-builder /build/ibm-cloud-controller-manager /bin/ibm-cloud-controller-manager
+ENTRYPOINT [ "/bin/ibm-cloud-controller-manager" ]
