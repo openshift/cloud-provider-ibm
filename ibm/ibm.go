@@ -39,60 +39,42 @@ const (
 	ProviderName = "ibm"
 )
 
-// LoadBalancerDeployment is the load balancer deployment data for classic
-// load balancers. All fields are required when running on classic
-// infrastructure, otherwise this section may be omitted and will be ignored
-// for VPC infrastructure.
+// LoadBalancerDeployment is the load balancer deployment data.
 type LoadBalancerDeployment struct {
-	// Name of the image to use for the load balancer deployment.
+	// Required: Name of the image to use for the deployment.
 	Image string `gcfg:"image"`
-	// Name of the application to use as a label for the load balancer deployment.
+	// Required: Name of the application to use as a label for the deployment.
 	Application string `gcfg:"application"`
-	// Name of the VLAN IP config map in the kube-system or ibm-system namespace
-	// that is used to determine the available cloud provider IPs for the
-	// load balancer deployment.
+	// Required: Name of the VLAN IP config map used to determine the
+	// available cloud provider IPs for the deployment.
 	VlanIPConfigMap string `gcfg:"vlan-ip-config-map"`
 }
 
-// Provider holds information from the cloud provider.
-// TODO(rtheis): Remove legacy in tree cloud provider implementation.
+// Provider holds information from the cloud provider node (i.e. instance).
 type Provider struct {
-	// Unsupported: Cloud provider ID for the node. Only used when running the
-	// legacy in tree cloud provider implementation, ignored otherwise.
+	// Optional: Cloud provider ID for the node Only set in worker.
 	ProviderID string `gcfg:"providerID"`
-	// Unsupported: Internal IP of the node. Only used when running the
-	// legacy in tree cloud provider implementation, ignored otherwise.
+	// Optional: Internal IP of the node. Only set in worker.
 	InternalIP string `gcfg:"internalIP"`
-	// Unsupported: External IP of the node. Only used when running the
-	// legacy in tree cloud provider implementation, ignored otherwise.
+	// Optional: External IP of the node. Only set in worker.
 	ExternalIP string `gcfg:"externalIP"`
-	// NOTE(rtheis): This field has multiple usages.
-	// Region of the cluster. Required when configured to get node
-	// data from VPC.
-	// Unsupported: Region of the node. Only used when running the
-	// legacy in tree cloud provider implementation.
+	// Optional: Region of the node. Only set in worker.
 	Region string `gcfg:"region"`
-	// Unsupported: Zone of the node. Only used when running the
-	// legacy in tree cloud provider implementation, ignored otherwise.
+	// Optional: Zone of the node. Only set in worker.
 	Zone string `gcfg:"zone"`
-	// Unsupported: Instance Type of the node. Only used when running the
-	// legacy in tree cloud provider implementation, ignored otherwise.
+	// Optional: Instance Type of the node. Only set in worker.
 	InstanceType string `gcfg:"instanceType"`
-	// Required: Cluster ID of the cluster.
+	// Optional: Cluster ID of the master. Only set in controller manager.
 	ClusterID string `gcfg:"clusterID"`
-	// Required: Account ID that owns the cluster.
+	// Optional: Account ID of the master. Only set in controller manager.
 	AccountID string `gcfg:"accountID"`
-	// Required: Provider type of the cloud provider. Set to "g2" when running
-	// on VPC infrastructure. All other values (including being unset)
-	// yield the default, classic infrastructure.
-	// TODO(rtheis): Remove support for "gc" provider type.
+	// Optional: Provider type of the cloud provider
 	ProviderType string `gcfg:"cluster-default-provider"`
-	// Required for VPC: Service account ID used to allocate VPC infrastructure.
+	// Optional: Service account ID used to allocate worker nodes in VPC Gen2 environment
 	G2WorkerServiceAccountID string `gcfg:"g2workerServiceAccountID"`
-	// VPC name. Required when configured to get node data from VPC.
+	// Optional: VPC Gen2 name
 	G2VpcName string `gcfg:"g2VpcName"`
-	// File containing VPC credentials. Required when configured to get node
-	// data from VPC.
+	// Optional: File containing VPC Gen2 credentials
 	G2Credentials string `gcfg:"g2Credentials"`
 }
 
@@ -106,15 +88,10 @@ type CloudConfig struct {
 	}
 	// [kubernetes] section
 	Kubernetes struct {
-		// The Kubernetes config file paths. The first file found will be used.
-		// If not specified, then the in cluster config will be used. Using
-		// an in cluster config is not support for classic infrastructure
-		// since Calico does not support such configurations.
+		// Required: The kubernetes config file paths. The first file
+		// found will be used.
 		ConfigFilePaths []string `gcfg:"config-file"`
-		// The Calico datastore type: "ETCD" or "KDD". Required when running on
-		// classic infrastructure, otherwise this may be omitted and will be
-		// ignored for VPC infrastructure.
-		CalicoDatastore string `gcfg:"calico-datastore"`
+		CalicoDatastore string   `gcfg:"calico-datastore"`
 	}
 	// [load-balancer-deployment] section
 	LBDeployment LoadBalancerDeployment `gcfg:"load-balancer-deployment"`
@@ -152,7 +129,7 @@ func (c *Cloud) HasClusterID() bool {
 func (c *Cloud) SetInformers(informerFactory informers.SharedInformerFactory) {
 	klog.Infof("Initializing Informers")
 
-	// endpointInformer is not needed for VPC
+	// endpointInformer is not needed for VPC Gen2
 	if !isProviderVpc(c.Config.Prov.ProviderType) {
 		endpointInformer := informerFactory.Core().V1().Endpoints().Informer()
 		endpointInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -221,10 +198,6 @@ func NewCloud(config io.Reader) (cloudprovider.Interface, error) {
 	}
 
 	// Get the k8s config.
-	// Use in cluster config if no config file paths were provided.
-	if 0 == len(cloudConfig.Kubernetes.ConfigFilePaths) {
-		cloudConfig.Kubernetes.ConfigFilePaths = append(cloudConfig.Kubernetes.ConfigFilePaths, "")
-	}
 	k8sConfig, err = getK8SConfig(cloudConfig.Kubernetes.ConfigFilePaths)
 	if nil != err {
 		return nil, err
