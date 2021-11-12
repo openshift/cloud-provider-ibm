@@ -172,6 +172,7 @@ func getK8SConfig(k8sConfigFilePaths []string) (*restclient.Config, error) {
 	var config *restclient.Config
 	var err error
 	for _, k8sConfigFilePath := range k8sConfigFilePaths {
+		klog.Infof("Building using config from: %v", k8sConfigFilePath)
 		config, err = clientcmd.BuildConfigFromFlags("", k8sConfigFilePath)
 		if nil == err {
 			break
@@ -190,6 +191,7 @@ func getCloudConfig(config io.Reader) (*CloudConfig, error) {
 	var cloudConfig CloudConfig
 
 	if nil != config {
+		klog.Infof("Attempting to use config file: %v", config)
 		err := gcfg.FatalOnly(gcfg.ReadInto(&cloudConfig, config))
 		if nil != err {
 			return nil, fmt.Errorf("Failed to read cloud config: %v", err)
@@ -214,6 +216,9 @@ func NewCloud(config io.Reader) (cloudprovider.Interface, error) {
 	var cloudMetadata *MetadataService
 	var err error
 
+	klog.Infof("KUBERNETES_SERVICE_HOST: %v", os.Getenv("KUBERNETES_SERVICE_HOST"))
+	klog.Infof("KUBERNETES_MASTER: %v", os.Getenv("KUBERNETES_MASTER"))
+
 	// Get the cloud config.
 	cloudConfig, err = getCloudConfig(config)
 	if nil != err {
@@ -223,6 +228,7 @@ func NewCloud(config io.Reader) (cloudprovider.Interface, error) {
 	// Get the k8s config.
 	// Use in cluster config if no config file paths were provided.
 	if 0 == len(cloudConfig.Kubernetes.ConfigFilePaths) {
+		klog.Infof("Using in cluster config, no file provided")
 		cloudConfig.Kubernetes.ConfigFilePaths = append(cloudConfig.Kubernetes.ConfigFilePaths, "")
 	}
 	k8sConfig, err = getK8SConfig(cloudConfig.Kubernetes.ConfigFilePaths)

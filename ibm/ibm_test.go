@@ -74,7 +74,7 @@ func TestNewCloud(t *testing.T) {
 		defer config.Close()
 		c, err = NewCloud(config)
 		if nil != c || nil == err {
-			t.Fatalf("Unexpected cloud created: %v, %v", c, err)
+			t.Fatalf("Unexpected cloud created: %v from: %v, %v", c, invalidCloudConfigFilename, err)
 		}
 	}
 
