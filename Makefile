@@ -36,7 +36,7 @@ IMAGE_SOURCE := gcr.io
 CALICOCTL_CURL_URL=$(shell cat addons/calicoctl.yml | awk '/^source_git:/{print $$2}')
 endif
 export
-GOPACKAGES=$(shell go list ./...)
+GOPACKAGES=$(shell go list ./... | grep -v /vendor/)
 GOFILES=$(shell find . -type f -name '*.go' -not -path "./test-fixtures/*")
 SHFILES=$(shell find . -type f -name '*.sh' -not -path "./build-tools/*")
 AWKFILES=$(shell find . -type f -name '*.awk' -not -path "./build-tools/*")
