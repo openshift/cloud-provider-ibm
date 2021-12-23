@@ -293,7 +293,7 @@ func (e *Store) NamespaceScoped() bool {
 		return e.UpdateStrategy.NamespaceScoped()
 	}
 
-	panic("programmer error: no CRUD for resource, you're crazy, override NamespaceScoped too")
+	panic("programmer error: no CRUD for resource, override NamespaceScoped too")
 }
 
 // GetCreateStrategy implements GenericStore.
@@ -685,8 +685,9 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 // create-on-update path.
 func newCreateOptionsFromUpdateOptions(in *metav1.UpdateOptions) *metav1.CreateOptions {
 	co := &metav1.CreateOptions{
-		DryRun:       in.DryRun,
-		FieldManager: in.FieldManager,
+		DryRun:          in.DryRun,
+		FieldManager:    in.FieldManager,
+		FieldValidation: in.FieldValidation,
 	}
 	co.TypeMeta.SetGroupVersionKind(metav1.SchemeGroupVersion.WithKind("CreateOptions"))
 	return co
@@ -753,9 +754,9 @@ func shouldOrphanDependents(ctx context.Context, e *Store, accessor metav1.Objec
 	}
 
 	// An explicit policy was set at deletion time, that overrides everything
-	//lint:ignore SA1019 backwards compatibility
+	//nolint:staticcheck // SA1019 backwards compatibility
 	if options != nil && options.OrphanDependents != nil {
-		//lint:ignore SA1019 backwards compatibility
+		//nolint:staticcheck // SA1019 backwards compatibility
 		return *options.OrphanDependents
 	}
 	if options != nil && options.PropagationPolicy != nil {
@@ -796,7 +797,7 @@ func shouldDeleteDependents(ctx context.Context, e *Store, accessor metav1.Objec
 	}
 
 	// If an explicit policy was set at deletion time, that overrides both
-	//lint:ignore SA1019 backwards compatibility
+	//nolint:staticcheck // SA1019 backwards compatibility
 	if options != nil && options.OrphanDependents != nil {
 		return false
 	}
