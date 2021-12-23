@@ -19,13 +19,13 @@
 language: go
 
 go:
-  - 1.17.2
+  - 1.17.5
 
 dist: bionic
 
 env:
   global:
-    - IKS_PIPELINE_IAM_APIKEY="${ALL_GLOBAL_UPDATE_IKS_PIPELINE_IAM_APIKEY_20201116}"
+    - IKS_PIPELINE_IAM_APIKEY="${ALL_GLOBAL_UPDATE_IKS_PIPELINE_IAM_APIKEY_20211116}"
     - registry_iam_api_key="${PROD_GLOBAL_UPDATE_ARMADA_UPDATE_BUILD_REGISTRY_API_KEY_20210423}"
     - GHE_TOKEN="${ALL_GLOBAL_UPDATE_IKSROCH1_GHE_TOKEN_20210520}"
     - TRAVIS_HOSTNAME="travis.ibm.com"
@@ -86,12 +86,12 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: ${TRAVIS_TAG} == v1.23.0-alpha.4-* && ${BUILD_JOB_NAME} == Default
-      go: 1.17.2
+      condition: ${TRAVIS_TAG} == v1.23.1-* && ${BUILD_JOB_NAME} == Default
+      go: 1.17.5
   - provider: script
     script: BUILD_TAG=${TRAVIS_TAG} make dev-deploy
     skip_cleanup: true
     on:
       tags: true
-      go: 1.17.2
+      go: 1.17.5
       condition: ${TRAVIS_TAG} == dev-* && ${BUILD_JOB_NAME} == Default

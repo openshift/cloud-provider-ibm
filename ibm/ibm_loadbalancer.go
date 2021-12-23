@@ -80,7 +80,7 @@ const (
 	lbUnsupportedScheduler              = "You have specified an unsupported scheduler: %s. Supported schedulers are: %s. " + lbDocUnsupportedScheduler
 	lbDefaultNoIPPortableSubnetErrorMsg = lbNoIPsMessage + " " + lbDocReferenceMessage
 	lbFeatureIPVS                       = "ipvs"
-	calicoEtcdSecrets                   = "calico-etcd-secrets" // Name of Kubernetes secret resource which contains the secrets, not an actual secret  #nosec
+	calicoEtcdSecrets                   = "calico-etcd-secrets" // #nosec G101 Name of Kubernetes secret resource which contains the secrets, not an actual secret
 	lbPriorityClassName                 = "ibm-app-cluster-critical"
 	clusterInfoCM                       = "cluster-info"
 	lbIPVSInvlaidExternalTrafficPolicy  = "Cluster networking is not supported for IPVS-based load balancers. Set 'externalTrafficPolicy' to 'Local', and try again."
@@ -2292,14 +2292,28 @@ func sliceContains(stringSlice []string, searchString string) bool {
 }
 
 func isServiceConfigurationSupported(service *v1.Service) error {
+	var hasTCP bool
+	var hasUDP bool
+
 	for _, port := range service.Spec.Ports {
-		if port.Protocol == v1.ProtocolSCTP {
-			return fmt.Errorf("SCTP protocol")
+		switch port.Protocol {
+		case v1.ProtocolTCP:
+			hasTCP = true
+		case v1.ProtocolUDP:
+			hasUDP = true
+		default:
+			return fmt.Errorf("%s protocol", port.Protocol)
 		}
+
 		if port.AppProtocol != nil {
 			return fmt.Errorf("application protocol")
 		}
 	}
+
+	if hasTCP && hasUDP {
+		return fmt.Errorf("mixed protocol")
+	}
+
 	return nil
 }
 
