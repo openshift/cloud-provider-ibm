@@ -27,6 +27,8 @@ import (
 	gcfg "gopkg.in/gcfg.v1"
 	"k8s.io/klog/v2"
 
+	"cloud.ibm.com/cloud-provider-vpc-controller/pkg/vpcctl"
+
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
@@ -94,6 +96,12 @@ type Provider struct {
 	// File containing VPC credentials. Required when configured to get node
 	// data from VPC.
 	G2Credentials string `gcfg:"g2Credentials"`
+	// Resource group name. Required when configured to get node
+	// data from VPC.
+	G2ResourceGroupName string `gcfg:"g2ResourceGroupName"`
+	// List of VPC subnet names. Required when configured to get node
+	// data from VPC.
+	G2VpcSubnetNames string `gcfg:"g2VpcSubnetNames"`
 }
 
 // CloudConfig is the ibm cloud provider config data.
@@ -130,6 +138,7 @@ type Cloud struct {
 	Recorder   *CloudEventRecorder
 	CloudTasks map[string]*CloudTask
 	Metadata   *MetadataService // will be nil in kubelet
+	Vpc        *vpcctl.CloudVpc
 }
 
 // Initialize provides the cloud with a kubernetes client builder and may spawn goroutines
