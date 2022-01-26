@@ -49,7 +49,7 @@ GOLANGCI_LINT_VERSION := 1.42.1
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
 REGISTRY ?= armada-master
-TAG ?= v1.23.0-alpha.4
+TAG ?= v1.23.1
 VPCCTL_SOURCE=$(shell cat addons/vpcctl.yml | awk '/^source:/{print $$2}')
 VPCCTL_CHECKSUM=$(shell cat addons/vpcctl.yml | awk '/^checksum:/{print $$2}')
 
@@ -124,7 +124,8 @@ endif
 lint:
 ifdef GOLANGCI_LINT_EXISTS
 	# NOTE(cjschaef): golangci-lint can take a while to run, bump deadline
-	golangci-lint run --deadline 5m -e G404 -e exitAfterDefer
+	echo "Running gosec"
+	golangci-lint run --deadline 5m -e exitAfterDefer
 else
 	@echo "golangci-lint is not installed"
 	exit 1
