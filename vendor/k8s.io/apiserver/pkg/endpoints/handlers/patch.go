@@ -236,16 +236,13 @@ func PatchResource(r rest.Patcher, scope *RequestScope, admit admission.Interfac
 		}
 		trace.Step("Object stored in database")
 
-		if err := setObjectSelfLink(ctx, result, req, scope.Namer); err != nil {
-			scope.err(err, w, req)
-			return
-		}
-		trace.Step("Self-link added")
-
 		status := http.StatusOK
 		if wasCreated {
 			status = http.StatusCreated
 		}
+
+		trace.Step("About to write a response")
+		defer trace.Step("Writing http response done")
 		transformResponseObject(ctx, scope, trace, req, w, status, outputMediaType, result)
 	}
 }
