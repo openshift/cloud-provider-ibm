@@ -1,6 +1,6 @@
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2021 All Rights Reserved.
+# (C) Copyright IBM Corp. 2021, 2022 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -19,7 +19,7 @@
 language: go
 
 go:
-  - 1.17.5
+  - 1.17.7
 
 dist: bionic
 
@@ -86,12 +86,12 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: ${TRAVIS_TAG} == v1.23.1-* && ${BUILD_JOB_NAME} == Default
-      go: 1.17.5
+      condition: ${TRAVIS_TAG} == v1.24.0-alpha.3-* && ${BUILD_JOB_NAME} == Default
+      go: 1.17.7
   - provider: script
     script: BUILD_TAG=${TRAVIS_TAG} make dev-deploy
     skip_cleanup: true
     on:
       tags: true
-      go: 1.17.5
+      go: 1.17.7
       condition: ${TRAVIS_TAG} == dev-* && ${BUILD_JOB_NAME} == Default

@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+* (C) Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -63,8 +63,8 @@ func getInstancesInterface() cloudprovider.Instances {
 func TestInstances(t *testing.T) {
 	c := &Cloud{}
 	cloud, ok := c.Instances()
-	if !ok {
-		t.Fatalf("Instances implementation missing")
+	if ok {
+		t.Fatalf("Instances implementation should be disabled")
 	}
 	if c != cloud {
 		t.Fatalf("Cloud not returned")
@@ -459,17 +459,16 @@ func getInstancesV2Interface() cloudprovider.InstancesV2 {
 	return getInstancesV2InterfaceWithProvider(nil)
 }
 
-// TODO(jonesbr): Uncomment when v2 is enabled
-// func TestInstancesV2(t *testing.T) {
-// 	c := &Cloud{}
-// 	cloud, ok := c.InstancesV2()
-// 	if !ok {
-// 		t.Fatalf("InstancesV2 implementation missing")
-// 	}
-// 	if c != cloud {
-// 		t.Fatalf("Cloud not returned")
-// 	}
-// }
+func TestInstancesV2(t *testing.T) {
+	c := &Cloud{}
+	cloud, ok := c.InstancesV2()
+	if !ok {
+		t.Fatalf("InstancesV2 implementation missing")
+	}
+	if c != cloud {
+		t.Fatalf("Cloud not returned")
+	}
+}
 
 func TestInstanceExists(t *testing.T) {
 	i := getInstancesV2Interface()
@@ -503,7 +502,7 @@ func TestInstanceMetadata(t *testing.T) {
 	metadataSvc := NewMetadataService(nil, fakeclient)
 
 	expectedMetadata := cloudprovider.InstanceMetadata{
-		ProviderID:   "testaccount///testcluster/testworkerid",
+		ProviderID:   "ibm://testaccount///testcluster/testworkerid",
 		InstanceType: expectedInstanceType,
 		NodeAddresses: []v1.NodeAddress{
 			{Type: v1.NodeInternalIP, Address: "10.190.31.186"},

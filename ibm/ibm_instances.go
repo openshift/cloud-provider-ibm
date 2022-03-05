@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+* (C) Copyright IBM Corp. 2017, 2022 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -32,7 +32,7 @@ import (
 Instances cloud provider interface must be implemented.
 */
 func (c *Cloud) Instances() (cloudprovider.Instances, bool) {
-	return c, true
+	return c, false
 }
 
 // NodeAddresses returns the addresses of the specified instance.
@@ -177,7 +177,7 @@ InstancesV2 cloud provider interface must be implemented.
 */
 
 func (c *Cloud) InstancesV2() (cloudprovider.InstancesV2, bool) {
-	return c, false
+	return c, true
 }
 
 // InstanceExists returns true if the instance for the given node exists according to the cloud provider.
@@ -202,26 +202,14 @@ func (c *Cloud) InstanceShutdown(ctx context.Context, node *v1.Node) (bool, erro
 // for a given node. In cases where node.spec.providerID is empty, implementations can use other
 // properties of the node like its name, labels and annotations.
 func (c *Cloud) InstanceMetadata(ctx context.Context, node *v1.Node) (*cloudprovider.InstanceMetadata, error) {
-	nodename := types.NodeName(node.Name)
 	nodeMD, err := c.Metadata.GetNodeMetadata(node.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	providerID, err := c.InstanceID(ctx, nodename)
-	if err != nil {
-		return nil, err
-	}
-
-	instanceType, err := c.InstanceType(ctx, nodename)
-	if err != nil {
-		return nil, err
-	}
-
-	nodeAddresses, err := c.NodeAddresses(ctx, nodename)
-	if err != nil {
-		return nil, err
-	}
+	providerID := c.providerIDV2(ctx, nodeMD)
+	instanceType := c.instanceTypeV2(ctx, nodeMD)
+	nodeAddresses := c.nodeAddressesV2(ctx, nodeMD)
 
 	instanceMetadata := cloudprovider.InstanceMetadata{
 		ProviderID:    providerID,
@@ -232,4 +220,33 @@ func (c *Cloud) InstanceMetadata(ctx context.Context, node *v1.Node) (*cloudprov
 	}
 
 	return &instanceMetadata, nil
+}
+
+// get provider id from node labels
+func (c *Cloud) providerIDV2(ctx context.Context, nodeMD NodeMetadata) string {
+	if nodeMD.ProviderID != "" {
+		return nodeMD.ProviderID
+	}
+	// construct provider id from config and node metadata
+	return fmt.Sprintf("ibm://%s///%s/%s", c.Config.Prov.AccountID, c.Config.Prov.ClusterID, nodeMD.WorkerID)
+}
+
+// Get instance type from node labels
+func (c *Cloud) instanceTypeV2(ctx context.Context, nodeMD NodeMetadata) string {
+	return nodeMD.InstanceType
+}
+
+// Get node addresses from node labels
+func (c *Cloud) nodeAddressesV2(ctx context.Context, nodeMD NodeMetadata) []v1.NodeAddress {
+	// ExternalIP may not be provided by metadata for private-only nodes, but
+	// we will return one in case external consumers depend on it.
+	externalIP := nodeMD.ExternalIP
+	if len(externalIP) == 0 {
+		externalIP = nodeMD.InternalIP
+	}
+	// Build and return node nodeaddresses.
+	return []v1.NodeAddress{
+		{Type: v1.NodeInternalIP, Address: nodeMD.InternalIP},
+		{Type: v1.NodeExternalIP, Address: externalIP},
+	}
 }
