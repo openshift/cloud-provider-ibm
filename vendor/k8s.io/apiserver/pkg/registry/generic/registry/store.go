@@ -347,16 +347,18 @@ func (e *Store) ListPredicate(ctx context.Context, p storage.SelectionPredicate,
 		ResourceVersion:      options.ResourceVersion,
 		ResourceVersionMatch: options.ResourceVersionMatch,
 		Predicate:            p,
+		Recursive:            true,
 	}
 	if name, ok := p.MatchesSingle(); ok {
 		if key, err := e.KeyFunc(ctx, name); err == nil {
-			err := e.Storage.GetToList(ctx, key, storageOpts, list)
+			storageOpts.Recursive = false
+			err := e.Storage.GetList(ctx, key, storageOpts, list)
 			return list, storeerr.InterpretListError(err, qualifiedResource)
 		}
 		// if we cannot extract a key based on the current context, the optimization is skipped
 	}
 
-	err := e.Storage.List(ctx, e.KeyRootFunc(ctx), storageOpts, list)
+	err := e.Storage.GetList(ctx, e.KeyRootFunc(ctx), storageOpts, list)
 	return list, storeerr.InterpretListError(err, qualifiedResource)
 }
 
@@ -436,11 +438,6 @@ func (e *Store) Create(ctx context.Context, obj runtime.Object, createValidation
 	}
 	if e.Decorator != nil {
 		e.Decorator(out)
-	}
-	if dryrun.IsDryRun(options.DryRun) {
-		if err := dryrun.ResetMetadata(obj, out); err != nil {
-			return nil, err
-		}
 	}
 	return out, nil
 }
