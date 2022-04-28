@@ -48,6 +48,13 @@ import (
 	utiltrace "k8s.io/utils/trace"
 )
 
+const (
+	// maxLimit is a maximum page limit increase used when fetching objects from etcd.
+	// This limit is used only for increasing page size by kube-apiserver. If request
+	// specifies larger limit initially, it won't be changed.
+	maxLimit = 10000
+)
+
 // authenticatedDataString satisfies the value.Context interface. It uses the key to
 // authenticate the stored data. This does not defend against reuse of previously
 // encrypted values under the same key, but will prevent an attacker from using an
@@ -136,7 +143,7 @@ func (s *store) Get(ctx context.Context, key string, opts storage.GetOptions, ou
 	}
 	kv := getResp.Kvs[0]
 
-	data, _, err := s.transformer.TransformFromStorage(kv.Value, authenticatedDataString(key))
+	data, _, err := s.transformer.TransformFromStorage(ctx, kv.Value, authenticatedDataString(key))
 	if err != nil {
 		return storage.NewInternalError(err.Error())
 	}
@@ -163,7 +170,7 @@ func (s *store) Create(ctx context.Context, key string, obj, out runtime.Object,
 		return err
 	}
 
-	newData, err := s.transformer.TransformToStorage(data, authenticatedDataString(key))
+	newData, err := s.transformer.TransformToStorage(ctx, data, authenticatedDataString(key))
 	if err != nil {
 		return storage.NewInternalError(err.Error())
 	}
@@ -211,7 +218,7 @@ func (s *store) conditionalDelete(
 		if err != nil {
 			return nil, err
 		}
-		return s.getState(getResp, key, v, false)
+		return s.getState(ctx, getResp, key, v, false)
 	}
 
 	var origState *objState
@@ -296,7 +303,7 @@ func (s *store) conditionalDelete(
 		if !txnResp.Succeeded {
 			getResp := (*clientv3.GetResponse)(txnResp.Responses[0].GetResponseRange())
 			klog.V(4).Infof("deletion of %s failed because of a conflict, going to retry", key)
-			origState, err = s.getState(getResp, key, v, false)
+			origState, err = s.getState(ctx, getResp, key, v, false)
 			if err != nil {
 				return err
 			}
@@ -327,7 +334,7 @@ func (s *store) GuaranteedUpdate(
 		if err != nil {
 			return nil, err
 		}
-		return s.getState(getResp, key, v, ignoreNotFound)
+		return s.getState(ctx, getResp, key, v, ignoreNotFound)
 	}
 
 	var origState *objState
@@ -415,7 +422,7 @@ func (s *store) GuaranteedUpdate(
 			}
 		}
 
-		newData, err := s.transformer.TransformToStorage(data, transformContext)
+		newData, err := s.transformer.TransformToStorage(ctx, data, transformContext)
 		if err != nil {
 			return storage.NewInternalError(err.Error())
 		}
@@ -442,7 +449,7 @@ func (s *store) GuaranteedUpdate(
 		if !txnResp.Succeeded {
 			getResp := (*clientv3.GetResponse)(txnResp.Responses[0].GetResponseRange())
 			klog.V(4).Infof("GuaranteedUpdate of %s failed because of a conflict, going to retry", key)
-			origState, err = s.getState(getResp, key, v, ignoreNotFound)
+			origState, err = s.getState(ctx, getResp, key, v, ignoreNotFound)
 			if err != nil {
 				return err
 			}
@@ -454,11 +461,6 @@ func (s *store) GuaranteedUpdate(
 
 		return decode(s.codec, s.versioner, data, out, putResp.Header.Revision)
 	}
-}
-
-// GetToList implements storage.Interface.GetToList.
-func (s *store) GetToList(ctx context.Context, key string, listOpts storage.ListOptions, listObj runtime.Object) error {
-	return s.list(ctx, key, listOpts, listObj, false)
 }
 
 func getNewItemFunc(listObj runtime.Object, v reflect.Value) func() runtime.Object {
@@ -557,12 +559,9 @@ func encodeContinue(key, keyPrefix string, resourceVersion int64) (string, error
 	return base64.RawURLEncoding.EncodeToString(out), nil
 }
 
-// List implements storage.Interface.List.
-func (s *store) List(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object) error {
-	return s.list(ctx, key, opts, listObj, true)
-}
-
-func (s *store) list(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object, recursive bool) error {
+// GetList implements storage.Interface.
+func (s *store) GetList(ctx context.Context, key string, opts storage.ListOptions, listObj runtime.Object) error {
+	recursive := opts.Recursive
 	resourceVersion := opts.ResourceVersion
 	match := opts.ResourceVersionMatch
 	pred := opts.Predicate
@@ -593,11 +592,12 @@ func (s *store) list(ctx context.Context, key string, opts storage.ListOptions, 
 	keyPrefix := key
 
 	// set the appropriate clientv3 options to filter the returned data set
-	var paging bool
+	var limitOption *clientv3.OpOption
+	var limit int64 = pred.Limit
 	options := make([]clientv3.OpOption, 0, 4)
 	if s.pagingEnabled && pred.Limit > 0 {
-		paging = true
-		options = append(options, clientv3.WithLimit(pred.Limit))
+		options = append(options, clientv3.WithLimit(limit))
+		limitOption = &options[len(options)-1]
 	}
 
 	newItemFunc := getNewItemFunc(listObj, v)
@@ -722,13 +722,13 @@ func (s *store) list(ctx context.Context, key string, opts storage.ListOptions, 
 
 		// take items from the response until the bucket is full, filtering as we go
 		for i, kv := range getResp.Kvs {
-			if paging && int64(v.Len()) >= pred.Limit {
+			if limitOption != nil && int64(v.Len()) >= pred.Limit {
 				hasMore = true
 				break
 			}
 			lastKey = kv.Key
 
-			data, _, err := s.transformer.TransformFromStorage(kv.Value, authenticatedDataString(kv.Key))
+			data, _, err := s.transformer.TransformFromStorage(ctx, kv.Value, authenticatedDataString(kv.Key))
 			if err != nil {
 				return storage.NewInternalErrorf("unable to transform key %q: %v", kv.Key, err)
 			}
@@ -748,12 +748,22 @@ func (s *store) list(ctx context.Context, key string, opts storage.ListOptions, 
 		}
 
 		// no more results remain or we didn't request paging
-		if !hasMore || !paging {
+		if !hasMore || limitOption == nil {
 			break
 		}
 		// we're paging but we have filled our bucket
 		if int64(v.Len()) >= pred.Limit {
 			break
+		}
+
+		if limit < maxLimit {
+			// We got incomplete result due to field/label selector dropping the object.
+			// Double page size to reduce total number of calls to etcd.
+			limit *= 2
+			if limit > maxLimit {
+				limit = maxLimit
+			}
+			*limitOption = clientv3.WithLimit(limit)
 		}
 		key = string(lastKey) + "\x00"
 		if withRev == 0 {
@@ -828,7 +838,7 @@ func (s *store) Watch(ctx context.Context, key string, opts storage.ListOptions)
 	return s.watcher.Watch(ctx, key, int64(rev), opts.Recursive, opts.ProgressNotify, opts.Predicate)
 }
 
-func (s *store) getState(getResp *clientv3.GetResponse, key string, v reflect.Value, ignoreNotFound bool) (*objState, error) {
+func (s *store) getState(ctx context.Context, getResp *clientv3.GetResponse, key string, v reflect.Value, ignoreNotFound bool) (*objState, error) {
 	state := &objState{
 		meta: &storage.ResponseMeta{},
 	}
@@ -847,7 +857,7 @@ func (s *store) getState(getResp *clientv3.GetResponse, key string, v reflect.Va
 			return nil, err
 		}
 	} else {
-		data, stale, err := s.transformer.TransformFromStorage(getResp.Kvs[0].Value, authenticatedDataString(key))
+		data, stale, err := s.transformer.TransformFromStorage(ctx, getResp.Kvs[0].Value, authenticatedDataString(key))
 		if err != nil {
 			return nil, storage.NewInternalError(err.Error())
 		}
