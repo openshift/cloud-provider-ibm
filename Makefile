@@ -41,17 +41,16 @@ GOFILES=$(shell find . -type f -name '*.go' -not -path "./test-fixtures/*")
 SHFILES=$(shell find . -type f -name '*.sh' -not -path "./build-tools/*")
 AWKFILES=$(shell find . -type f -name '*.awk' -not -path "./build-tools/*")
 PYFILES=$(shell find . -type f -name '*.py' -not -path "./build-tools/*")
-YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -print | sort)
+YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -not -path "./travis-secret-metadata/*" -print | sort)
 INI_FILES=$(shell find . -type f -name '*.ini' -not -path "./build-tools/*")
 OSS_FILES := go.mod
 
-GOLANGCI_LINT_VERSION := 1.44.0
+GOLANGCI_LINT_VERSION := 1.45.0
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
+HUB_RLS ?= 2.14.2
 REGISTRY ?= armada-master
-TAG ?= v1.24.0-alpha.3
-VPCCTL_SOURCE=$(shell cat addons/vpcctl.yml | awk '/^source:/{print $$2}')
-VPCCTL_CHECKSUM=$(shell cat addons/vpcctl.yml | awk '/^checksum:/{print $$2}')
+TAG ?= v1.24.0-rc.1
 
 NANCY_VERSION := 1.0.17
 
@@ -182,9 +181,8 @@ endif
 	sudo mv nancy /usr/local/bin/nancy
 
 .PHONY: containers
-containers: calicoctlcli vpcctlcli
+containers: calicoctlcli
 	cp /usr/local/bin/calicoctl cmd/ibm-cloud-controller-manager/calicoctl
-	cp /usr/local/bin/vpcctl cmd/ibm-cloud-controller-manager/vpcctl
 	docker -l debug build \
 		--build-arg IMAGE_SOURCE=${IMAGE_SOURCE} \
 		--build-arg this_build_id=${BUILD_ID} \
@@ -202,10 +200,14 @@ calicoctlcli:
 	sudo chmod 755 /usr/local/bin/calicoctl
 	sudo mkdir -p /etc/calico/ && sudo touch /etc/calico/calicoctl.cfg
 
-.PHONY: vpcctlcli
-vpcctlcli:
-	scripts/verify_file_md5.sh /usr/local/bin/vpcctl ${VPCCTL_SOURCE} ${VPCCTL_CHECKSUM}
-	sudo chmod 755 /usr/local/bin/vpcctl
+.PHONY: vpcctl
+vpcctl:
+ifdef ARTIFACTORY_API_KEY
+	@echo "Update pkg/vpcctl to use alternate vpcctl library"
+	./scripts/updatePackage.sh addons/vpcctl.yml
+else
+	@echo "Use the existing pkg/vpcctl logic"
+endif
 
 .PHONY: kubectlcli
 kubectlcli:
@@ -232,19 +234,31 @@ runfvt: kubectlcli vpcctlcli
 push-images:
 	cd vagrant-kube-build/provisioning && ./push_image.sh ${ALT_REGISTRY} ${ALT_NAMESPACE} ibm-cloud-controller-manager
 
-.PHONY: travis-deploy
-travis-deploy:
-	scripts/travisDeploy.sh ${REGISTRY}/ibm-cloud-controller-manager ${BUILD_TAG} ${TAG}
+.PHONY: hub-install
+hub-install:
+ifdef ARTIFACTORY_API_KEY
+	@echo "installing hub"
+	@curl -H "X-JFrog-Art-Api:${ARTIFACTORY_API_KEY}" -OL "https://na.artifactory.swg-devops.com/artifactory/wcp-alchemy-containers-team-github-generic-remote/github/hub/releases/download/v$(HUB_RLS)/hub-linux-amd64-$(HUB_RLS).tgz" ; \
+	tar -xzvf hub-linux-amd64-$(HUB_RLS).tgz ; \
+	rm -f hub-linux-amd64-$(HUB_RLS).tgz ; \
+	cd hub-linux-amd64-$(HUB_RLS) ; \
+	sudo ./install ; \
+	cd ..; rm -rf hub-linux-amd64-$(HUB_RLS) ; \
+	git config --global --add hub.host github.ibm.com ; \
+	git config --global user.email "iksroch1@us.ibm.com" ; \
+	git config --global user.name "iksroch1"
+else
+	@echo "hub was not installed"
+endif
 
-.PHONY: dev-deploy
-dev-deploy:
-	scripts/devDeploy.sh ${REGISTRY}/ibm-cloud-controller-manager ${BUILD_TAG}
+.PHONY: deploy
+deploy: hub-install
+	scripts/deploy.sh ${REGISTRY}/ibm-cloud-controller-manager ${BUILD_TAG}
 
 .PHONY: clean
 clean:
 	rm -f cover.out cover.html
 	rm -f cmd/ibm-cloud-controller-manager/calicoctl
-	rm -f cmd/ibm-cloud-controller-manager/vpcctl
 	rm -f ibm-cloud-controller-manager
 	rm -f tests/fvt/ibm_loadbalancer
 	rm -rf $(GOPATH)/src/k8s.io
