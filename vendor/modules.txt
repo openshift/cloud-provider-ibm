@@ -5,8 +5,8 @@ github.com/Azure/go-ansiterm/winterm
 # github.com/IBM/go-sdk-core/v5 v5.9.5
 ## explicit; go 1.14
 github.com/IBM/go-sdk-core/v5/core
-# github.com/IBM/platform-services-go-sdk v0.24.1
-## explicit; go 1.14
+# github.com/IBM/platform-services-go-sdk v0.25.0
+## explicit; go 1.16
 github.com/IBM/platform-services-go-sdk/common
 github.com/IBM/platform-services-go-sdk/resourcemanagerv2
 # github.com/IBM/vpc-go-sdk v0.19.0
@@ -500,7 +500,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/api v0.24.0-rc.1
+# k8s.io/api v0.24.0
 ## explicit; go 1.16
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -549,7 +549,7 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.24.0-rc.1
+# k8s.io/apimachinery v0.24.0
 ## explicit; go 1.16
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -603,7 +603,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.24.0-rc.1
+# k8s.io/apiserver v0.24.0
 ## explicit; go 1.16
 k8s.io/apiserver/pkg/admission
 k8s.io/apiserver/pkg/admission/configuration
@@ -731,7 +731,7 @@ k8s.io/apiserver/plugin/pkg/audit/truncate
 k8s.io/apiserver/plugin/pkg/audit/webhook
 k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
-# k8s.io/client-go v0.24.0-rc.1
+# k8s.io/client-go v0.24.0
 ## explicit; go 1.16
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -1013,7 +1013,7 @@ k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/cloud-provider v0.24.0-rc.1
+# k8s.io/cloud-provider v0.24.0
 ## explicit; go 1.16
 k8s.io/cloud-provider
 k8s.io/cloud-provider/api
@@ -1031,7 +1031,7 @@ k8s.io/cloud-provider/controllers/service/config/v1alpha1
 k8s.io/cloud-provider/node/helpers
 k8s.io/cloud-provider/options
 k8s.io/cloud-provider/service/helpers
-# k8s.io/component-base v0.24.0-rc.1
+# k8s.io/component-base v0.24.0
 ## explicit; go 1.16
 k8s.io/component-base/cli
 k8s.io/component-base/cli/flag
@@ -1056,10 +1056,10 @@ k8s.io/component-base/term
 k8s.io/component-base/traces
 k8s.io/component-base/version
 k8s.io/component-base/version/verflag
-# k8s.io/component-helpers v0.24.0-rc.1
+# k8s.io/component-helpers v0.24.0
 ## explicit; go 1.16
 k8s.io/component-helpers/node/util
-# k8s.io/controller-manager v0.24.0-rc.1
+# k8s.io/controller-manager v0.24.0
 ## explicit; go 1.16
 k8s.io/controller-manager/app
 k8s.io/controller-manager/config
