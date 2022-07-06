@@ -1,11 +1,11 @@
 # Build IBM cloud controller manager binary
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.11 AS ccm-builder
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12 AS ccm-builder
 WORKDIR /build
 COPY . .
 RUN CGO_ENABLED=0 go build -ldflags "-s -w" -o ibm-cloud-controller-manager .
 
 # Assemble the final image
-FROM registry.ci.openshift.org/ocp/4.11:base
+FROM registry.ci.openshift.org/ocp/4.12:base
 LABEL description="IBM Cloud Controller Manager"
 COPY --from=ccm-builder /build/ibm-cloud-controller-manager /bin/ibm-cloud-controller-manager
 ENTRYPOINT [ "/bin/ibm-cloud-controller-manager" ]
