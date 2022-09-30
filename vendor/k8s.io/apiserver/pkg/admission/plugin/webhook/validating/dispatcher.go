@@ -32,6 +32,7 @@ import (
 	webhookerrors "k8s.io/apiserver/pkg/admission/plugin/webhook/errors"
 	"k8s.io/apiserver/pkg/admission/plugin/webhook/generic"
 	webhookrequest "k8s.io/apiserver/pkg/admission/plugin/webhook/request"
+	endpointsrequest "k8s.io/apiserver/pkg/endpoints/request"
 	webhookutil "k8s.io/apiserver/pkg/util/webhook"
 	"k8s.io/apiserver/pkg/warning"
 	"k8s.io/klog/v2"
@@ -99,20 +100,52 @@ func (d *validatingDispatcher) Dispatch(ctx context.Context, attr admission.Attr
 	}
 
 	wg := sync.WaitGroup{}
-	errCh := make(chan error, len(relevantHooks))
+	errCh := make(chan error, 2*len(relevantHooks)) // double the length to handle extra errors for panics in the gofunc
 	wg.Add(len(relevantHooks))
 	for i := range relevantHooks {
 		go func(invocation *generic.WebhookInvocation, idx int) {
+			ignoreClientCallFailures := false
+			hookName := "unknown"
+			versionedAttr := versionedAttrs[invocation.Kind]
+			// The ordering of these two defers is critical. The wg.Done will release the parent go func to close the errCh
+			// that is used by the second defer to report errors. The recovery and error reporting must be done first.
 			defer wg.Done()
+			defer func() {
+				// HandleCrash has already called the crash handlers and it has been configured to utilruntime.ReallyCrash
+				// This block prevents the second panic from failing our process.
+				// This failure mode for the handler functions properly using the channel below.
+				recover()
+			}()
+			defer utilruntime.HandleCrash(
+				func(r interface{}) {
+					if r == nil {
+						return
+					}
+					if ignoreClientCallFailures {
+						// if failures are supposed to ignored, ignore it
+						klog.Warningf("Panic calling webhook, failing open %v: %v", hookName, r)
+						admissionmetrics.Metrics.ObserveWebhookFailOpen(ctx, hookName, "validating")
+						key := fmt.Sprintf("%sround_0_index_%d", ValidatingAuditAnnotationFailedOpenKeyPrefix, idx)
+						value := hookName
+						if err := versionedAttr.Attributes.AddAnnotation(key, value); err != nil {
+							klog.Warningf("Failed to set admission audit annotation %s to %s for validating webhook %s: %v", key, value, hookName, err)
+						}
+						return
+					}
+					// this ensures that the admission request fails and a message is provided.
+					errCh <- apierrors.NewInternalError(fmt.Errorf("ValidatingAdmissionWebhook/%v has panicked: %v", hookName, r))
+				},
+			)
+
 			hook, ok := invocation.Webhook.GetValidatingWebhook()
 			if !ok {
 				utilruntime.HandleError(fmt.Errorf("validating webhook dispatch requires v1.ValidatingWebhook, but got %T", hook))
 				return
 			}
-			versionedAttr := versionedAttrs[invocation.Kind]
+			hookName = hook.Name
+			ignoreClientCallFailures = hook.FailurePolicy != nil && *hook.FailurePolicy == v1.Ignore
 			t := time.Now()
 			err := d.callHook(ctx, hook, invocation, versionedAttr)
-			ignoreClientCallFailures := hook.FailurePolicy != nil && *hook.FailurePolicy == v1.Ignore
 			rejected := false
 			if err != nil {
 				switch err := err.(type) {
@@ -139,7 +172,7 @@ func (d *validatingDispatcher) Dispatch(ctx context.Context, attr admission.Attr
 			if callErr, ok := err.(*webhookutil.ErrCallingWebhook); ok {
 				if ignoreClientCallFailures {
 					klog.Warningf("Failed calling webhook, failing open %v: %v", hook.Name, callErr)
-
+					admissionmetrics.Metrics.ObserveWebhookFailOpen(ctx, hook.Name, "validating")
 					key := fmt.Sprintf("%sround_0_index_%d", ValidatingAuditAnnotationFailedOpenKeyPrefix, idx)
 					value := hook.Name
 					if err := versionedAttr.Attributes.AddAnnotation(key, value); err != nil {
@@ -230,7 +263,13 @@ func (d *validatingDispatcher) callHook(ctx context.Context, h *v1.ValidatingWeb
 		}
 	}
 
-	if err := r.Do(ctx).Into(response); err != nil {
+	do := func() { err = r.Do(ctx).Into(response) }
+	if wd, ok := endpointsrequest.LatencyTrackersFrom(ctx); ok {
+		tmp := do
+		do = func() { wd.ValidatingWebhookTracker.Track(tmp) }
+	}
+	do()
+	if err != nil {
 		var status *apierrors.StatusError
 		if se, ok := err.(*apierrors.StatusError); ok {
 			status = se
