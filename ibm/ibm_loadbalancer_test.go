@@ -22,7 +22,7 @@ package ibm
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -30,8 +30,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -71,6 +69,7 @@ func getLoadBalancerService(lbName string) *v1.Service {
 
 func getLoadBalancerMixedService(lbName string) *v1.Service {
 	s := getLoadBalancerService(lbName)
+	s.Spec.LoadBalancerIP = "192.168.10.54"
 	s.Spec.Ports = []v1.ServicePort{
 		{
 			Port:     80,
@@ -280,7 +279,7 @@ func createTestCloudProviderVlanIPConfigMaps() (*v1.ConfigMap, *v1.ConfigMap, *v
 			{"ip": "192.168.10.16", "subnet_id": "44", "vlan_id": "4", "is_public": true, "zone": "dal10"},
 			{"ip": "10.10.10.30", "subnet_id": "55", "vlan_id": "5", "is_public": false, "zone": "dal10"}],
 		"vlans":[
-			{"id": "1", "subnets":[{"id": "11", "ips": ["192.168.10.30", "192.168.10.31", "192.168.10.32", "192.168.10.33", "192.168.10.34", "192.168.10.35", "192.168.10.36", "192.168.10.37", "192.168.10.38", "192.168.10.39","192.168.10.50","192.168.10.51","192.168.10.52","192.168.10.53"], "is_public": true}], "zone": "dal09"},
+			{"id": "1", "subnets":[{"id": "11", "ips": ["192.168.10.30", "192.168.10.31", "192.168.10.32", "192.168.10.33", "192.168.10.34", "192.168.10.35", "192.168.10.36", "192.168.10.37", "192.168.10.38", "192.168.10.39","192.168.10.50","192.168.10.51","192.168.10.52","192.168.10.53","192.168.10.54"], "is_public": true}], "zone": "dal09"},
 			{"id": "2", "subnets":[{"id": "22", "ips": ["10.10.10.21", "10.10.10.22"], "is_public": false}], "zone": "dal09"},
 			{"id": "3", "subnets":[{"id": "33", "ips": ["2001:db8::1"], "is_public": true}], "zone": "dal09"},
 			{"id": "4", "subnets":[{"id": "44", "ips": ["192.168.10.40", "192.168.10.41", "192.168.10.42", "192.168.10.43", "192.168.10.44", "192.168.10.45"], "is_public": true}], "zone": "dal10"},
@@ -1410,7 +1409,7 @@ func TestCreateCalicoCfg(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error while calling createCalicoCfg() %v", err)
 	}
-	calicoCtlCfgBytes, err := ioutil.ReadFile(calicoCtlCfgFile)
+	calicoCtlCfgBytes, err := os.ReadFile(calicoCtlCfgFile)
 	if err != nil {
 		t.Fatalf("Could not read calicoctl config file: %v. error is: %v", calicoCtlCfgFile, err)
 	}
@@ -1426,7 +1425,7 @@ func TestCreateCalicoCfg(t *testing.T) {
 	}
 	colonIndex := strings.Index(calicoCtlCfgLines[5], ": ") + 2
 	keyFileName := calicoCtlCfgLines[5][colonIndex:]
-	keyFileBytes, err := ioutil.ReadFile(keyFileName)
+	keyFileBytes, err := os.ReadFile(keyFileName)
 	if err != nil {
 		t.Fatalf("Could not read calicoctl key file: %v. error is: %v", keyFileName, err)
 	}
@@ -1439,7 +1438,7 @@ func TestCreateCalicoCfg(t *testing.T) {
 	}
 	colonIndex = strings.Index(calicoCtlCfgLines[6], ": ") + 2
 	certFileName := calicoCtlCfgLines[6][colonIndex:]
-	certFileBytes, err := ioutil.ReadFile(certFileName)
+	certFileBytes, err := os.ReadFile(certFileName)
 	if err != nil {
 		t.Fatalf("Could not read calicoctl cert file: %v. error is: %v", certFileName, err)
 	}
@@ -1452,7 +1451,7 @@ func TestCreateCalicoCfg(t *testing.T) {
 	}
 	colonIndex = strings.Index(calicoCtlCfgLines[7], ": ") + 2
 	caCertFileName := calicoCtlCfgLines[7][colonIndex:]
-	caCertFileBytes, err := ioutil.ReadFile(caCertFileName)
+	caCertFileBytes, err := os.ReadFile(caCertFileName)
 	if err != nil {
 		t.Fatalf("Could not read calicoctl CA cert file: %v. error is: %v", caCertFileName, err)
 	}
@@ -1470,12 +1469,12 @@ func TestCreateCalicoKDDCfg(t *testing.T) {
 		t.Fatalf("Error while calling createCalicoCfg() %v", err)
 	}
 
-	actualCalicoCfg, err := ioutil.ReadFile(calicoCfgFile)
+	actualCalicoCfg, err := os.ReadFile(calicoCfgFile)
 	if err != nil {
 		t.Fatalf("Could not read created calicoctl config file: %v. error is: %v", calicoCfgFile, err)
 	}
 
-	expectedCalicoCfg, _ := ioutil.ReadFile("../test-fixtures/kdd-calico-config.yaml")
+	expectedCalicoCfg, _ := os.ReadFile("../test-fixtures/kdd-calico-config.yaml")
 	if string(actualCalicoCfg) != strings.TrimSpace(string(expectedCalicoCfg)) {
 		t.Errorf("FAILURE: unable to generate expected yaml. expected \n%+v, actual \n%+v", string(expectedCalicoCfg), string(actualCalicoCfg))
 	}
@@ -1539,7 +1538,7 @@ func TestCreateCalicoExecDummy(t *testing.T) {
 		args = args[1:]
 	}
 
-	b, err := ioutil.ReadAll(os.Stdin)
+	b, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		t.Fatalf("unable to read calico policy yaml: %v", err)
 	}
@@ -1849,13 +1848,14 @@ func TestPopulateAvailableCloudProviderVlanIPConfig(t *testing.T) {
 
 	// Public, unreserved cloud provider VLAN IPs exist
 	expectedCloudProviderVLANs := map[string][]string{
-		"1": {"192.168.10.30", "192.168.10.31", "192.168.10.32", "192.168.10.33", "192.168.10.34", "192.168.10.35", "192.168.10.36", "192.168.10.37", "192.168.10.38", "192.168.10.39", "192.168.10.50", "192.168.10.51", "192.168.10.52", "192.168.10.53"},
+		"1": {"192.168.10.30", "192.168.10.31", "192.168.10.32", "192.168.10.33", "192.168.10.34", "192.168.10.35", "192.168.10.36", "192.168.10.37", "192.168.10.38", "192.168.10.39", "192.168.10.50", "192.168.10.51", "192.168.10.52", "192.168.10.53", "192.168.10.54"},
 		"3": {"2001:db8::1"},
 		"4": {"192.168.10.40", "192.168.10.41", "192.168.10.42", "192.168.10.43", "192.168.10.44", "192.168.10.45"},
 	}
 	expectedCloudProviderIPs := map[string]string{
 		"192.168.10.30": "1", "192.168.10.31": "1", "192.168.10.32": "1", "192.168.10.33": "1", "192.168.10.34": "1", "192.168.10.35": "1", "192.168.10.36": "1", "192.168.10.37": "1", "192.168.10.38": "1", "192.168.10.39": "1",
-		"192.168.10.50": "1", "192.168.10.51": "1", "192.168.10.52": "1", "192.168.10.53": "1", "192.168.10.40": "4", "192.168.10.41": "4", "192.168.10.42": "4", "192.168.10.43": "4", "192.168.10.44": "4", "192.168.10.45": "4",
+		"192.168.10.50": "1", "192.168.10.51": "1", "192.168.10.52": "1", "192.168.10.53": "1", "192.168.10.54": "1", "192.168.10.40": "4", "192.168.10.41": "4", "192.168.10.42": "4", "192.168.10.43": "4", "192.168.10.44": "4",
+		"192.168.10.45": "4",
 	}
 	verifyPopulateAvailableCloudProviderVlanIPConfig(
 		t, c, PublicIP, UnreservedIP,
@@ -1986,6 +1986,55 @@ func TestGetLoadBalancer(t *testing.T) {
 	}
 }
 
+func TestEnsureLoadBalancerNodePortAllocation(t *testing.T) {
+	// Test for the case of not supporting "Disabling Loadbalancer NodePort allocation" in VPC clusters.
+	var err error
+	var status *v1.LoadBalancerStatus
+	const (
+		VPCCluster     = "VPCClusterID"
+		VPCClusterName = "VPCClusterName"
+	)
+
+	service := createTestLoadBalancerService("testLBNodePortDisable", "192.168.10.51", true, true)
+	lbNodePortAllocation := false
+	service.Spec.AllocateLoadBalancerNodePorts = &lbNodePortAllocation
+
+	c := Cloud{
+		Config:     &CloudConfig{Prov: Provider{ClusterID: VPCCluster, ProviderType: lbVpcNextGenProvider}},
+		KubeClient: fake.NewSimpleClientset(service),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+	}
+
+	node1, node2, _, _ := createTestCloudNodes()
+	nodes := []*v1.Node{node1, node2}
+
+	// The service should not support "Disabling NodePort allocation" in VPC cluster and should return error.
+	status, err = c.EnsureLoadBalancer(context.Background(), VPCClusterName, service, nodes)
+
+	if status != nil || err == nil {
+		t.Fatalf("Unexpected error ensuring load balancer with disabling loadbalancer nodeport allocation: %v, %v", status, err)
+	}
+
+	// The service should be removed from the monitoring loadbalancer services list. Check the above loadbalancer service is removed from the list with unsupported configuration.
+	services, err := c.KubeClient.CoreV1().Services(v1.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
+	if nil != err {
+		t.Fatalf("Failed to list load balancer services: %v", err)
+	}
+
+	num := len(services.Items)
+	expectedNum := 1 // Count of load balanacer services
+	if expectedNum != num {
+		t.Fatalf("The number of services: %v is not equal with the expected value: %v", num, expectedNum)
+	}
+
+	c.filterLoadBalancersFromServiceList(services)
+	num = len(services.Items)
+	expectedNum = 0 // Count of load balanacer services
+	if expectedNum != num {
+		t.Fatalf("The number of services: %v is not equal with the expected value: %v", num, expectedNum)
+	}
+}
+
 func TestEnsureLoadBalancer(t *testing.T) {
 	var err error
 	var status *v1.LoadBalancerStatus
@@ -2100,12 +2149,10 @@ func TestEnsureLoadBalancer(t *testing.T) {
 		t.Fatalf("Unexpected error updating load balancer deployment keepalived Init container Image: %v", d.Spec.Template.Spec.Containers[0].Image)
 	}
 
-	// MixedProtocol (i.e. both TCP and UDP ports) is NOT supportd for now
+	// MixedProtocol (i.e. both TCP and UDP ports)
 	status, err = c.EnsureLoadBalancer(context.Background(), clusterName, getLoadBalancerMixedService("testMixed"), nil)
 	if nil == status && err != nil {
-		assert.Contains(t, err.Error(), "mixed protocol")
-	} else {
-		t.Fatalf("MixedProtocol did not return error")
+		t.Fatalf("Unexpected error while creating a LB with mixed protocol: %v, %v", status, err)
 	}
 
 	// Duplicate load balancers exist
@@ -3622,7 +3669,7 @@ func TestFilterLoadBalancersFromServiceList(t *testing.T) {
 		t.Fatalf("The number of services: %v is not equal with the expected value: %v", num, expectedNum)
 	}
 
-	filterLoadBalancersFromServiceList(services)
+	c.filterLoadBalancersFromServiceList(services)
 	num = len(services.Items)
 	expectedNum = 11 // Count of load balanacer services
 	if expectedNum != num {
@@ -3633,7 +3680,7 @@ func TestFilterLoadBalancersFromServiceList(t *testing.T) {
 	// Filter out these load balancer services
 	services.Items[4].Spec.LoadBalancerClass = pointer.String("dummylb.io")
 	services.Items[9].Spec.LoadBalancerClass = pointer.String("dummylb.io")
-	filterLoadBalancersFromServiceList(services)
+	c.filterLoadBalancersFromServiceList(services)
 	num = len(services.Items)
 	expectedNum = 9 // Count of load balancer services without load balancer class
 	if expectedNum != num {

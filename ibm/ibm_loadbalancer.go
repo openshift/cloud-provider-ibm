@@ -24,7 +24,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -1007,7 +1006,7 @@ func (c *Cloud) createCalicoCfg() (string, error) {
 	*/
 
 	var caliCfgYaml string
-	calicoCfgFile, err := ioutil.TempFile("", "calicfg")
+	calicoCfgFile, err := os.CreateTemp("", "calicfg")
 	if err != nil {
 		klog.Error("Unable to create temp calico configuration file")
 		return "", err
@@ -1039,19 +1038,19 @@ spec:
 			return "", err
 		}
 
-		caFile, err := ioutil.TempFile("", "ca")
+		caFile, err := os.CreateTemp("", "ca")
 		if err != nil {
 			klog.Error("Unable to create temp calico ca file")
 			return "", err
 		}
 
-		certFile, err := ioutil.TempFile("", "cert")
+		certFile, err := os.CreateTemp("", "cert")
 		if err != nil {
 			klog.Error("Unable to create temp calico cert file")
 			return "", err
 		}
 
-		keyFile, err := ioutil.TempFile("", "key")
+		keyFile, err := os.CreateTemp("", "key")
 		if err != nil {
 			klog.Error("Unable to create temp calico key file")
 			return "", err
@@ -1107,7 +1106,7 @@ spec:
 }
 
 func cleanupCalicoCfg(calicoCfgFile string) error {
-	calicoCtlCfgBytes, err := ioutil.ReadFile(filepath.Clean(calicoCfgFile))
+	calicoCtlCfgBytes, err := os.ReadFile(filepath.Clean(calicoCfgFile))
 	if err != nil {
 		klog.Error("Unable to read Calico config temp file")
 		return err
@@ -1341,7 +1340,7 @@ func isUpdateSourceIPRequired(lbDeployment *apps.Deployment, service *v1.Service
 func (c *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, service *v1.Service, nodes []*v1.Node) (*v1.LoadBalancerStatus, error) {
 
 	// Verify that the load balancer service configuration is supported.
-	err := isServiceConfigurationSupported(service)
+	err := c.isServiceConfigurationSupported(service)
 	if err != nil {
 		return nil, c.Recorder.LoadBalancerServiceWarningEvent(
 			service, CreatingCloudLoadBalancerFailed,
@@ -2148,11 +2147,12 @@ func replicaSetHasDesiredReplicas(clientset clientset.Interface, replicaSet *app
 }
 
 // Filter the services list to just contain the load balancers without defined load balancer class and nothing else.
-func filterLoadBalancersFromServiceList(services *v1.ServiceList) {
+func (c *Cloud) filterLoadBalancersFromServiceList(services *v1.ServiceList) {
 	var lbItems []v1.Service
 	for i := range services.Items {
+		err := c.isServiceConfigurationSupported(&services.Items[i])
 		if services.Items[i].Spec.Type == v1.ServiceTypeLoadBalancer &&
-			services.Items[i].Spec.LoadBalancerClass == nil {
+			services.Items[i].Spec.LoadBalancerClass == nil && err == nil {
 			lbItems = append(lbItems, services.Items[i])
 		}
 	}
@@ -2176,7 +2176,7 @@ func MonitorLoadBalancers(c *Cloud, data map[string]string) {
 	// Filtering out the services which type is not load blancer and also filtering out
 	// the load blanacer services which has got defined load blancer class.
 	// The ServiceList struct was modified in place so there is no returning value
-	filterLoadBalancersFromServiceList(services)
+	c.filterLoadBalancersFromServiceList(services)
 
 	// Invoke VPC specific logic if this is a VPC cluster
 	if c.isProviderVpc() {
@@ -2336,16 +2336,15 @@ func sliceContains(stringSlice []string, searchString string) bool {
 	return false
 }
 
-func isServiceConfigurationSupported(service *v1.Service) error {
-	var hasTCP bool
-	var hasUDP bool
+func (c *Cloud) isServiceConfigurationSupported(service *v1.Service) error {
+
+	if c.isProviderVpc() && service.Spec.AllocateLoadBalancerNodePorts != nil && !*service.Spec.AllocateLoadBalancerNodePorts {
+		return fmt.Errorf("NodePort allocation is required")
+	}
 
 	for _, port := range service.Spec.Ports {
 		switch port.Protocol {
-		case v1.ProtocolTCP:
-			hasTCP = true
-		case v1.ProtocolUDP:
-			hasUDP = true
+		case v1.ProtocolTCP, v1.ProtocolUDP:
 		default:
 			return fmt.Errorf("%s protocol", port.Protocol)
 		}
@@ -2354,11 +2353,6 @@ func isServiceConfigurationSupported(service *v1.Service) error {
 			return fmt.Errorf("application protocol")
 		}
 	}
-
-	if hasTCP && hasUDP {
-		return fmt.Errorf("mixed protocol")
-	}
-
 	return nil
 }
 
