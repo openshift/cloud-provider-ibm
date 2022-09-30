@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"strconv"
 	"sync"
 	"time"
@@ -56,7 +57,8 @@ type CloudPakForDataAuthenticator struct {
 
 	// The http.Client object used to invoke token server requests [optional]. If
 	// not specified, a suitable default Client will be constructed.
-	Client *http.Client
+	Client     *http.Client
+	clientInit sync.Once
 
 	// The cached token and expiration time.
 	tokenData *cp4dTokenData
@@ -154,6 +156,26 @@ func (authenticator *CloudPakForDataAuthenticator) Validate() error {
 	}
 
 	return nil
+}
+
+// client returns the authenticator's http client after potentially initializing it.
+func (authenticator *CloudPakForDataAuthenticator) client() *http.Client {
+	authenticator.clientInit.Do(func() {
+		if authenticator.Client == nil {
+			authenticator.Client = DefaultHTTPClient()
+			authenticator.Client.Timeout = time.Second * 30
+
+			// If the user told us to disable SSL verification, then do it now.
+			if authenticator.DisableSSLVerification {
+				transport := &http.Transport{
+					// #nosec G402
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				}
+				authenticator.Client.Transport = transport
+			}
+		}
+	})
+	return authenticator.Client
 }
 
 // Authenticate adds the bearer token (obtained from the token server) to the
@@ -293,25 +315,31 @@ func (authenticator *CloudPakForDataAuthenticator) requestToken() (tokenResponse
 		return
 	}
 
-	// If the authenticator does not have a Client, create one now.
-	if authenticator.Client == nil {
-		authenticator.Client = &http.Client{
-			Timeout: time.Second * 30,
-		}
-
-		// If the user told us to disable SSL verification, then do it now.
-		if authenticator.DisableSSLVerification {
-			transport := &http.Transport{
-				/* #nosec G402 */
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-			authenticator.Client.Transport = transport
+	// If debug is enabled, then dump the request.
+	if GetLogger().IsLogLevelEnabled(LevelDebug) {
+		buf, dumpErr := httputil.DumpRequestOut(req, req.Body != nil)
+		if dumpErr == nil {
+			GetLogger().Debug("Request:\n%s\n", RedactSecrets(string(buf)))
+		} else {
+			GetLogger().Debug(fmt.Sprintf("error while attempting to log outbound request: %s", dumpErr.Error()))
 		}
 	}
 
-	resp, err := authenticator.Client.Do(req)
+	GetLogger().Debug("Invoking CP4D token service operation: %s", builder.URL)
+	resp, err := authenticator.client().Do(req)
 	if err != nil {
 		return
+	}
+	GetLogger().Debug("Returned from CP4D token service operation, received status code %d", resp.StatusCode)
+
+	// If debug is enabled, then dump the response.
+	if GetLogger().IsLogLevelEnabled(LevelDebug) {
+		buf, dumpErr := httputil.DumpResponse(resp, req.Body != nil)
+		if dumpErr == nil {
+			GetLogger().Debug("Response:\n%s\n", RedactSecrets(string(buf)))
+		} else {
+			GetLogger().Debug(fmt.Sprintf("error while attempting to log inbound response: %s", dumpErr.Error()))
+		}
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

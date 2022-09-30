@@ -204,8 +204,19 @@ func ConfirmUsable(config clientcmdapi.Config, passedContextName string) error {
 
 	if exists {
 		validationErrors = append(validationErrors, validateContext(contextName, *context, config)...)
-		validationErrors = append(validationErrors, validateAuthInfo(context.AuthInfo, *config.AuthInfos[context.AuthInfo])...)
-		validationErrors = append(validationErrors, validateClusterInfo(context.Cluster, *config.Clusters[context.Cluster])...)
+
+		// Default to empty users and clusters and let the validation function report an error.
+		authInfo := config.AuthInfos[context.AuthInfo]
+		if authInfo == nil {
+			authInfo = &clientcmdapi.AuthInfo{}
+		}
+		validationErrors = append(validationErrors, validateAuthInfo(context.AuthInfo, *authInfo)...)
+
+		cluster := config.Clusters[context.Cluster]
+		if cluster == nil {
+			cluster = &clientcmdapi.Cluster{}
+		}
+		validationErrors = append(validationErrors, validateClusterInfo(context.Cluster, *cluster)...)
 	}
 
 	return newErrConfigurationInvalid(validationErrors)
@@ -323,9 +334,9 @@ func validateAuthInfo(authInfoName string, authInfo clientcmdapi.AuthInfo) []err
 		validationErrors = append(validationErrors, fmt.Errorf("more than one authentication method found for %v; found %v, only one is allowed", authInfoName, methods))
 	}
 
-	// ImpersonateGroups or ImpersonateUserExtra should be requested with a user
-	if (len(authInfo.ImpersonateGroups) > 0 || len(authInfo.ImpersonateUserExtra) > 0) && (len(authInfo.Impersonate) == 0) {
-		validationErrors = append(validationErrors, fmt.Errorf("requesting groups or user-extra for %v without impersonating a user", authInfoName))
+	// ImpersonateUID, ImpersonateGroups or ImpersonateUserExtra should be requested with a user
+	if (len(authInfo.ImpersonateUID) > 0 || len(authInfo.ImpersonateGroups) > 0 || len(authInfo.ImpersonateUserExtra) > 0) && (len(authInfo.Impersonate) == 0) {
+		validationErrors = append(validationErrors, fmt.Errorf("requesting uid, groups or user-extra for %v without impersonating a user", authInfoName))
 	}
 	return validationErrors
 }

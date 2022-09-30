@@ -217,7 +217,10 @@ type Store struct {
 	// If the StorageVersioner is nil, apiserver will leave the
 	// storageVersionHash as empty in the discovery document.
 	StorageVersioner runtime.GroupVersioner
-	// Called to cleanup clients used by the underlying Storage; optional.
+
+	// DestroyFunc cleans up clients used by the underlying Storage; optional.
+	// If set, DestroyFunc has to be implemented in thread-safe way and
+	// be prepared for being called more than once.
 	DestroyFunc func()
 }
 
@@ -279,6 +282,13 @@ func (e *Store) New() runtime.Object {
 	return e.NewFunc()
 }
 
+// Destroy cleans up its resources on shutdown.
+func (e *Store) Destroy() {
+	if e.DestroyFunc != nil {
+		e.DestroyFunc()
+	}
+}
+
 // NewList implements rest.Lister.
 func (e *Store) NewList() runtime.Object {
 	return e.NewListFunc()
@@ -293,7 +303,7 @@ func (e *Store) NamespaceScoped() bool {
 		return e.UpdateStrategy.NamespaceScoped()
 	}
 
-	panic("programmer error: no CRUD for resource, you're crazy, override NamespaceScoped too")
+	panic("programmer error: no CRUD for resource, override NamespaceScoped too")
 }
 
 // GetCreateStrategy implements GenericStore.
@@ -343,16 +353,22 @@ func (e *Store) ListPredicate(ctx context.Context, p storage.SelectionPredicate,
 	p.Continue = options.Continue
 	list := e.NewListFunc()
 	qualifiedResource := e.qualifiedResourceFromContext(ctx)
-	storageOpts := storage.ListOptions{ResourceVersion: options.ResourceVersion, ResourceVersionMatch: options.ResourceVersionMatch, Predicate: p}
+	storageOpts := storage.ListOptions{
+		ResourceVersion:      options.ResourceVersion,
+		ResourceVersionMatch: options.ResourceVersionMatch,
+		Predicate:            p,
+		Recursive:            true,
+	}
 	if name, ok := p.MatchesSingle(); ok {
 		if key, err := e.KeyFunc(ctx, name); err == nil {
-			err := e.Storage.GetToList(ctx, key, storageOpts, list)
+			storageOpts.Recursive = false
+			err := e.Storage.GetList(ctx, key, storageOpts, list)
 			return list, storeerr.InterpretListError(err, qualifiedResource)
 		}
 		// if we cannot extract a key based on the current context, the optimization is skipped
 	}
 
-	err := e.Storage.List(ctx, e.KeyRootFunc(ctx), storageOpts, list)
+	err := e.Storage.GetList(ctx, e.KeyRootFunc(ctx), storageOpts, list)
 	return list, storeerr.InterpretListError(err, qualifiedResource)
 }
 
@@ -365,6 +381,13 @@ func finishNothing(context.Context, bool) {}
 // be able to examine the input and output objects for differences.
 func (e *Store) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
 	var finishCreate FinishFunc = finishNothing
+
+	// Init metadata as early as possible.
+	if objectMeta, err := meta.Accessor(obj); err != nil {
+		return nil, err
+	} else {
+		rest.FillObjectMetaSystemFields(objectMeta)
+	}
 
 	if e.BeginCreate != nil {
 		fn, err := e.BeginCreate(ctx, obj, options)
@@ -542,6 +565,13 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 		doUnconditionalUpdate := newResourceVersion == 0 && e.UpdateStrategy.AllowUnconditionalUpdate()
 
 		if existingResourceVersion == 0 {
+			// Init metadata as early as possible.
+			if objectMeta, err := meta.Accessor(obj); err != nil {
+				return nil, nil, err
+			} else {
+				rest.FillObjectMetaSystemFields(objectMeta)
+			}
+
 			var finishCreate FinishFunc = finishNothing
 
 			if e.BeginCreate != nil {
@@ -685,8 +715,9 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 // create-on-update path.
 func newCreateOptionsFromUpdateOptions(in *metav1.UpdateOptions) *metav1.CreateOptions {
 	co := &metav1.CreateOptions{
-		DryRun:       in.DryRun,
-		FieldManager: in.FieldManager,
+		DryRun:          in.DryRun,
+		FieldManager:    in.FieldManager,
+		FieldValidation: in.FieldValidation,
 	}
 	co.TypeMeta.SetGroupVersionKind(metav1.SchemeGroupVersion.WithKind("CreateOptions"))
 	return co
@@ -753,9 +784,9 @@ func shouldOrphanDependents(ctx context.Context, e *Store, accessor metav1.Objec
 	}
 
 	// An explicit policy was set at deletion time, that overrides everything
-	//lint:ignore SA1019 backwards compatibility
+	//nolint:staticcheck // SA1019 backwards compatibility
 	if options != nil && options.OrphanDependents != nil {
-		//lint:ignore SA1019 backwards compatibility
+		//nolint:staticcheck // SA1019 backwards compatibility
 		return *options.OrphanDependents
 	}
 	if options != nil && options.PropagationPolicy != nil {
@@ -796,7 +827,7 @@ func shouldDeleteDependents(ctx context.Context, e *Store, accessor metav1.Objec
 	}
 
 	// If an explicit policy was set at deletion time, that overrides both
-	//lint:ignore SA1019 backwards compatibility
+	//nolint:staticcheck // SA1019 backwards compatibility
 	if options != nil && options.OrphanDependents != nil {
 		return false
 	}
@@ -893,13 +924,13 @@ func markAsDeleting(obj runtime.Object, now time.Time) (err error) {
 // grace period seconds (graceful deletion) and updating the list of
 // finalizers (finalization); it returns:
 //
-// 1. an error
-// 2. a boolean indicating that the object was not found, but it should be
-//    ignored
-// 3. a boolean indicating that the object's grace period is exhausted and it
-//    should be deleted immediately
-// 4. a new output object with the state that was updated
-// 5. a copy of the last existing state of the object
+//  1. an error
+//  2. a boolean indicating that the object was not found, but it should be
+//     ignored
+//  3. a boolean indicating that the object's grace period is exhausted and it
+//     should be deleted immediately
+//  4. a new output object with the state that was updated
+//  5. a copy of the last existing state of the object
 func (e *Store) updateForGracefulDeletionAndFinalizers(ctx context.Context, name, key string, options *metav1.DeleteOptions, preconditions storage.Preconditions, deleteValidation rest.ValidateObjectFunc, in runtime.Object) (err error, ignoreNotFound, deleteImmediately bool, out, lastExisting runtime.Object) {
 	lastGraceful := int64(0)
 	var pendingFinalizers bool
@@ -1127,13 +1158,21 @@ func (e *Store) DeleteCollection(ctx context.Context, deleteValidation rest.Vali
 	wg := sync.WaitGroup{}
 	toProcess := make(chan int, 2*workersNumber)
 	errs := make(chan error, workersNumber+1)
+	workersExited := make(chan struct{})
+	distributorExited := make(chan struct{})
 
 	go func() {
 		defer utilruntime.HandleCrash(func(panicReason interface{}) {
 			errs <- fmt.Errorf("DeleteCollection distributor panicked: %v", panicReason)
 		})
+		defer close(distributorExited)
 		for i := 0; i < len(items); i++ {
-			toProcess <- i
+			select {
+			case toProcess <- i:
+			case <-workersExited:
+				klog.V(4).InfoS("workers already exited, and there are some items waiting to be processed", "finished", i, "total", len(items))
+				return
+			}
 		}
 		close(toProcess)
 	}()
@@ -1166,6 +1205,9 @@ func (e *Store) DeleteCollection(ctx context.Context, deleteValidation rest.Vali
 		}()
 	}
 	wg.Wait()
+	// notify distributor to exit
+	close(workersExited)
+	<-distributorExited
 	select {
 	case err := <-errs:
 		return nil, err
@@ -1228,23 +1270,19 @@ func (e *Store) Watch(ctx context.Context, options *metainternalversion.ListOpti
 
 // WatchPredicate starts a watch for the items that matches.
 func (e *Store) WatchPredicate(ctx context.Context, p storage.SelectionPredicate, resourceVersion string) (watch.Interface, error) {
-	storageOpts := storage.ListOptions{ResourceVersion: resourceVersion, Predicate: p}
+	storageOpts := storage.ListOptions{ResourceVersion: resourceVersion, Predicate: p, Recursive: true}
+
+	key := e.KeyRootFunc(ctx)
 	if name, ok := p.MatchesSingle(); ok {
-		if key, err := e.KeyFunc(ctx, name); err == nil {
-			w, err := e.Storage.Watch(ctx, key, storageOpts)
-			if err != nil {
-				return nil, err
-			}
-			if e.Decorator != nil {
-				return newDecoratedWatcher(ctx, w, e.Decorator), nil
-			}
-			return w, nil
+		if k, err := e.KeyFunc(ctx, name); err == nil {
+			key = k
+			storageOpts.Recursive = false
 		}
 		// if we cannot extract a key based on the current context, the
 		// optimization is skipped
 	}
 
-	w, err := e.Storage.WatchList(ctx, e.KeyRootFunc(ctx), storageOpts)
+	w, err := e.Storage.Watch(ctx, key, storageOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -1419,11 +1457,14 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 		if opts.CountMetricPollPeriod > 0 {
 			stopFunc := e.startObservingCount(opts.CountMetricPollPeriod, opts.StorageObjectCountTracker)
 			previousDestroy := e.DestroyFunc
+			var once sync.Once
 			e.DestroyFunc = func() {
-				stopFunc()
-				if previousDestroy != nil {
-					previousDestroy()
-				}
+				once.Do(func() {
+					stopFunc()
+					if previousDestroy != nil {
+						previousDestroy()
+					}
+				})
 			}
 		}
 	}
