@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2023 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -195,6 +195,11 @@ func TestCloudVpc_GenerateLoadBalancerName(t *testing.T) {
 	lbName = lbName[:63]
 	result := c.GenerateLoadBalancerName(kubeService)
 	assert.Equal(t, result, lbName)
+
+	// Verify annotation works to specify VPC LB name
+	kubeService.Annotations = map[string]string{serviceAnnotationLbName: "my-lb-name"}
+	result = c.GenerateLoadBalancerName(kubeService)
+	assert.Equal(t, result, "my-lb-name")
 }
 
 func TestCloudVpc_GetLoadBalancer(t *testing.T) {

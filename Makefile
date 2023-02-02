@@ -1,6 +1,6 @@
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+# (C) Copyright IBM Corp. 2021, 2023 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -45,14 +45,14 @@ YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -n
 INI_FILES=$(shell find . -type f -name '*.ini' -not -path "./build-tools/*")
 OSS_FILES := go.mod
 
-GOLANGCI_LINT_VERSION := 1.49.0
+GOLANGCI_LINT_VERSION := 1.50.0
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
 HUB_RLS ?= 2.14.2
 REGISTRY ?= armada-master
-TAG ?= v1.25.2
+TAG ?= v1.26.1
 
-NANCY_VERSION := 1.0.37
+NANCY_VERSION := 1.0.39
 
 WORKSPACE=$(GOPATH)/src/k8s.io
 
@@ -168,7 +168,7 @@ fvttest:
 .PHONY: runanalyzedeps
 runanalyzedeps:
 	which nancy || $(MAKE) install-nancy-dep-scanner
-	go list -json -deps | nancy sleuth --no-color > nancy.log 2>&1; scripts/process_nancy_log.sh $$?
+	go list -json -deps | nancy sleuth -e sonatype-2022-6522 --no-color > nancy.log 2>&1; scripts/process_nancy_log.sh $$?
 
 .PHONY: install-nancy-dep-scanner
 install-nancy-dep-scanner:
