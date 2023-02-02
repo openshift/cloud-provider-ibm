@@ -1,7 +1,7 @@
 #!/bin/bash
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2019, 2022 All Rights Reserved.
+# (C) Copyright IBM Corp. 2019, 2023 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -70,6 +70,7 @@ if [[ "${DOCKER_IMAGE_TAG}" = dev-* ]]; then
     dev_branch=${new_image_tag#"dev-"}
     dev_branch=${dev_branch%-*}
     pr_option="--draft"
+    pr_labels="DNM"
     echo "${DOCKER_IMAGE_TAG} is a dev image"
     {
         echo "DNM: Test BOM for ${image_name} - ${new_image_tag}"
@@ -92,6 +93,7 @@ if [[ "${DOCKER_IMAGE_TAG}" = dev-* ]]; then
 else
     kube_branch="release-${kube_major}.${kube_minor}"
     pr_option=""
+    pr_labels="pull-request-ready"
     {
         echo "Update ${image_name} to ${new_image_tag}"
         echo
@@ -109,4 +111,14 @@ git commit --file "${TRAVIS_BUILD_DIR}"/message.txt
 
 echo "Creating pull request..."
 export GITHUB_TOKEN=${GHE_TOKEN}
-hub pull-request --file "${TRAVIS_BUILD_DIR}"/message.txt --push "${pr_option}"
+hub pull-request --file "${TRAVIS_BUILD_DIR}"/message.txt --push "${pr_option}" --labels "${pr_labels}"
+
+# Check to see if vpcctl logic is being updated
+cd "${TRAVIS_BUILD_DIR}"
+if grep -q "Update vpcctl" "${TRAVIS_BUILD_DIR}/message.txt"; then
+
+    # Clone the armada-network repo and kick off Jenkins job
+    git clone --depth=1 --no-single-branch "https://${GHE_USER}:${GHE_TOKEN}@github.ibm.com/alchemy-containers/armada-network.git"
+    cd armada-network/tools/jenkins-cli
+    go run main.go -action createTestBOM -ansibleBranch "armada-lb-${new_image_tag}" -clusterVersion "${kube_major}.${kube_minor}" -user "${JENKINS_USER}" -token "${JENKINS_TOKEN}"
+fi

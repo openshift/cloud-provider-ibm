@@ -1,6 +1,6 @@
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+# (C) Copyright IBM Corp. 2021, 2023 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -19,13 +19,13 @@
 language: go
 
 go:
-  - 1.19.1
+  - 1.19.5
 
 dist: bionic
 
 env:
   global:
-    - IKS_PIPELINE_IAM_APIKEY="${ALL_GLOBAL_UPDATE_IKS_PIPELINE_IAM_APIKEY_20211116}"
+    - IKS_PIPELINE_IAM_APIKEY="${ALL_GLOBAL_NETWORK_IKS_PIPELINE_IAM_APIKEY_20221103}"
     - registry_iam_api_key="${ALL_GLOBAL_registry_iam_api_key_20220425}"
     - GHE_TOKEN="${ALL_GLOBAL_GHE_API_KEY_20220420}"
     - TRAVIS_HOSTNAME="travis.ibm.com"
@@ -87,12 +87,19 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: ${TRAVIS_TAG} == v1.25.2-* && ${BUILD_JOB_NAME} == Default
-      go: 1.19.1
+      condition: ${TRAVIS_TAG} == v1.26.1-* && ${BUILD_JOB_NAME} == Default
+      go: 1.19.5
   - provider: script
     script: BUILD_TAG=${TRAVIS_TAG} make deploy
     skip_cleanup: true
     on:
       tags: true
-      go: 1.19.1
+      go: 1.19.5
       condition: ${TRAVIS_TAG} == dev-* && ${BUILD_JOB_NAME} == Default
+  - provider: script
+    script: ./scripts/publishTag.sh
+    skip_cleanup: true
+    on:
+      branch: release-1.26
+      go: 1.19.5
+      condition: ${TRAVIS_COMMIT_MESSAGE} =~ push_build && ${BUILD_JOB_NAME} == Default
