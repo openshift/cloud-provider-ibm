@@ -17,17 +17,17 @@
 # limitations under the License.
 # ******************************************************************************
 GO111MODULE := on
+GOCOVERDIR := .
 
 CALICOCTL_VERSION=$(shell cat addons/calicoctl.yml | awk '/^version:/{print $$2}')
 CALICOCTL_CHECKSUM=$(shell cat addons/calicoctl.yml | awk '/^checksum:/{print $$2}')
 
-# When ARTIFACTORY_API_KEY is set then artifactory builds are enabled and the
+# When ARTIFACTORY_AUTH_HEADER_FILE is set then artifactory builds are enabled and the
 # following environment variables will also be set:
-# - ARTIFACTORY_USER
-# - ARTIFACTORY_API_KEY_FILE
+# - ARTIFACTORY_USER_NAME
+# - ARTIFACTORY_TOKEN_PATH
 # - ARTIFACTORY_AUTH_HEADER_FILE
-ifdef ARTIFACTORY_API_KEY
-GOPROXY := https://${ARTIFACTORY_USER}:${ARTIFACTORY_API_KEY}@na.artifactory.swg-devops.com/artifactory/api/go/wcp-alchemy-containers-team-go-virtual
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
 IMAGE_SOURCE := wcp-alchemy-containers-team-gcr-docker-remote.artifactory.swg-devops.com
 CALICOCTL_CURL_HEADERS := "-H @${ARTIFACTORY_AUTH_HEADER_FILE}"
 CALICOCTL_CURL_URL=$(shell cat addons/calicoctl.yml | awk '/^source_artifactory:/{print $$2}')
@@ -45,14 +45,14 @@ YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -n
 INI_FILES=$(shell find . -type f -name '*.ini' -not -path "./build-tools/*")
 OSS_FILES := go.mod
 
-GOLANGCI_LINT_VERSION := 1.50.0
+GOLANGCI_LINT_VERSION := 1.51.2
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
 HUB_RLS ?= 2.14.2
 REGISTRY ?= armada-master
-TAG ?= v1.26.1
+TAG ?= v1.27.1
 
-NANCY_VERSION := 1.0.39
+NANCY_VERSION := 1.0.42
 
 WORKSPACE=$(GOPATH)/src/k8s.io
 
@@ -71,20 +71,9 @@ all: oss fmt lint lint-sh lint-copyright vet test coverage commands fvttest cont
 
 .PHONY: setup-artifactory-build
 setup-artifactory-build:
-ifdef IKS_PIPELINE_IAM_APIKEY
-	echo "Preparing artifactory build setup."
-	curl -s https://s3.us.cloud-object-storage.appdomain.cloud/armada-build-tools-prod-us-geo/build-tools/build-tools.tar.gz | tar -xvz
-	./build-tools/install.sh
-	./build-tools/key-protect/get-key-data.sh --bluemix-api-key "${IKS_PIPELINE_IAM_APIKEY}" --keyprotect-instance-id "${IKS_PIPELINE_KEYPROTECT_INSTANCE_ID}" --keyprotect-root-key-name icdevops-artifactory-api-key --keyprotect-host "us-south.kms.cloud.ibm.com" | base64 -d > "${ARTIFACTORY_API_KEY_FILE}"
-	cat "${ARTIFACTORY_API_KEY_FILE}" | docker login wcp-alchemy-containers-team-access-redhat-docker-remote.artifactory.swg-devops.com --username "${ARTIFACTORY_USER}" --password-stdin
-	cat "${ARTIFACTORY_API_KEY_FILE}" | docker login wcp-alchemy-containers-team-gcr-docker-remote.artifactory.swg-devops.com --username "${ARTIFACTORY_USER}" --password-stdin
-	mkdir -p ~/.pip/
-	echo "[global]" > ~/.pip/pip.conf
-	echo "index-url = https://na.artifactory.swg-devops.com/artifactory/api/pypi/wcp-alchemy-containers-team-pypi-remote/simple" >> ~/.pip/pip.conf
-	printf "machine na.artifactory.swg-devops.com login ${ARTIFACTORY_USER} password " >> ~/.netrc
-	cat "${ARTIFACTORY_API_KEY_FILE}" >> ~/.netrc
-	printf "X-JFrog-Art-Api:" > "${ARTIFACTORY_AUTH_HEADER_FILE}"
-	cat "${ARTIFACTORY_API_KEY_FILE}" >> "${ARTIFACTORY_AUTH_HEADER_FILE}"
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
+	export ARTIFACTORY_TOKEN_PATH="/tmp/.artifactory-token-path"
+	scripts/setup-artifactory-build.sh
 else
 	echo "Skipping artifactory build setup."
 endif
@@ -96,7 +85,7 @@ setup-build: setup-artifactory-build
 
 .PHONY: install-golangci-lint
 install-golangci-lint:
-ifdef ARTIFACTORY_API_KEY
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
 	curl -H @${ARTIFACTORY_AUTH_HEADER_FILE} -L "https://na.artifactory.swg-devops.com/artifactory/wcp-alchemy-containers-team-github-generic-remote/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" | sudo tar -xvz -C $(go env GOPATH)/bin --strip-components=1 golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint
 else
 	curl -L "https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz" | sudo tar -xvz -C $(go env GOPATH)/bin --strip-components=1 golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint
@@ -124,7 +113,7 @@ lint:
 ifdef GOLANGCI_LINT_EXISTS
 	# NOTE(cjschaef): golangci-lint can take a while to run, bump deadline
 	echo "Running gosec"
-	golangci-lint run --deadline 5m -e exitAfterDefer
+	golangci-lint run -v --timeout 5m
 else
 	@echo "golangci-lint is not installed"
 	exit 1
@@ -168,11 +157,11 @@ fvttest:
 .PHONY: runanalyzedeps
 runanalyzedeps:
 	which nancy || $(MAKE) install-nancy-dep-scanner
-	go list -json -deps | nancy sleuth -e sonatype-2022-6522 --no-color > nancy.log 2>&1; scripts/process_nancy_log.sh $$?
+	go list -json -deps | nancy sleuth -e sonatype-2022-6522,CVE-2020-8561 --no-color > nancy.log 2>&1; scripts/process_nancy_log.sh $$?
 
 .PHONY: install-nancy-dep-scanner
 install-nancy-dep-scanner:
-ifdef ARTIFACTORY_API_KEY
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
 	curl -L -H @${ARTIFACTORY_AUTH_HEADER_FILE} "https://na.artifactory.swg-devops.com/artifactory/wcp-alchemy-containers-team-github-generic-remote/sonatype-nexus-community/nancy/releases/download/v$(NANCY_VERSION)/nancy-v$(NANCY_VERSION)-linux-amd64" -o nancy
 else
 	curl -L "https://github.com/sonatype-nexus-community/nancy/releases/download/v$(NANCY_VERSION)/nancy-v$(NANCY_VERSION)-linux-amd64" -o nancy
@@ -202,7 +191,7 @@ calicoctlcli:
 
 .PHONY: vpcctl
 vpcctl:
-ifdef ARTIFACTORY_API_KEY
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
 	@echo "Update pkg/vpcctl to use alternate vpcctl library"
 	./scripts/updatePackage.sh addons/vpcctl.yml
 else
@@ -236,9 +225,9 @@ push-images:
 
 .PHONY: hub-install
 hub-install:
-ifdef ARTIFACTORY_API_KEY
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
 	@echo "installing hub"
-	@curl -H "X-JFrog-Art-Api:${ARTIFACTORY_API_KEY}" -OL "https://na.artifactory.swg-devops.com/artifactory/wcp-alchemy-containers-team-github-generic-remote/github/hub/releases/download/v$(HUB_RLS)/hub-linux-amd64-$(HUB_RLS).tgz" ; \
+	@curl -H @${ARTIFACTORY_AUTH_HEADER_FILE} -OL "https://na.artifactory.swg-devops.com/artifactory/wcp-alchemy-containers-team-github-generic-remote/github/hub/releases/download/v$(HUB_RLS)/hub-linux-amd64-$(HUB_RLS).tgz" ; \
 	tar -xzvf hub-linux-amd64-$(HUB_RLS).tgz ; \
 	rm -f hub-linux-amd64-$(HUB_RLS).tgz ; \
 	cd hub-linux-amd64-$(HUB_RLS) ; \
