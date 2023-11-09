@@ -28,7 +28,7 @@ CALICOCTL_CHECKSUM=$(shell cat addons/calicoctl.yml | awk '/^checksum:/{print $$
 # - ARTIFACTORY_TOKEN_PATH
 # - ARTIFACTORY_AUTH_HEADER_FILE
 ifdef ARTIFACTORY_AUTH_HEADER_FILE
-IMAGE_SOURCE := wcp-alchemy-containers-team-gcr-docker-remote.artifactory.swg-devops.com
+IMAGE_SOURCE := docker-na-private.artifactory.swg-devops.com/wcp-alchemy-containers-team-gcr-docker-remote
 CALICOCTL_CURL_HEADERS := "-H @${ARTIFACTORY_AUTH_HEADER_FILE}"
 CALICOCTL_CURL_URL=$(shell cat addons/calicoctl.yml | awk '/^source_artifactory:/{print $$2}')
 else
@@ -45,12 +45,12 @@ YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -n
 INI_FILES=$(shell find . -type f -name '*.ini' -not -path "./build-tools/*")
 OSS_FILES := go.mod
 
-GOLANGCI_LINT_VERSION := 1.51.2
+GOLANGCI_LINT_VERSION := 1.53.2
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
 HUB_RLS ?= 2.14.2
 REGISTRY ?= armada-master
-TAG ?= v1.27.1
+TAG ?= v1.28.3
 
 NANCY_VERSION := 1.0.42
 
@@ -188,6 +188,15 @@ calicoctlcli:
 	scripts/verify_file_md5.sh /usr/local/bin/calicoctl ${CALICOCTL_CURL_URL} ${CALICOCTL_CHECKSUM} ${CALICOCTL_CURL_HEADERS}
 	sudo chmod 755 /usr/local/bin/calicoctl
 	sudo mkdir -p /etc/calico/ && sudo touch /etc/calico/calicoctl.cfg
+
+.PHONY: classic
+classic:
+ifdef ARTIFACTORY_AUTH_HEADER_FILE
+	@echo "Update pkg/classic to use alternate classic library"
+	./scripts/updatePackage.sh addons/classic.yml
+else
+	@echo "Use the existing pkg/classic logic"
+endif
 
 .PHONY: vpcctl
 vpcctl:

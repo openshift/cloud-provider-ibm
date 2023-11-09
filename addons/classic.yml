@@ -1,6 +1,6 @@
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2021, 2023 All Rights Reserved.
+# (C) Copyright IBM Corp. 2023 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -18,24 +18,24 @@
 # ******************************************************************************
 
 # (Required) - the source github repo which will be used to retrieve GO files from
-source: github.ibm.com/alchemy-containers/armada-vpc-lb
+source: github.ibm.com/alchemy-containers/armada-classic-lb
 
 # (Required) - git release or branch name in the source github repo
-release: v0.20.0
+release: v0.1.0
 
 # (Required) - source directory in the github repo containing GO files
-source_dir: pkg/vpcctl
+source_dir: pkg/classic
 
 # (Optional) - target directory in current repo where the GO files will be copied to
 #              if this field is not set, defaults to the same path as the source_dir
 target_dir:
 
 # (Optional) - grep search string which will be done before / after the sed commands are done on the GO logic
-grep_string: cloud.ibm.com/cloud-provider-
+grep_string: Copyright
 
 # (Optional) - sed commands to update the GO source files copied from source repo
-sed_command_1: s/cloud-provider-vpc-controller/cloud-provider-ibm/
-sed_command_2: s/2022 All Rights Reserved/2023 All Rights Reserved/
+sed_command_1: s/2022 All Rights Reserved/2023 All Rights Reserved/
+sed_command_2:
 sed_command_3:
 
 # (Optional) - set to "true" if the local repo's go.mod needs to be updated / refreshed

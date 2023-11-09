@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+* (C) Copyright IBM Corp. 2017, 2023 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -239,6 +239,9 @@ func TestGetCloudConfig(t *testing.T) {
 	}
 	// Build off previous expected configuration with select overrides.
 	ecc.Kubernetes.ConfigFilePaths = nil
+	ecc.Prov.G2EndpointOverride = "https://us-south.iaas.cloud.ibm.com"
+	ecc.Prov.IamEndpointOverride = "https://iam.cloud.ibm.com"
+	ecc.Prov.RmEndpointOverride = "https://resource-controller.cloud.ibm.com"
 	verifyCloudConfig(t, cc, &ecc)
 
 	// Verify nil cloud config.
