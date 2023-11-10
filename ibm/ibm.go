@@ -27,6 +27,7 @@ import (
 	gcfg "gopkg.in/gcfg.v1"
 	"k8s.io/klog/v2"
 
+	"cloud.ibm.com/cloud-provider-ibm/pkg/classic"
 	"cloud.ibm.com/cloud-provider-ibm/pkg/vpcctl"
 
 	"k8s.io/client-go/informers"
@@ -102,6 +103,12 @@ type Provider struct {
 	// List of VPC subnet names. Required when configured to get node
 	// data from VPC.
 	G2VpcSubnetNames string `gcfg:"g2VpcSubnetNames"`
+	// Optional: VPC RIaaS endpoint override URL
+	G2EndpointOverride string `gcfg:"g2EndpointOverride"`
+	// Optional: IAM endpoint override URL
+	IamEndpointOverride string `gcfg:"iamEndpointOverride"`
+	// Optional: Resource Manager endpoint override URL
+	RmEndpointOverride string `gcfg:"rmEndpointOverride"`
 }
 
 // CloudConfig is the ibm cloud provider config data.
@@ -123,6 +130,9 @@ type CloudConfig struct {
 		// classic infrastructure, otherwise this may be omitted and will be
 		// ignored for VPC infrastructure.
 		CalicoDatastore string `gcfg:"calico-datastore"`
+		// If set to true, all new nodes will get the condition NetworkUnavailable
+		// during node registration
+		SetNetworkUnavailable bool `gcfg:"set-network-unavailable,false"`
 	}
 	// [load-balancer-deployment] section
 	LBDeployment LoadBalancerDeployment `gcfg:"load-balancer-deployment"`
@@ -132,12 +142,13 @@ type CloudConfig struct {
 
 // Cloud is the ibm cloud provider implementation.
 type Cloud struct {
-	Name       string
-	KubeClient clientset.Interface
-	Config     *CloudConfig
-	Recorder   *CloudEventRecorder
-	CloudTasks map[string]*CloudTask
-	Metadata   *MetadataService // will be nil in kubelet
+	Name         string
+	KubeClient   clientset.Interface
+	Config       *CloudConfig
+	Recorder     *CloudEventRecorder
+	CloudTasks   map[string]*CloudTask
+	Metadata     *MetadataService // will be nil in kubelet
+	ClassicCloud *classic.Cloud   // Classic load balancer support
 }
 
 // Initialize provides the cloud with a kubernetes client builder and may spawn goroutines
@@ -161,11 +172,8 @@ func (c *Cloud) SetInformers(informerFactory informers.SharedInformerFactory) {
 	klog.Infof("Initializing Informers")
 
 	// endpointInformer is not needed for VPC
-	if !isProviderVpc(c.Config.Prov.ProviderType) {
-		endpointInformer := informerFactory.Core().V1().Endpoints().Informer()
-		endpointInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-			UpdateFunc: c.handleEndpointUpdate,
-		})
+	if !c.isProviderVpc() {
+		c.ClassicCloud.SetInformers(informerFactory)
 	}
 
 	nodeInformer := informerFactory.Core().V1().Nodes().Informer()
@@ -280,6 +288,16 @@ func NewCloud(config io.Reader) (cloudprovider.Interface, error) {
 			errString := fmt.Sprintf("Failed initializing VPC: %v", err)
 			klog.Warningf(errString)
 		}
+	} else {
+		// Initialize the classic logic
+		classicConfig := &classic.CloudConfig{
+			Application:     c.Config.LBDeployment.Application,
+			CalicoDatastore: c.Config.Kubernetes.CalicoDatastore,
+			ConfigFilePath:  c.Config.Kubernetes.ConfigFilePaths[0],
+			Image:           c.Config.LBDeployment.Image,
+			VlanIPConfigMap: c.Config.LBDeployment.VlanIPConfigMap,
+		}
+		c.ClassicCloud = classic.NewCloud(c.KubeClient, classicConfig, c.Recorder.Recorder)
 	}
 	return &c, nil
 }
