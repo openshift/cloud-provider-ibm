@@ -109,6 +109,10 @@ type Provider struct {
 	IamEndpointOverride string `gcfg:"iamEndpointOverride"`
 	// Optional: Resource Manager endpoint override URL
 	RmEndpointOverride string `gcfg:"rmEndpointOverride"`
+	// Optional: IBM Cloud Kubernetes Service API Private Endpoint Hostname
+	IKSPrivateEndpointHostname string `gcfg:"iksPrivateEndpointHostname"`
+	// File containing cloud credentials both for Classic and VPC
+	CloudCredentials string `gcfg:"cloudCredentials"`
 }
 
 // CloudConfig is the ibm cloud provider config data.
@@ -292,11 +296,15 @@ func NewCloud(config io.Reader) (cloudprovider.Interface, error) {
 	} else {
 		// Initialize the classic logic
 		classicConfig := &classic.CloudConfig{
-			Application:     c.Config.LBDeployment.Application,
-			CalicoDatastore: c.Config.Kubernetes.CalicoDatastore,
-			ConfigFilePath:  c.Config.Kubernetes.ConfigFilePaths[0],
-			Image:           c.Config.LBDeployment.Image,
-			VlanIPConfigMap: c.Config.LBDeployment.VlanIPConfigMap,
+			APIKeySecretPath:           c.Config.Prov.CloudCredentials,
+			Application:                c.Config.LBDeployment.Application,
+			CalicoDatastore:            c.Config.Kubernetes.CalicoDatastore,
+			ClusterID:                  c.Config.Prov.ClusterID,
+			ConfigFilePath:             c.Config.Kubernetes.ConfigFilePaths[0],
+			Region:                     c.Config.Prov.Region,
+			IKSPrivateEndpointHostname: c.Config.Prov.IKSPrivateEndpointHostname,
+			Image:                      c.Config.LBDeployment.Image,
+			VlanIPConfigMap:            c.Config.LBDeployment.VlanIPConfigMap,
 		}
 		c.ClassicCloud = classic.NewCloud(c.KubeClient, classicConfig, c.Recorder.Recorder)
 	}
