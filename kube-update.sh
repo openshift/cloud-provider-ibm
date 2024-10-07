@@ -1,7 +1,7 @@
 #!/bin/bash
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2017, 2022 All Rights Reserved.
+# (C) Copyright IBM Corp. 2017, 2024 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -89,20 +89,26 @@ for FILE_TO_UPDATE_FOR_K8S_VERSION in $FILES_TO_UPDATE_FOR_K8S_VERSION; do
 done
 
 if [[ "${K8S_GOLANG_CURRENT_VERSION}" != "${K8S_GOLANG_UPDATE_VERSION}" ]]; then
-    FILES_TO_UPDATE=".travis.yml vagrant-kube-build/Vagrantfile"
-    for FILE_TO_UPDATE in $FILES_TO_UPDATE; do
-        if [[ "${FILE_TO_UPDATE}" == ".travis.yml" ]]; then
-            sed -i -e "s/^  - ${K8S_GOLANG_CURRENT_VERSION}/  - ${K8S_GOLANG_UPDATE_VERSION}/g" "${FILE_TO_UPDATE}"
-            sed -i -e "s/go:\s\+${K8S_GOLANG_CURRENT_VERSION}/go: ${K8S_GOLANG_UPDATE_VERSION}/g" "${FILE_TO_UPDATE}"
-        else
-            sed -i -e "s/${K8S_GOLANG_CURRENT_VERSION}/${K8S_GOLANG_UPDATE_VERSION}/g" "$FILE_TO_UPDATE"
-        fi
-        git add "$FILE_TO_UPDATE"
-        echo "INFO: Updated golang version in $FILE_TO_UPDATE"
-    done
+    echo "INFO: Current golang version: ${K8S_GOLANG_CURRENT_VERSION}"
+    echo "INFO: Updated golang version: ${K8S_GOLANG_UPDATE_VERSION}"
+
+    sed -i -e "s/go\s\+${K8S_GOLANG_CURRENT_VERSION}/go ${K8S_GOLANG_UPDATE_VERSION}/g" go.mod
+    go mod tidy
+    git add go.mod
+    git add go.sum
+    echo "INFO: Updated golang version in go.mod / go.sun"
+
+    sed -i -e "s/^  - ${K8S_GOLANG_CURRENT_VERSION}/  - ${K8S_GOLANG_UPDATE_VERSION}/g" .travis.yml
+    sed -i -e "s/go:\s\+${K8S_GOLANG_CURRENT_VERSION}/go: ${K8S_GOLANG_UPDATE_VERSION}/g" .travis.yml
+    git add .travis.yml
+    echo "INFO: Updated golang version in .travis.yml"
+
+    sed -i -e "s/go${K8S_GOLANG_CURRENT_VERSION}/go${K8S_GOLANG_UPDATE_VERSION}/g" vagrant-kube-build/Vagrantfile
+    git add vagrant-kube-build/Vagrantfile
+    echo "INFO: Updated golang version in vagrant-kube-build/Vagrantfile"
 fi
 
-COMMIT_MESSAGE="Update from ${K8S_CURRENT_VERSION} to ${K8S_UPDATE_VERSION}"
+COMMIT_MESSAGE="Update repo from ${K8S_CURRENT_VERSION} to ${K8S_UPDATE_VERSION} ($TRAVIS_BRANCH)"
 git checkout -b "${K8S_UPDATE_VERSION}-initial"
 git commit --no-verify -m "${COMMIT_MESSAGE}"
 if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
