@@ -23,8 +23,8 @@ import (
 	"strings"
 	"time"
 
-	jsonpatch "github.com/evanphx/json-patch"
 	"go.opentelemetry.io/otel/attribute"
+	jsonpatch "gopkg.in/evanphx/json-patch.v4"
 	kjson "sigs.k8s.io/json"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -66,6 +66,7 @@ func PatchResource(r rest.Patcher, scope *RequestScope, admit admission.Interfac
 		ctx := req.Context()
 		// For performance tracking purposes.
 		ctx, span := tracing.Start(ctx, "Patch", traceFields(req)...)
+		req = req.WithContext(ctx)
 		defer span.End(500 * time.Millisecond)
 
 		// Do this first, otherwise name extraction can fail for unrecognized content types
