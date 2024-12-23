@@ -6,7 +6,7 @@ infrastructure node and load balancer support to
 [Kubernetes](https://kubernetes.io/docs/home/) or
 [OpenShift](https://docs.openshift.com/) clusters running on
 [IBM Cloud](https://cloud.ibm.com/docs). This repository branch is based on
-[Kubernetes version v1.31.1](https://github.com/kubernetes/kubernetes/tree/v1.31.1).
+[Kubernetes version v1.32.0](https://github.com/kubernetes/kubernetes/tree/v1.32.0).
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 
 ## Local Build and Deploy Instructions
@@ -61,38 +61,6 @@ The default build process above will run all unit tests and matches
 what is done by Travis CI.
 
 `make test`
-
-### Functional
-
-Functional tests are available under `tests/fvt` and are designed to run against
-an existing cluster. These tests exercise the load balancer interfaces without
-having to do a full build and deployment. These tests are **not** run by
-Travis CI.
-
-To run these tests, do the following:
-
-1. Copy your cluster admin configuration into `tests/fvt/kubeconfig` along with
-   the associated 3 `*.pem` files:
-    1. The `setupFVT.sh` script in `vagrant-kube-build` can do this for you, just:
-        - `cd vagrant-kube-build`
-        - `./setupFVT.sh <CLUSTER_NAME>`
-
-1. Edit `ibm-cloud-config.ini` file depending on whether you are testing a cluster
-   using classic or VPC infrastructure:
-    1. For Classic, no modifications are needed
-    1. For VPC, you must uncomment the lines at the bottom from `[provider]` to
-       the end, and update them with information from your cluster:
-        - `accountID` can be anything (for example, `accountID = bogusAccountID`)
-        - `clusterID` must be set to your cluster ID
-
-1. Once you have this done, the default `./build.sh` script will run the FVT tests.
-
-1. You can also use this tester to run additional tests.  To do that:
-    1. Run the full `./build.sh` to run through the default tests once
-    1. `vagrant ssh` into the build VM and run other variations of the tests
-       using any of the following as examples:
-        - `make runfvt TEST_FVT_OPTIONS="--action=create --name=BradsLB1"`
-        - `make runfvt TEST_FVT_OPTIONS="--action=delete --name=BradsLB1"`
 
 ## Dependencies
 
