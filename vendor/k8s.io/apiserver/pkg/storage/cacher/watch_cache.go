@@ -52,17 +52,11 @@ const (
 	// after receiving a 'too high resource version' error.
 	resourceVersionTooHighRetrySeconds = 1
 
-	// eventFreshDuration is time duration of events we want to keep.
-	// We set it to `defaultBookmarkFrequency` plus epsilon to maximize
-	// chances that last bookmark was sent within kept history, at the
-	// same time, minimizing the needed memory usage.
-	eventFreshDuration = 75 * time.Second
-
 	// defaultLowerBoundCapacity is a default value for event cache capacity's lower bound.
 	// TODO: Figure out, to what value we can decreased it.
 	defaultLowerBoundCapacity = 100
 
-	// defaultUpperBoundCapacity  should be able to keep eventFreshDuration of history.
+	// defaultUpperBoundCapacity should be able to keep the required history.
 	defaultUpperBoundCapacity = 100 * 1024
 )
 
@@ -142,6 +136,9 @@ type watchCache struct {
 	// for testing timeouts.
 	clock clock.Clock
 
+	// eventFreshDuration defines the minimum watch history watchcache will store.
+	eventFreshDuration time.Duration
+
 	// An underlying storage.Versioner.
 	versioner storage.Versioner
 
@@ -163,6 +160,7 @@ func newWatchCache(
 	versioner storage.Versioner,
 	indexers *cache.Indexers,
 	clock clock.WithTicker,
+	eventFreshDuration time.Duration,
 	groupResource schema.GroupResource,
 	progressRequester *conditionalProgressRequester) *watchCache {
 	wc := &watchCache{
@@ -179,6 +177,7 @@ func newWatchCache(
 		listResourceVersion: 0,
 		eventHandler:        eventHandler,
 		clock:               clock,
+		eventFreshDuration:  eventFreshDuration,
 		versioner:           versioner,
 		groupResource:       groupResource,
 		waitingUntilFresh:   progressRequester,
@@ -319,14 +318,14 @@ func (w *watchCache) updateCache(event *watchCacheEvent) {
 // - increases capacity by 2x if cache is full and all cached events occurred within last eventFreshDuration.
 // - decreases capacity by 2x when recent quarter of events occurred outside of eventFreshDuration(protect watchCache from flapping).
 func (w *watchCache) resizeCacheLocked(eventTime time.Time) {
-	if w.isCacheFullLocked() && eventTime.Sub(w.cache[w.startIndex%w.capacity].RecordTime) < eventFreshDuration {
+	if w.isCacheFullLocked() && eventTime.Sub(w.cache[w.startIndex%w.capacity].RecordTime) < w.eventFreshDuration {
 		capacity := min(w.capacity*2, w.upperBoundCapacity)
 		if capacity > w.capacity {
 			w.doCacheResizeLocked(capacity)
 		}
 		return
 	}
-	if w.isCacheFullLocked() && eventTime.Sub(w.cache[(w.endIndex-w.capacity/4)%w.capacity].RecordTime) > eventFreshDuration {
+	if w.isCacheFullLocked() && eventTime.Sub(w.cache[(w.endIndex-w.capacity/4)%w.capacity].RecordTime) > w.eventFreshDuration {
 		capacity := max(w.capacity/2, w.lowerBoundCapacity)
 		if capacity < w.capacity {
 			w.doCacheResizeLocked(capacity)
@@ -452,7 +451,7 @@ func (s sortableStoreElements) Swap(i, j int) {
 
 // WaitUntilFreshAndList returns list of pointers to `storeElement` objects along
 // with their ResourceVersion and the name of the index, if any, that was used.
-func (w *watchCache) WaitUntilFreshAndList(ctx context.Context, resourceVersion uint64, key string, matchValues []storage.MatchValue) (result []interface{}, rv uint64, index string, err error) {
+func (w *watchCache) WaitUntilFreshAndList(ctx context.Context, resourceVersion uint64, key string, matchValues []storage.MatchValue) (resp listResp, index string, err error) {
 	requestWatchProgressSupported := etcdfeature.DefaultFeatureSupportChecker.Supports(storage.RequestWatchProgress)
 	if utilfeature.DefaultFeatureGate.Enabled(features.ConsistentListFromCache) && requestWatchProgressSupported && w.notFresh(resourceVersion) {
 		w.waitingUntilFresh.Add()
@@ -464,32 +463,34 @@ func (w *watchCache) WaitUntilFreshAndList(ctx context.Context, resourceVersion 
 
 	defer w.RUnlock()
 	if err != nil {
-		return result, rv, index, err
+		return listResp{}, "", err
 	}
-	var prefixFilteredAndOrdered bool
-	result, rv, index, prefixFilteredAndOrdered, err = func() ([]interface{}, uint64, string, bool, error) {
-		// This isn't the place where we do "final filtering" - only some "prefiltering" is happening here. So the only
-		// requirement here is to NOT miss anything that should be returned. We can return as many non-matching items as we
-		// want - they will be filtered out later. The fact that we return less things is only further performance improvement.
-		// TODO: if multiple indexes match, return the one with the fewest items, so as to do as much filtering as possible.
-		for _, matchValue := range matchValues {
-			if result, err := w.store.ByIndex(matchValue.IndexName, matchValue.Value); err == nil {
-				return result, w.resourceVersion, matchValue.IndexName, false, nil
-			}
-		}
-		if store, ok := w.store.(orderedLister); ok {
-			result, _ := store.ListPrefix(key, "", 0)
-			return result, w.resourceVersion, "", true, nil
-		}
-		return w.store.List(), w.resourceVersion, "", false, nil
-	}()
-	if !prefixFilteredAndOrdered {
-		result, err = filterPrefixAndOrder(key, result)
-		if err != nil {
-			return nil, 0, "", err
+	// This isn't the place where we do "final filtering" - only some "prefiltering" is happening here. So the only
+	// requirement here is to NOT miss anything that should be returned. We can return as many non-matching items as we
+	// want - they will be filtered out later. The fact that we return less things is only further performance improvement.
+	// TODO: if multiple indexes match, return the one with the fewest items, so as to do as much filtering as possible.
+	for _, matchValue := range matchValues {
+		if result, err := w.store.ByIndex(matchValue.IndexName, matchValue.Value); err == nil {
+			result, err = filterPrefixAndOrder(key, result)
+			return listResp{
+				Items:           result,
+				ResourceVersion: w.resourceVersion,
+			}, matchValue.IndexName, err
 		}
 	}
-	return result, w.resourceVersion, index, nil
+	if store, ok := w.store.(orderedLister); ok {
+		result, _ := store.ListPrefix(key, "", 0)
+		return listResp{
+			Items:           result,
+			ResourceVersion: w.resourceVersion,
+		}, "", nil
+	}
+	result := w.store.List()
+	result, err = filterPrefixAndOrder(key, result)
+	return listResp{
+		Items:           result,
+		ResourceVersion: w.resourceVersion,
+	}, "", err
 }
 
 func filterPrefixAndOrder(prefix string, items []interface{}) ([]interface{}, error) {
@@ -660,7 +661,7 @@ func (w *watchCache) suggestedWatchChannelSize(indexExists, triggerUsed bool) in
 	// We don't have an exact data, but given we store updates from
 	// the last <eventFreshDuration>, we approach it by dividing the
 	// capacity by the length of the history window.
-	chanSize := int(math.Ceil(float64(w.currentCapacity()) / eventFreshDuration.Seconds()))
+	chanSize := int(math.Ceil(float64(w.currentCapacity()) / w.eventFreshDuration.Seconds()))
 
 	// Finally we adjust the size to avoid ending with too low or
 	// to large values.
@@ -751,7 +752,7 @@ func (w *watchCache) getAllEventsSinceLocked(resourceVersion uint64, key string,
 // that covers the entire storage state.
 // This function assumes to be called under the watchCache lock.
 func (w *watchCache) getIntervalFromStoreLocked(key string, matchesSingle bool) (*watchCacheInterval, error) {
-	ci, err := newCacheIntervalFromStore(w.resourceVersion, w.store, w.getAttrsFunc, key, matchesSingle)
+	ci, err := newCacheIntervalFromStore(w.resourceVersion, w.store, key, matchesSingle)
 	if err != nil {
 		return nil, err
 	}

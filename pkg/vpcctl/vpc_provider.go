@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2024 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -24,11 +24,11 @@ import (
 	"fmt"
 	"strings"
 
-	"cloud.ibm.com/cloud-provider-ibm/pkg/klog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 )
 
 const (

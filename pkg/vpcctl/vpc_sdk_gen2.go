@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2023 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -26,10 +26,10 @@ import (
 	"strings"
 	"time"
 
-	"cloud.ibm.com/cloud-provider-ibm/pkg/klog"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	sdk "github.com/IBM/vpc-go-sdk/vpcv1"
+	"k8s.io/klog/v2"
 )
 
 // VpcSdkGen2 SDK methods
