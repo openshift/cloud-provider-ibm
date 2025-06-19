@@ -1,6 +1,6 @@
 # ******************************************************************************
 # IBM Cloud Kubernetes Service, 5737-D43
-# (C) Copyright IBM Corp. 2021, 2024 All Rights Reserved.
+# (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache2.0
 #
@@ -25,14 +25,14 @@ services:
 language: go
 
 go:
-  - 1.23.3
+  - 1.24.1
 
 env:
   global:
     - CONTAINERIZED_BUILD_TOOLS="true"
     - IKS_PIPELINE_IAM_APIKEY="${ALL_GLOBAL_NETWORK_IKS_PIPELINE_IAM_APIKEY_20241110}"
-    - registry_iam_api_key="${ALL_GLOBAL_registry_iam_api_key_20240423}"
-    - GHE_TOKEN="${ALL_GLOBAL_GHE_TOKEN_20240424}"
+    - registry_iam_api_key="${ALL_GLOBAL_registry_iam_api_key_20250402}"
+    - GHE_TOKEN="${ALL_GLOBAL_GHE_TOKEN_20250416}"
     - TRAVIS_INTERNAL_HOSTNAME="v3.travis.ibm.com"
 
 sudo: required
@@ -89,19 +89,19 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      condition: ${TRAVIS_TAG} == v1.32.0-* && ${TRAVIS_JOB_NAME} == Internal
-      go: 1.23.3
+      condition: ${TRAVIS_TAG} == v1.33.1-* && ${TRAVIS_JOB_NAME} == Internal
+      go: 1.24.1
   - provider: script
     script: BUILD_TAG=${TRAVIS_TAG} make deploy
     skip_cleanup: true
     on:
       tags: true
-      go: 1.23.3
+      go: 1.24.1
       condition: ${TRAVIS_TAG} == dev-* && ${TRAVIS_JOB_NAME} == Internal
   - provider: script
     script: ./scripts/publishTag.sh
     skip_cleanup: true
     on:
-      branch: release-1.32
-      go: 1.23.3
+      branch: release-1.33
+      go: 1.24.1
       condition: ${TRAVIS_COMMIT_MESSAGE} =~ push_build && ${TRAVIS_JOB_NAME} == Internal

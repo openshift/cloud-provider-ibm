@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2019, 2024 All Rights Reserved.
+* (C) Copyright IBM Corp. 2019, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -18,8 +18,8 @@
 *******************************************************************************/
 
 // References:
-// - https://raw.githubusercontent.com/kubernetes/kubernetes/v1.32.0/staging/src/k8s.io/cloud-provider/app/controllermanager.go
-// - https://raw.githubusercontent.com/kubernetes/kubernetes/v1.32.0/staging/src/k8s.io/cloud-provider/sample/basic_main.go
+// - https://raw.githubusercontent.com/kubernetes/kubernetes/v1.33.1/staging/src/k8s.io/cloud-provider/app/controllermanager.go
+// - https://raw.githubusercontent.com/kubernetes/kubernetes/v1.33.1/staging/src/k8s.io/cloud-provider/sample/basic_main.go
 
 package main
 
@@ -52,6 +52,9 @@ func main() {
 
 	// set IBM cloud provider name
 	ccmOptions.KubeCloudShared.CloudProvider.Name = ibm.ProviderName
+
+	// set the metadata service to run every 2 minutes instead of default every 5 minutes
+	// ccmOptions.NodeStatusUpdateFrequency = v1.Duration{Duration: time.Duration(2) * time.Minute}
 
 	// IBM cloud does not need the "route" implementation
 	controllerInitializers := app.DefaultInitFuncConstructors
