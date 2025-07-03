@@ -51,7 +51,6 @@ import (
 	"k8s.io/component-base/tracing"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
-	"k8s.io/utils/ptr"
 )
 
 var (
@@ -437,9 +436,6 @@ func NewCacherFromConfig(config Config) (*Cacher, error) {
 	// We don't want to terminate all watchers as recreating all watchers puts high load on api-server.
 	// In most of the cases, leader is reelected within few cycles.
 	reflector.MaxInternalErrorRetryDuration = time.Second * 30
-	// since the watch-list is provided by the watch cache instruct
-	// the reflector to issue a regular LIST against the store
-	reflector.UseWatchList = ptr.To(false)
 
 	cacher.watchCache = watchCache
 	cacher.reflector = reflector
@@ -466,8 +462,8 @@ func NewCacherFromConfig(config Config) (*Cacher, error) {
 func (c *Cacher) startCaching(stopChannel <-chan struct{}) {
 	c.watchCache.SetOnReplace(func() {
 		c.ready.setReady()
-		klog.V(1).Infof("cacher (%v): initialized", c.groupResource.String())
-		metrics.WatchCacheInitializations.WithLabelValues(c.groupResource.String()).Inc()
+		klog.V(1).InfoS("cacher initialized", "group", c.groupResource.Group, "resource", c.groupResource.Resource)
+		metrics.WatchCacheInitializations.WithLabelValues(c.groupResource.Group, c.groupResource.Resource).Inc()
 	})
 	var err error
 	defer func() {
@@ -812,7 +808,7 @@ func (c *Cacher) GetList(ctx context.Context, key string, opts storage.ListOptio
 			return err
 		}
 	}
-	metrics.RecordListCacheMetrics(c.resourcePrefix, indexUsed, len(resp.Items), listVal.Len())
+	metrics.RecordListCacheMetrics(c.groupResource, indexUsed, len(resp.Items), listVal.Len())
 	return nil
 }
 
@@ -891,7 +887,7 @@ func (c *Cacher) dispatchEvents() {
 				c.dispatchEvent(&event)
 			}
 			lastProcessedResourceVersion = event.ResourceVersion
-			metrics.EventsCounter.WithLabelValues(c.groupResource.String()).Inc()
+			metrics.EventsCounter.WithLabelValues(c.groupResource.Group, c.groupResource.Resource).Inc()
 		case <-bookmarkTimer.C():
 			bookmarkTimer.Reset(wait.Jitter(time.Second, 0.25))
 			bookmarkEvent := &watchCacheEvent{
@@ -949,9 +945,6 @@ func (c *Cacher) dispatchEvent(event *watchCacheEvent) {
 	// Since add() can block, we explicitly add when cacher is unlocked.
 	// Dispatching event in nonblocking way first, which make faster watchers
 	// not be blocked by slower ones.
-	//
-	// Note: if we ever decide to cache the serialization of bookmark events,
-	// we will also need to modify the watchEncoder encoder
 	if event.Type == watch.Bookmark {
 		for _, watcher := range c.watchersBuffer {
 			watcher.nonblockingAdd(event)

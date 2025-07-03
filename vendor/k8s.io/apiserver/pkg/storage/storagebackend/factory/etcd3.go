@@ -325,8 +325,7 @@ var newETCD3Client = func(c storagebackend.TransportConfig) (*kubernetes.Client,
 		// Even with Noop  TracerProvider, the otelgrpc still handles context propagation.
 		// See https://github.com/open-telemetry/opentelemetry-go/tree/main/example/passthrough
 		dialOptions = append(dialOptions,
-			grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor(tracingOpts...)),
-			grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor(tracingOpts...)))
+			grpc.WithStatsHandler(otelgrpc.NewClientHandler(tracingOpts...)))
 	}
 	if egressDialer != nil {
 		dialer := func(ctx context.Context, addr string) (net.Conn, error) {
@@ -464,7 +463,16 @@ func newETCD3Storage(c storagebackend.ConfigForResource, newFunc, newListFunc fu
 
 	versioner := storage.APIObjectVersioner{}
 	decoder := etcd3.NewDefaultDecoder(c.Codec, versioner)
-	store := etcd3.New(client, c.Codec, newFunc, newListFunc, c.Prefix, resourcePrefix, c.GroupResource, transformer, c.LeaseManagerConfig, decoder, versioner)
+
+	if utilfeature.DefaultFeatureGate.Enabled(genericfeatures.AllowUnsafeMalformedObjectDeletion) {
+		transformer = etcd3.WithCorruptObjErrorHandlingTransformer(transformer)
+		decoder = etcd3.WithCorruptObjErrorHandlingDecoder(decoder)
+	}
+	var store storage.Interface
+	store = etcd3.New(client, c.Codec, newFunc, newListFunc, c.Prefix, resourcePrefix, c.GroupResource, transformer, c.LeaseManagerConfig, decoder, versioner)
+	if utilfeature.DefaultFeatureGate.Enabled(genericfeatures.AllowUnsafeMalformedObjectDeletion) {
+		store = etcd3.NewStoreWithUnsafeCorruptObjectDeletion(store, c.GroupResource)
+	}
 	return store, destroyFunc, nil
 }
 
