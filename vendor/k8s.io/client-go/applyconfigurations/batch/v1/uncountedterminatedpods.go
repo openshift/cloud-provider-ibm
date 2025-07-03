@@ -22,18 +22,19 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 )
 
-// UncountedTerminatedPodsApplyConfiguration represents an declarative configuration of the UncountedTerminatedPods type for use
+// UncountedTerminatedPodsApplyConfiguration represents a declarative configuration of the UncountedTerminatedPods type for use
 // with apply.
 type UncountedTerminatedPodsApplyConfiguration struct {
 	Succeeded []types.UID `json:"succeeded,omitempty"`
 	Failed    []types.UID `json:"failed,omitempty"`
 }
 
-// UncountedTerminatedPodsApplyConfiguration constructs an declarative configuration of the UncountedTerminatedPods type for use with
+// UncountedTerminatedPodsApplyConfiguration constructs a declarative configuration of the UncountedTerminatedPods type for use with
 // apply.
 func UncountedTerminatedPods() *UncountedTerminatedPodsApplyConfiguration {
 	return &UncountedTerminatedPodsApplyConfiguration{}
 }
+func (b UncountedTerminatedPodsApplyConfiguration) IsApplyConfiguration() {}
 
 // WithSucceeded adds the given value to the Succeeded field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

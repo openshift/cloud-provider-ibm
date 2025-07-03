@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ProbeHandlerApplyConfiguration represents an declarative configuration of the ProbeHandler type for use
+// ProbeHandlerApplyConfiguration represents a declarative configuration of the ProbeHandler type for use
 // with apply.
 type ProbeHandlerApplyConfiguration struct {
 	Exec      *ExecActionApplyConfiguration      `json:"exec,omitempty"`
@@ -27,11 +27,12 @@ type ProbeHandlerApplyConfiguration struct {
 	GRPC      *GRPCActionApplyConfiguration      `json:"grpc,omitempty"`
 }
 
-// ProbeHandlerApplyConfiguration constructs an declarative configuration of the ProbeHandler type for use with
+// ProbeHandlerApplyConfiguration constructs a declarative configuration of the ProbeHandler type for use with
 // apply.
 func ProbeHandler() *ProbeHandlerApplyConfiguration {
 	return &ProbeHandlerApplyConfiguration{}
 }
+func (b ProbeHandlerApplyConfiguration) IsApplyConfiguration() {}
 
 // WithExec sets the Exec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

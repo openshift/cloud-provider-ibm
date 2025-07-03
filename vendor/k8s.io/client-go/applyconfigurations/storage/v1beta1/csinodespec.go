@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta1
 
-// CSINodeSpecApplyConfiguration represents an declarative configuration of the CSINodeSpec type for use
+// CSINodeSpecApplyConfiguration represents a declarative configuration of the CSINodeSpec type for use
 // with apply.
 type CSINodeSpecApplyConfiguration struct {
 	Drivers []CSINodeDriverApplyConfiguration `json:"drivers,omitempty"`
 }
 
-// CSINodeSpecApplyConfiguration constructs an declarative configuration of the CSINodeSpec type for use with
+// CSINodeSpecApplyConfiguration constructs a declarative configuration of the CSINodeSpec type for use with
 // apply.
 func CSINodeSpec() *CSINodeSpecApplyConfiguration {
 	return &CSINodeSpecApplyConfiguration{}
 }
+func (b CSINodeSpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithDrivers adds the given value to the Drivers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

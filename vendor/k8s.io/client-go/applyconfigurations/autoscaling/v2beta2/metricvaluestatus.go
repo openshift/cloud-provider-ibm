@@ -22,7 +22,7 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// MetricValueStatusApplyConfiguration represents an declarative configuration of the MetricValueStatus type for use
+// MetricValueStatusApplyConfiguration represents a declarative configuration of the MetricValueStatus type for use
 // with apply.
 type MetricValueStatusApplyConfiguration struct {
 	Value              *resource.Quantity `json:"value,omitempty"`
@@ -30,11 +30,12 @@ type MetricValueStatusApplyConfiguration struct {
 	AverageUtilization *int32             `json:"averageUtilization,omitempty"`
 }
 
-// MetricValueStatusApplyConfiguration constructs an declarative configuration of the MetricValueStatus type for use with
+// MetricValueStatusApplyConfiguration constructs a declarative configuration of the MetricValueStatus type for use with
 // apply.
 func MetricValueStatus() *MetricValueStatusApplyConfiguration {
 	return &MetricValueStatusApplyConfiguration{}
 }
+func (b MetricValueStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithValue sets the Value field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

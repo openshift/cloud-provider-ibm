@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// LoadBalancerStatusApplyConfiguration represents an declarative configuration of the LoadBalancerStatus type for use
+// LoadBalancerStatusApplyConfiguration represents a declarative configuration of the LoadBalancerStatus type for use
 // with apply.
 type LoadBalancerStatusApplyConfiguration struct {
 	Ingress []LoadBalancerIngressApplyConfiguration `json:"ingress,omitempty"`
 }
 
-// LoadBalancerStatusApplyConfiguration constructs an declarative configuration of the LoadBalancerStatus type for use with
+// LoadBalancerStatusApplyConfiguration constructs a declarative configuration of the LoadBalancerStatus type for use with
 // apply.
 func LoadBalancerStatus() *LoadBalancerStatusApplyConfiguration {
 	return &LoadBalancerStatusApplyConfiguration{}
 }
+func (b LoadBalancerStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithIngress adds the given value to the Ingress field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

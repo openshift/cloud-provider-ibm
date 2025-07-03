@@ -22,18 +22,19 @@ import (
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// TCPSocketActionApplyConfiguration represents an declarative configuration of the TCPSocketAction type for use
+// TCPSocketActionApplyConfiguration represents a declarative configuration of the TCPSocketAction type for use
 // with apply.
 type TCPSocketActionApplyConfiguration struct {
 	Port *intstr.IntOrString `json:"port,omitempty"`
 	Host *string             `json:"host,omitempty"`
 }
 
-// TCPSocketActionApplyConfiguration constructs an declarative configuration of the TCPSocketAction type for use with
+// TCPSocketActionApplyConfiguration constructs a declarative configuration of the TCPSocketAction type for use with
 // apply.
 func TCPSocketAction() *TCPSocketActionApplyConfiguration {
 	return &TCPSocketActionApplyConfiguration{}
 }
+func (b TCPSocketActionApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPort sets the Port field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

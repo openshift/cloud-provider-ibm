@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta2
 
-// PriorityLevelConfigurationStatusApplyConfiguration represents an declarative configuration of the PriorityLevelConfigurationStatus type for use
+// PriorityLevelConfigurationStatusApplyConfiguration represents a declarative configuration of the PriorityLevelConfigurationStatus type for use
 // with apply.
 type PriorityLevelConfigurationStatusApplyConfiguration struct {
 	Conditions []PriorityLevelConfigurationConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// PriorityLevelConfigurationStatusApplyConfiguration constructs an declarative configuration of the PriorityLevelConfigurationStatus type for use with
+// PriorityLevelConfigurationStatusApplyConfiguration constructs a declarative configuration of the PriorityLevelConfigurationStatus type for use with
 // apply.
 func PriorityLevelConfigurationStatus() *PriorityLevelConfigurationStatusApplyConfiguration {
 	return &PriorityLevelConfigurationStatusApplyConfiguration{}
 }
+func (b PriorityLevelConfigurationStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithConditions adds the given value to the Conditions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

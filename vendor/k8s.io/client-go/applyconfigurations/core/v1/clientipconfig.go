@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// ClientIPConfigApplyConfiguration represents an declarative configuration of the ClientIPConfig type for use
+// ClientIPConfigApplyConfiguration represents a declarative configuration of the ClientIPConfig type for use
 // with apply.
 type ClientIPConfigApplyConfiguration struct {
 	TimeoutSeconds *int32 `json:"timeoutSeconds,omitempty"`
 }
 
-// ClientIPConfigApplyConfiguration constructs an declarative configuration of the ClientIPConfig type for use with
+// ClientIPConfigApplyConfiguration constructs a declarative configuration of the ClientIPConfig type for use with
 // apply.
 func ClientIPConfig() *ClientIPConfigApplyConfiguration {
 	return &ClientIPConfigApplyConfiguration{}
 }
+func (b ClientIPConfigApplyConfiguration) IsApplyConfiguration() {}
 
 // WithTimeoutSeconds sets the TimeoutSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

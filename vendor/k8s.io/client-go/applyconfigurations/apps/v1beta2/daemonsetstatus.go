@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta2
 
-// DaemonSetStatusApplyConfiguration represents an declarative configuration of the DaemonSetStatus type for use
+// DaemonSetStatusApplyConfiguration represents a declarative configuration of the DaemonSetStatus type for use
 // with apply.
 type DaemonSetStatusApplyConfiguration struct {
 	CurrentNumberScheduled *int32                                 `json:"currentNumberScheduled,omitempty"`
@@ -33,11 +33,12 @@ type DaemonSetStatusApplyConfiguration struct {
 	Conditions             []DaemonSetConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// DaemonSetStatusApplyConfiguration constructs an declarative configuration of the DaemonSetStatus type for use with
+// DaemonSetStatusApplyConfiguration constructs a declarative configuration of the DaemonSetStatus type for use with
 // apply.
 func DaemonSetStatus() *DaemonSetStatusApplyConfiguration {
 	return &DaemonSetStatusApplyConfiguration{}
 }
+func (b DaemonSetStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithCurrentNumberScheduled sets the CurrentNumberScheduled field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

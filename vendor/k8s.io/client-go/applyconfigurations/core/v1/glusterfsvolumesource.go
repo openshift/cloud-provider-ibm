@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// GlusterfsVolumeSourceApplyConfiguration represents an declarative configuration of the GlusterfsVolumeSource type for use
+// GlusterfsVolumeSourceApplyConfiguration represents a declarative configuration of the GlusterfsVolumeSource type for use
 // with apply.
 type GlusterfsVolumeSourceApplyConfiguration struct {
 	EndpointsName *string `json:"endpoints,omitempty"`
@@ -26,11 +26,12 @@ type GlusterfsVolumeSourceApplyConfiguration struct {
 	ReadOnly      *bool   `json:"readOnly,omitempty"`
 }
 
-// GlusterfsVolumeSourceApplyConfiguration constructs an declarative configuration of the GlusterfsVolumeSource type for use with
+// GlusterfsVolumeSourceApplyConfiguration constructs a declarative configuration of the GlusterfsVolumeSource type for use with
 // apply.
 func GlusterfsVolumeSource() *GlusterfsVolumeSourceApplyConfiguration {
 	return &GlusterfsVolumeSourceApplyConfiguration{}
 }
+func (b GlusterfsVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithEndpointsName sets the EndpointsName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

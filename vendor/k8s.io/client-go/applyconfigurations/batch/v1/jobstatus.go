@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// JobStatusApplyConfiguration represents an declarative configuration of the JobStatus type for use
+// JobStatusApplyConfiguration represents a declarative configuration of the JobStatus type for use
 // with apply.
 type JobStatusApplyConfiguration struct {
 	Conditions              []JobConditionApplyConfiguration           `json:"conditions,omitempty"`
@@ -38,11 +38,12 @@ type JobStatusApplyConfiguration struct {
 	Ready                   *int32                                     `json:"ready,omitempty"`
 }
 
-// JobStatusApplyConfiguration constructs an declarative configuration of the JobStatus type for use with
+// JobStatusApplyConfiguration constructs a declarative configuration of the JobStatus type for use with
 // apply.
 func JobStatus() *JobStatusApplyConfiguration {
 	return &JobStatusApplyConfiguration{}
 }
+func (b JobStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithConditions adds the given value to the Conditions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// PodDNSConfigOptionApplyConfiguration represents an declarative configuration of the PodDNSConfigOption type for use
+// PodDNSConfigOptionApplyConfiguration represents a declarative configuration of the PodDNSConfigOption type for use
 // with apply.
 type PodDNSConfigOptionApplyConfiguration struct {
 	Name  *string `json:"name,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
-// PodDNSConfigOptionApplyConfiguration constructs an declarative configuration of the PodDNSConfigOption type for use with
+// PodDNSConfigOptionApplyConfiguration constructs a declarative configuration of the PodDNSConfigOption type for use with
 // apply.
 func PodDNSConfigOption() *PodDNSConfigOptionApplyConfiguration {
 	return &PodDNSConfigOptionApplyConfiguration{}
 }
+func (b PodDNSConfigOptionApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

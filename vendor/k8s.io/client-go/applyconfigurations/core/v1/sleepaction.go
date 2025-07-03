@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// SleepActionApplyConfiguration represents an declarative configuration of the SleepAction type for use
+// SleepActionApplyConfiguration represents a declarative configuration of the SleepAction type for use
 // with apply.
 type SleepActionApplyConfiguration struct {
 	Seconds *int64 `json:"seconds,omitempty"`
 }
 
-// SleepActionApplyConfiguration constructs an declarative configuration of the SleepAction type for use with
+// SleepActionApplyConfiguration constructs a declarative configuration of the SleepAction type for use with
 // apply.
 func SleepAction() *SleepActionApplyConfiguration {
 	return &SleepActionApplyConfiguration{}
 }
+func (b SleepActionApplyConfiguration) IsApplyConfiguration() {}
 
 // WithSeconds sets the Seconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

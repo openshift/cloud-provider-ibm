@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// LimitedPriorityLevelConfigurationApplyConfiguration represents an declarative configuration of the LimitedPriorityLevelConfiguration type for use
+// LimitedPriorityLevelConfigurationApplyConfiguration represents a declarative configuration of the LimitedPriorityLevelConfiguration type for use
 // with apply.
 type LimitedPriorityLevelConfigurationApplyConfiguration struct {
 	AssuredConcurrencyShares *int32                           `json:"assuredConcurrencyShares,omitempty"`
@@ -27,11 +27,12 @@ type LimitedPriorityLevelConfigurationApplyConfiguration struct {
 	BorrowingLimitPercent    *int32                           `json:"borrowingLimitPercent,omitempty"`
 }
 
-// LimitedPriorityLevelConfigurationApplyConfiguration constructs an declarative configuration of the LimitedPriorityLevelConfiguration type for use with
+// LimitedPriorityLevelConfigurationApplyConfiguration constructs a declarative configuration of the LimitedPriorityLevelConfiguration type for use with
 // apply.
 func LimitedPriorityLevelConfiguration() *LimitedPriorityLevelConfigurationApplyConfiguration {
 	return &LimitedPriorityLevelConfigurationApplyConfiguration{}
 }
+func (b LimitedPriorityLevelConfigurationApplyConfiguration) IsApplyConfiguration() {}
 
 // WithAssuredConcurrencyShares sets the AssuredConcurrencyShares field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

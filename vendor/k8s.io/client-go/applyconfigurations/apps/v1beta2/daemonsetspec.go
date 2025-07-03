@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DaemonSetSpecApplyConfiguration represents an declarative configuration of the DaemonSetSpec type for use
+// DaemonSetSpecApplyConfiguration represents a declarative configuration of the DaemonSetSpec type for use
 // with apply.
 type DaemonSetSpecApplyConfiguration struct {
 	Selector             *v1.LabelSelectorApplyConfiguration        `json:"selector,omitempty"`
@@ -33,11 +33,12 @@ type DaemonSetSpecApplyConfiguration struct {
 	RevisionHistoryLimit *int32                                     `json:"revisionHistoryLimit,omitempty"`
 }
 
-// DaemonSetSpecApplyConfiguration constructs an declarative configuration of the DaemonSetSpec type for use with
+// DaemonSetSpecApplyConfiguration constructs a declarative configuration of the DaemonSetSpec type for use with
 // apply.
 func DaemonSetSpec() *DaemonSetSpecApplyConfiguration {
 	return &DaemonSetSpecApplyConfiguration{}
 }
+func (b DaemonSetSpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithSelector sets the Selector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

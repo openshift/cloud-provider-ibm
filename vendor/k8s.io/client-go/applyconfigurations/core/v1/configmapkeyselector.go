@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ConfigMapKeySelectorApplyConfiguration represents an declarative configuration of the ConfigMapKeySelector type for use
+// ConfigMapKeySelectorApplyConfiguration represents a declarative configuration of the ConfigMapKeySelector type for use
 // with apply.
 type ConfigMapKeySelectorApplyConfiguration struct {
 	LocalObjectReferenceApplyConfiguration `json:",inline"`
@@ -26,17 +26,18 @@ type ConfigMapKeySelectorApplyConfiguration struct {
 	Optional                               *bool   `json:"optional,omitempty"`
 }
 
-// ConfigMapKeySelectorApplyConfiguration constructs an declarative configuration of the ConfigMapKeySelector type for use with
+// ConfigMapKeySelectorApplyConfiguration constructs a declarative configuration of the ConfigMapKeySelector type for use with
 // apply.
 func ConfigMapKeySelector() *ConfigMapKeySelectorApplyConfiguration {
 	return &ConfigMapKeySelectorApplyConfiguration{}
 }
+func (b ConfigMapKeySelectorApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
 func (b *ConfigMapKeySelectorApplyConfiguration) WithName(value string) *ConfigMapKeySelectorApplyConfiguration {
-	b.Name = &value
+	b.LocalObjectReferenceApplyConfiguration.Name = &value
 	return b
 }
 

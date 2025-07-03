@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// HostAliasApplyConfiguration represents an declarative configuration of the HostAlias type for use
+// HostAliasApplyConfiguration represents a declarative configuration of the HostAlias type for use
 // with apply.
 type HostAliasApplyConfiguration struct {
 	IP        *string  `json:"ip,omitempty"`
 	Hostnames []string `json:"hostnames,omitempty"`
 }
 
-// HostAliasApplyConfiguration constructs an declarative configuration of the HostAlias type for use with
+// HostAliasApplyConfiguration constructs a declarative configuration of the HostAlias type for use with
 // apply.
 func HostAlias() *HostAliasApplyConfiguration {
 	return &HostAliasApplyConfiguration{}
 }
+func (b HostAliasApplyConfiguration) IsApplyConfiguration() {}
 
 // WithIP sets the IP field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

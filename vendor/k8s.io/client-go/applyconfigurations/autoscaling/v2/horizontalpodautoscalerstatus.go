@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// HorizontalPodAutoscalerStatusApplyConfiguration represents an declarative configuration of the HorizontalPodAutoscalerStatus type for use
+// HorizontalPodAutoscalerStatusApplyConfiguration represents a declarative configuration of the HorizontalPodAutoscalerStatus type for use
 // with apply.
 type HorizontalPodAutoscalerStatusApplyConfiguration struct {
 	ObservedGeneration *int64                                               `json:"observedGeneration,omitempty"`
@@ -33,11 +33,12 @@ type HorizontalPodAutoscalerStatusApplyConfiguration struct {
 	Conditions         []HorizontalPodAutoscalerConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// HorizontalPodAutoscalerStatusApplyConfiguration constructs an declarative configuration of the HorizontalPodAutoscalerStatus type for use with
+// HorizontalPodAutoscalerStatusApplyConfiguration constructs a declarative configuration of the HorizontalPodAutoscalerStatus type for use with
 // apply.
 func HorizontalPodAutoscalerStatus() *HorizontalPodAutoscalerStatusApplyConfiguration {
 	return &HorizontalPodAutoscalerStatusApplyConfiguration{}
 }
+func (b HorizontalPodAutoscalerStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithObservedGeneration sets the ObservedGeneration field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

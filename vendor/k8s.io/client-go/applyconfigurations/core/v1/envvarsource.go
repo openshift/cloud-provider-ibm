@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// EnvVarSourceApplyConfiguration represents an declarative configuration of the EnvVarSource type for use
+// EnvVarSourceApplyConfiguration represents a declarative configuration of the EnvVarSource type for use
 // with apply.
 type EnvVarSourceApplyConfiguration struct {
 	FieldRef         *ObjectFieldSelectorApplyConfiguration   `json:"fieldRef,omitempty"`
@@ -27,11 +27,12 @@ type EnvVarSourceApplyConfiguration struct {
 	SecretKeyRef     *SecretKeySelectorApplyConfiguration     `json:"secretKeyRef,omitempty"`
 }
 
-// EnvVarSourceApplyConfiguration constructs an declarative configuration of the EnvVarSource type for use with
+// EnvVarSourceApplyConfiguration constructs a declarative configuration of the EnvVarSource type for use with
 // apply.
 func EnvVarSource() *EnvVarSourceApplyConfiguration {
 	return &EnvVarSourceApplyConfiguration{}
 }
+func (b EnvVarSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithFieldRef sets the FieldRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

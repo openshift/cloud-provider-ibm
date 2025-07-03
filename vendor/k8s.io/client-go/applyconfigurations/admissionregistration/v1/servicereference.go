@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ServiceReferenceApplyConfiguration represents an declarative configuration of the ServiceReference type for use
+// ServiceReferenceApplyConfiguration represents a declarative configuration of the ServiceReference type for use
 // with apply.
 type ServiceReferenceApplyConfiguration struct {
 	Namespace *string `json:"namespace,omitempty"`
@@ -27,11 +27,12 @@ type ServiceReferenceApplyConfiguration struct {
 	Port      *int32  `json:"port,omitempty"`
 }
 
-// ServiceReferenceApplyConfiguration constructs an declarative configuration of the ServiceReference type for use with
+// ServiceReferenceApplyConfiguration constructs a declarative configuration of the ServiceReference type for use with
 // apply.
 func ServiceReference() *ServiceReferenceApplyConfiguration {
 	return &ServiceReferenceApplyConfiguration{}
 }
+func (b ServiceReferenceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

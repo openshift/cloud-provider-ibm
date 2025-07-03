@@ -19,22 +19,23 @@ limitations under the License.
 package v1beta1
 
 import (
-	v1beta1 "k8s.io/api/extensions/v1beta1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 )
 
-// HTTPIngressPathApplyConfiguration represents an declarative configuration of the HTTPIngressPath type for use
+// HTTPIngressPathApplyConfiguration represents a declarative configuration of the HTTPIngressPath type for use
 // with apply.
 type HTTPIngressPathApplyConfiguration struct {
 	Path     *string                           `json:"path,omitempty"`
-	PathType *v1beta1.PathType                 `json:"pathType,omitempty"`
+	PathType *extensionsv1beta1.PathType       `json:"pathType,omitempty"`
 	Backend  *IngressBackendApplyConfiguration `json:"backend,omitempty"`
 }
 
-// HTTPIngressPathApplyConfiguration constructs an declarative configuration of the HTTPIngressPath type for use with
+// HTTPIngressPathApplyConfiguration constructs a declarative configuration of the HTTPIngressPath type for use with
 // apply.
 func HTTPIngressPath() *HTTPIngressPathApplyConfiguration {
 	return &HTTPIngressPathApplyConfiguration{}
 }
+func (b HTTPIngressPathApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPath sets the Path field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
@@ -47,7 +48,7 @@ func (b *HTTPIngressPathApplyConfiguration) WithPath(value string) *HTTPIngressP
 // WithPathType sets the PathType field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the PathType field is set to the value of the last call.
-func (b *HTTPIngressPathApplyConfiguration) WithPathType(value v1beta1.PathType) *HTTPIngressPathApplyConfiguration {
+func (b *HTTPIngressPathApplyConfiguration) WithPathType(value extensionsv1beta1.PathType) *HTTPIngressPathApplyConfiguration {
 	b.PathType = &value
 	return b
 }

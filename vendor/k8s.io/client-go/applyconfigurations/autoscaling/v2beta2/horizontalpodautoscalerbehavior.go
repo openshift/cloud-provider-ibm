@@ -18,18 +18,19 @@ limitations under the License.
 
 package v2beta2
 
-// HorizontalPodAutoscalerBehaviorApplyConfiguration represents an declarative configuration of the HorizontalPodAutoscalerBehavior type for use
+// HorizontalPodAutoscalerBehaviorApplyConfiguration represents a declarative configuration of the HorizontalPodAutoscalerBehavior type for use
 // with apply.
 type HorizontalPodAutoscalerBehaviorApplyConfiguration struct {
 	ScaleUp   *HPAScalingRulesApplyConfiguration `json:"scaleUp,omitempty"`
 	ScaleDown *HPAScalingRulesApplyConfiguration `json:"scaleDown,omitempty"`
 }
 
-// HorizontalPodAutoscalerBehaviorApplyConfiguration constructs an declarative configuration of the HorizontalPodAutoscalerBehavior type for use with
+// HorizontalPodAutoscalerBehaviorApplyConfiguration constructs a declarative configuration of the HorizontalPodAutoscalerBehavior type for use with
 // apply.
 func HorizontalPodAutoscalerBehavior() *HorizontalPodAutoscalerBehaviorApplyConfiguration {
 	return &HorizontalPodAutoscalerBehaviorApplyConfiguration{}
 }
+func (b HorizontalPodAutoscalerBehaviorApplyConfiguration) IsApplyConfiguration() {}
 
 // WithScaleUp sets the ScaleUp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

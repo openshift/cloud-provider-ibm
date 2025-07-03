@@ -22,18 +22,19 @@ import (
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// RollingUpdateDaemonSetApplyConfiguration represents an declarative configuration of the RollingUpdateDaemonSet type for use
+// RollingUpdateDaemonSetApplyConfiguration represents a declarative configuration of the RollingUpdateDaemonSet type for use
 // with apply.
 type RollingUpdateDaemonSetApplyConfiguration struct {
 	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
 	MaxSurge       *intstr.IntOrString `json:"maxSurge,omitempty"`
 }
 
-// RollingUpdateDaemonSetApplyConfiguration constructs an declarative configuration of the RollingUpdateDaemonSet type for use with
+// RollingUpdateDaemonSetApplyConfiguration constructs a declarative configuration of the RollingUpdateDaemonSet type for use with
 // apply.
 func RollingUpdateDaemonSet() *RollingUpdateDaemonSetApplyConfiguration {
 	return &RollingUpdateDaemonSetApplyConfiguration{}
 }
+func (b RollingUpdateDaemonSetApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMaxUnavailable sets the MaxUnavailable field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

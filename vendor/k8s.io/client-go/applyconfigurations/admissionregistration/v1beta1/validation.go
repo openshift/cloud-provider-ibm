@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ValidationApplyConfiguration represents an declarative configuration of the Validation type for use
+// ValidationApplyConfiguration represents a declarative configuration of the Validation type for use
 // with apply.
 type ValidationApplyConfiguration struct {
 	Expression        *string          `json:"expression,omitempty"`
@@ -31,11 +31,12 @@ type ValidationApplyConfiguration struct {
 	MessageExpression *string          `json:"messageExpression,omitempty"`
 }
 
-// ValidationApplyConfiguration constructs an declarative configuration of the Validation type for use with
+// ValidationApplyConfiguration constructs a declarative configuration of the Validation type for use with
 // apply.
 func Validation() *ValidationApplyConfiguration {
 	return &ValidationApplyConfiguration{}
 }
+func (b ValidationApplyConfiguration) IsApplyConfiguration() {}
 
 // WithExpression sets the Expression field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

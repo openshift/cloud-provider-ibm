@@ -19,21 +19,22 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// HostPathVolumeSourceApplyConfiguration represents an declarative configuration of the HostPathVolumeSource type for use
+// HostPathVolumeSourceApplyConfiguration represents a declarative configuration of the HostPathVolumeSource type for use
 // with apply.
 type HostPathVolumeSourceApplyConfiguration struct {
-	Path *string          `json:"path,omitempty"`
-	Type *v1.HostPathType `json:"type,omitempty"`
+	Path *string              `json:"path,omitempty"`
+	Type *corev1.HostPathType `json:"type,omitempty"`
 }
 
-// HostPathVolumeSourceApplyConfiguration constructs an declarative configuration of the HostPathVolumeSource type for use with
+// HostPathVolumeSourceApplyConfiguration constructs a declarative configuration of the HostPathVolumeSource type for use with
 // apply.
 func HostPathVolumeSource() *HostPathVolumeSourceApplyConfiguration {
 	return &HostPathVolumeSourceApplyConfiguration{}
 }
+func (b HostPathVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPath sets the Path field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
@@ -46,7 +47,7 @@ func (b *HostPathVolumeSourceApplyConfiguration) WithPath(value string) *HostPat
 // WithType sets the Type field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Type field is set to the value of the last call.
-func (b *HostPathVolumeSourceApplyConfiguration) WithType(value v1.HostPathType) *HostPathVolumeSourceApplyConfiguration {
+func (b *HostPathVolumeSourceApplyConfiguration) WithType(value corev1.HostPathType) *HostPathVolumeSourceApplyConfiguration {
 	b.Type = &value
 	return b
 }

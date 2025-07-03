@@ -18,7 +18,7 @@ limitations under the License.
 
 package v2beta2
 
-// ObjectMetricSourceApplyConfiguration represents an declarative configuration of the ObjectMetricSource type for use
+// ObjectMetricSourceApplyConfiguration represents a declarative configuration of the ObjectMetricSource type for use
 // with apply.
 type ObjectMetricSourceApplyConfiguration struct {
 	DescribedObject *CrossVersionObjectReferenceApplyConfiguration `json:"describedObject,omitempty"`
@@ -26,11 +26,12 @@ type ObjectMetricSourceApplyConfiguration struct {
 	Metric          *MetricIdentifierApplyConfiguration            `json:"metric,omitempty"`
 }
 
-// ObjectMetricSourceApplyConfiguration constructs an declarative configuration of the ObjectMetricSource type for use with
+// ObjectMetricSourceApplyConfiguration constructs a declarative configuration of the ObjectMetricSource type for use with
 // apply.
 func ObjectMetricSource() *ObjectMetricSourceApplyConfiguration {
 	return &ObjectMetricSourceApplyConfiguration{}
 }
+func (b ObjectMetricSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithDescribedObject sets the DescribedObject field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

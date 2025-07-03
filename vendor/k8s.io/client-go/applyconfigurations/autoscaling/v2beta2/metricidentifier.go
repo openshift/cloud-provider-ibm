@@ -22,18 +22,19 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// MetricIdentifierApplyConfiguration represents an declarative configuration of the MetricIdentifier type for use
+// MetricIdentifierApplyConfiguration represents a declarative configuration of the MetricIdentifier type for use
 // with apply.
 type MetricIdentifierApplyConfiguration struct {
 	Name     *string                             `json:"name,omitempty"`
 	Selector *v1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
 }
 
-// MetricIdentifierApplyConfiguration constructs an declarative configuration of the MetricIdentifier type for use with
+// MetricIdentifierApplyConfiguration constructs a declarative configuration of the MetricIdentifier type for use with
 // apply.
 func MetricIdentifier() *MetricIdentifierApplyConfiguration {
 	return &MetricIdentifierApplyConfiguration{}
 }
+func (b MetricIdentifierApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// LabelSelectorApplyConfiguration represents an declarative configuration of the LabelSelector type for use
+// LabelSelectorApplyConfiguration represents a declarative configuration of the LabelSelector type for use
 // with apply.
 type LabelSelectorApplyConfiguration struct {
 	MatchLabels      map[string]string                            `json:"matchLabels,omitempty"`
 	MatchExpressions []LabelSelectorRequirementApplyConfiguration `json:"matchExpressions,omitempty"`
 }
 
-// LabelSelectorApplyConfiguration constructs an declarative configuration of the LabelSelector type for use with
+// LabelSelectorApplyConfiguration constructs a declarative configuration of the LabelSelector type for use with
 // apply.
 func LabelSelector() *LabelSelectorApplyConfiguration {
 	return &LabelSelectorApplyConfiguration{}
 }
+func (b LabelSelectorApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMatchLabels puts the entries into the MatchLabels field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

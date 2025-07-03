@@ -22,18 +22,19 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// ResourceMetricSourceApplyConfiguration represents an declarative configuration of the ResourceMetricSource type for use
+// ResourceMetricSourceApplyConfiguration represents a declarative configuration of the ResourceMetricSource type for use
 // with apply.
 type ResourceMetricSourceApplyConfiguration struct {
 	Name   *v1.ResourceName                `json:"name,omitempty"`
 	Target *MetricTargetApplyConfiguration `json:"target,omitempty"`
 }
 
-// ResourceMetricSourceApplyConfiguration constructs an declarative configuration of the ResourceMetricSource type for use with
+// ResourceMetricSourceApplyConfiguration constructs a declarative configuration of the ResourceMetricSource type for use with
 // apply.
 func ResourceMetricSource() *ResourceMetricSourceApplyConfiguration {
 	return &ResourceMetricSourceApplyConfiguration{}
 }
+func (b ResourceMetricSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

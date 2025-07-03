@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// PhotonPersistentDiskVolumeSourceApplyConfiguration represents an declarative configuration of the PhotonPersistentDiskVolumeSource type for use
+// PhotonPersistentDiskVolumeSourceApplyConfiguration represents a declarative configuration of the PhotonPersistentDiskVolumeSource type for use
 // with apply.
 type PhotonPersistentDiskVolumeSourceApplyConfiguration struct {
 	PdID   *string `json:"pdID,omitempty"`
 	FSType *string `json:"fsType,omitempty"`
 }
 
-// PhotonPersistentDiskVolumeSourceApplyConfiguration constructs an declarative configuration of the PhotonPersistentDiskVolumeSource type for use with
+// PhotonPersistentDiskVolumeSourceApplyConfiguration constructs a declarative configuration of the PhotonPersistentDiskVolumeSource type for use with
 // apply.
 func PhotonPersistentDiskVolumeSource() *PhotonPersistentDiskVolumeSourceApplyConfiguration {
 	return &PhotonPersistentDiskVolumeSourceApplyConfiguration{}
 }
+func (b PhotonPersistentDiskVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPdID sets the PdID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

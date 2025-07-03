@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// HostIPApplyConfiguration represents an declarative configuration of the HostIP type for use
+// HostIPApplyConfiguration represents a declarative configuration of the HostIP type for use
 // with apply.
 type HostIPApplyConfiguration struct {
 	IP *string `json:"ip,omitempty"`
 }
 
-// HostIPApplyConfiguration constructs an declarative configuration of the HostIP type for use with
+// HostIPApplyConfiguration constructs a declarative configuration of the HostIP type for use with
 // apply.
 func HostIP() *HostIPApplyConfiguration {
 	return &HostIPApplyConfiguration{}
 }
+func (b HostIPApplyConfiguration) IsApplyConfiguration() {}
 
 // WithIP sets the IP field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

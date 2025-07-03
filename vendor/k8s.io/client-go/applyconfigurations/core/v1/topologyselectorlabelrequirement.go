@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// TopologySelectorLabelRequirementApplyConfiguration represents an declarative configuration of the TopologySelectorLabelRequirement type for use
+// TopologySelectorLabelRequirementApplyConfiguration represents a declarative configuration of the TopologySelectorLabelRequirement type for use
 // with apply.
 type TopologySelectorLabelRequirementApplyConfiguration struct {
 	Key    *string  `json:"key,omitempty"`
 	Values []string `json:"values,omitempty"`
 }
 
-// TopologySelectorLabelRequirementApplyConfiguration constructs an declarative configuration of the TopologySelectorLabelRequirement type for use with
+// TopologySelectorLabelRequirementApplyConfiguration constructs a declarative configuration of the TopologySelectorLabelRequirement type for use with
 // apply.
 func TopologySelectorLabelRequirement() *TopologySelectorLabelRequirementApplyConfiguration {
 	return &TopologySelectorLabelRequirementApplyConfiguration{}
 }
+func (b TopologySelectorLabelRequirementApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKey sets the Key field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

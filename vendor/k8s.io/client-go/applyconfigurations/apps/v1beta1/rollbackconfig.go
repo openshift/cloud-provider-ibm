@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta1
 
-// RollbackConfigApplyConfiguration represents an declarative configuration of the RollbackConfig type for use
+// RollbackConfigApplyConfiguration represents a declarative configuration of the RollbackConfig type for use
 // with apply.
 type RollbackConfigApplyConfiguration struct {
 	Revision *int64 `json:"revision,omitempty"`
 }
 
-// RollbackConfigApplyConfiguration constructs an declarative configuration of the RollbackConfig type for use with
+// RollbackConfigApplyConfiguration constructs a declarative configuration of the RollbackConfig type for use with
 // apply.
 func RollbackConfig() *RollbackConfigApplyConfiguration {
 	return &RollbackConfigApplyConfiguration{}
 }
+func (b RollbackConfigApplyConfiguration) IsApplyConfiguration() {}
 
 // WithRevision sets the Revision field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

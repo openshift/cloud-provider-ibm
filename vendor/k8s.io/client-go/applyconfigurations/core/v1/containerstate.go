@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ContainerStateApplyConfiguration represents an declarative configuration of the ContainerState type for use
+// ContainerStateApplyConfiguration represents a declarative configuration of the ContainerState type for use
 // with apply.
 type ContainerStateApplyConfiguration struct {
 	Waiting    *ContainerStateWaitingApplyConfiguration    `json:"waiting,omitempty"`
@@ -26,11 +26,12 @@ type ContainerStateApplyConfiguration struct {
 	Terminated *ContainerStateTerminatedApplyConfiguration `json:"terminated,omitempty"`
 }
 
-// ContainerStateApplyConfiguration constructs an declarative configuration of the ContainerState type for use with
+// ContainerStateApplyConfiguration constructs a declarative configuration of the ContainerState type for use with
 // apply.
 func ContainerState() *ContainerStateApplyConfiguration {
 	return &ContainerStateApplyConfiguration{}
 }
+func (b ContainerStateApplyConfiguration) IsApplyConfiguration() {}
 
 // WithWaiting sets the Waiting field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

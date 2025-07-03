@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1alpha1
 
-// AuditAnnotationApplyConfiguration represents an declarative configuration of the AuditAnnotation type for use
+// AuditAnnotationApplyConfiguration represents a declarative configuration of the AuditAnnotation type for use
 // with apply.
 type AuditAnnotationApplyConfiguration struct {
 	Key             *string `json:"key,omitempty"`
 	ValueExpression *string `json:"valueExpression,omitempty"`
 }
 
-// AuditAnnotationApplyConfiguration constructs an declarative configuration of the AuditAnnotation type for use with
+// AuditAnnotationApplyConfiguration constructs a declarative configuration of the AuditAnnotation type for use with
 // apply.
 func AuditAnnotation() *AuditAnnotationApplyConfiguration {
 	return &AuditAnnotationApplyConfiguration{}
 }
+func (b AuditAnnotationApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKey sets the Key field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

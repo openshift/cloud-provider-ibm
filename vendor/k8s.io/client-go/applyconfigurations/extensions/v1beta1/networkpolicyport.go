@@ -23,7 +23,7 @@ import (
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// NetworkPolicyPortApplyConfiguration represents an declarative configuration of the NetworkPolicyPort type for use
+// NetworkPolicyPortApplyConfiguration represents a declarative configuration of the NetworkPolicyPort type for use
 // with apply.
 type NetworkPolicyPortApplyConfiguration struct {
 	Protocol *v1.Protocol        `json:"protocol,omitempty"`
@@ -31,11 +31,12 @@ type NetworkPolicyPortApplyConfiguration struct {
 	EndPort  *int32              `json:"endPort,omitempty"`
 }
 
-// NetworkPolicyPortApplyConfiguration constructs an declarative configuration of the NetworkPolicyPort type for use with
+// NetworkPolicyPortApplyConfiguration constructs a declarative configuration of the NetworkPolicyPort type for use with
 // apply.
 func NetworkPolicyPort() *NetworkPolicyPortApplyConfiguration {
 	return &NetworkPolicyPortApplyConfiguration{}
 }
+func (b NetworkPolicyPortApplyConfiguration) IsApplyConfiguration() {}
 
 // WithProtocol sets the Protocol field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

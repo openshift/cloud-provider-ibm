@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// IngressSpecApplyConfiguration represents an declarative configuration of the IngressSpec type for use
+// IngressSpecApplyConfiguration represents a declarative configuration of the IngressSpec type for use
 // with apply.
 type IngressSpecApplyConfiguration struct {
 	IngressClassName *string                           `json:"ingressClassName,omitempty"`
@@ -27,11 +27,12 @@ type IngressSpecApplyConfiguration struct {
 	Rules            []IngressRuleApplyConfiguration   `json:"rules,omitempty"`
 }
 
-// IngressSpecApplyConfiguration constructs an declarative configuration of the IngressSpec type for use with
+// IngressSpecApplyConfiguration constructs a declarative configuration of the IngressSpec type for use with
 // apply.
 func IngressSpec() *IngressSpecApplyConfiguration {
 	return &IngressSpecApplyConfiguration{}
 }
+func (b IngressSpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithIngressClassName sets the IngressClassName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

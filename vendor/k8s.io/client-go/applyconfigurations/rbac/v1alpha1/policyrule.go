@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1alpha1
 
-// PolicyRuleApplyConfiguration represents an declarative configuration of the PolicyRule type for use
+// PolicyRuleApplyConfiguration represents a declarative configuration of the PolicyRule type for use
 // with apply.
 type PolicyRuleApplyConfiguration struct {
 	Verbs           []string `json:"verbs,omitempty"`
@@ -28,11 +28,12 @@ type PolicyRuleApplyConfiguration struct {
 	NonResourceURLs []string `json:"nonResourceURLs,omitempty"`
 }
 
-// PolicyRuleApplyConfiguration constructs an declarative configuration of the PolicyRule type for use with
+// PolicyRuleApplyConfiguration constructs a declarative configuration of the PolicyRule type for use with
 // apply.
 func PolicyRule() *PolicyRuleApplyConfiguration {
 	return &PolicyRuleApplyConfiguration{}
 }
+func (b PolicyRuleApplyConfiguration) IsApplyConfiguration() {}
 
 // WithVerbs adds the given value to the Verbs field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

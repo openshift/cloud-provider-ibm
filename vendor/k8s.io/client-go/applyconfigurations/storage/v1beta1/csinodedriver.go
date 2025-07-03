@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// CSINodeDriverApplyConfiguration represents an declarative configuration of the CSINodeDriver type for use
+// CSINodeDriverApplyConfiguration represents a declarative configuration of the CSINodeDriver type for use
 // with apply.
 type CSINodeDriverApplyConfiguration struct {
 	Name         *string                                `json:"name,omitempty"`
@@ -27,11 +27,12 @@ type CSINodeDriverApplyConfiguration struct {
 	Allocatable  *VolumeNodeResourcesApplyConfiguration `json:"allocatable,omitempty"`
 }
 
-// CSINodeDriverApplyConfiguration constructs an declarative configuration of the CSINodeDriver type for use with
+// CSINodeDriverApplyConfiguration constructs a declarative configuration of the CSINodeDriver type for use with
 // apply.
 func CSINodeDriver() *CSINodeDriverApplyConfiguration {
 	return &CSINodeDriverApplyConfiguration{}
 }
+func (b CSINodeDriverApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

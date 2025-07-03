@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// KeyToPathApplyConfiguration represents an declarative configuration of the KeyToPath type for use
+// KeyToPathApplyConfiguration represents a declarative configuration of the KeyToPath type for use
 // with apply.
 type KeyToPathApplyConfiguration struct {
 	Key  *string `json:"key,omitempty"`
@@ -26,11 +26,12 @@ type KeyToPathApplyConfiguration struct {
 	Mode *int32  `json:"mode,omitempty"`
 }
 
-// KeyToPathApplyConfiguration constructs an declarative configuration of the KeyToPath type for use with
+// KeyToPathApplyConfiguration constructs a declarative configuration of the KeyToPath type for use with
 // apply.
 func KeyToPath() *KeyToPathApplyConfiguration {
 	return &KeyToPathApplyConfiguration{}
 }
+func (b KeyToPathApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKey sets the Key field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

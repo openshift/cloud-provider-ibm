@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// EphemeralVolumeSourceApplyConfiguration represents an declarative configuration of the EphemeralVolumeSource type for use
+// EphemeralVolumeSourceApplyConfiguration represents a declarative configuration of the EphemeralVolumeSource type for use
 // with apply.
 type EphemeralVolumeSourceApplyConfiguration struct {
 	VolumeClaimTemplate *PersistentVolumeClaimTemplateApplyConfiguration `json:"volumeClaimTemplate,omitempty"`
 }
 
-// EphemeralVolumeSourceApplyConfiguration constructs an declarative configuration of the EphemeralVolumeSource type for use with
+// EphemeralVolumeSourceApplyConfiguration constructs a declarative configuration of the EphemeralVolumeSource type for use with
 // apply.
 func EphemeralVolumeSource() *EphemeralVolumeSourceApplyConfiguration {
 	return &EphemeralVolumeSourceApplyConfiguration{}
 }
+func (b EphemeralVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithVolumeClaimTemplate sets the VolumeClaimTemplate field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// IngressTLSApplyConfiguration represents an declarative configuration of the IngressTLS type for use
+// IngressTLSApplyConfiguration represents a declarative configuration of the IngressTLS type for use
 // with apply.
 type IngressTLSApplyConfiguration struct {
 	Hosts      []string `json:"hosts,omitempty"`
 	SecretName *string  `json:"secretName,omitempty"`
 }
 
-// IngressTLSApplyConfiguration constructs an declarative configuration of the IngressTLS type for use with
+// IngressTLSApplyConfiguration constructs a declarative configuration of the IngressTLS type for use with
 // apply.
 func IngressTLS() *IngressTLSApplyConfiguration {
 	return &IngressTLSApplyConfiguration{}
 }
+func (b IngressTLSApplyConfiguration) IsApplyConfiguration() {}
 
 // WithHosts adds the given value to the Hosts field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v2beta2
 
-// ExternalMetricStatusApplyConfiguration represents an declarative configuration of the ExternalMetricStatus type for use
+// ExternalMetricStatusApplyConfiguration represents a declarative configuration of the ExternalMetricStatus type for use
 // with apply.
 type ExternalMetricStatusApplyConfiguration struct {
 	Metric  *MetricIdentifierApplyConfiguration  `json:"metric,omitempty"`
 	Current *MetricValueStatusApplyConfiguration `json:"current,omitempty"`
 }
 
-// ExternalMetricStatusApplyConfiguration constructs an declarative configuration of the ExternalMetricStatus type for use with
+// ExternalMetricStatusApplyConfiguration constructs a declarative configuration of the ExternalMetricStatus type for use with
 // apply.
 func ExternalMetricStatus() *ExternalMetricStatusApplyConfiguration {
 	return &ExternalMetricStatusApplyConfiguration{}
 }
+func (b ExternalMetricStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMetric sets the Metric field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

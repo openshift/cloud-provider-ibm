@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// NodeSelectorTermApplyConfiguration represents an declarative configuration of the NodeSelectorTerm type for use
+// NodeSelectorTermApplyConfiguration represents a declarative configuration of the NodeSelectorTerm type for use
 // with apply.
 type NodeSelectorTermApplyConfiguration struct {
 	MatchExpressions []NodeSelectorRequirementApplyConfiguration `json:"matchExpressions,omitempty"`
 	MatchFields      []NodeSelectorRequirementApplyConfiguration `json:"matchFields,omitempty"`
 }
 
-// NodeSelectorTermApplyConfiguration constructs an declarative configuration of the NodeSelectorTerm type for use with
+// NodeSelectorTermApplyConfiguration constructs a declarative configuration of the NodeSelectorTerm type for use with
 // apply.
 func NodeSelectorTerm() *NodeSelectorTermApplyConfiguration {
 	return &NodeSelectorTermApplyConfiguration{}
 }
+func (b NodeSelectorTermApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMatchExpressions adds the given value to the MatchExpressions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

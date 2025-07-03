@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ISCSIPersistentVolumeSourceApplyConfiguration represents an declarative configuration of the ISCSIPersistentVolumeSource type for use
+// ISCSIPersistentVolumeSourceApplyConfiguration represents a declarative configuration of the ISCSIPersistentVolumeSource type for use
 // with apply.
 type ISCSIPersistentVolumeSourceApplyConfiguration struct {
 	TargetPortal      *string                            `json:"targetPortal,omitempty"`
@@ -34,11 +34,12 @@ type ISCSIPersistentVolumeSourceApplyConfiguration struct {
 	InitiatorName     *string                            `json:"initiatorName,omitempty"`
 }
 
-// ISCSIPersistentVolumeSourceApplyConfiguration constructs an declarative configuration of the ISCSIPersistentVolumeSource type for use with
+// ISCSIPersistentVolumeSourceApplyConfiguration constructs a declarative configuration of the ISCSIPersistentVolumeSource type for use with
 // apply.
 func ISCSIPersistentVolumeSource() *ISCSIPersistentVolumeSourceApplyConfiguration {
 	return &ISCSIPersistentVolumeSourceApplyConfiguration{}
 }
+func (b ISCSIPersistentVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithTargetPortal sets the TargetPortal field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

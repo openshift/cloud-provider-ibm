@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// NFSVolumeSourceApplyConfiguration represents an declarative configuration of the NFSVolumeSource type for use
+// NFSVolumeSourceApplyConfiguration represents a declarative configuration of the NFSVolumeSource type for use
 // with apply.
 type NFSVolumeSourceApplyConfiguration struct {
 	Server   *string `json:"server,omitempty"`
@@ -26,11 +26,12 @@ type NFSVolumeSourceApplyConfiguration struct {
 	ReadOnly *bool   `json:"readOnly,omitempty"`
 }
 
-// NFSVolumeSourceApplyConfiguration constructs an declarative configuration of the NFSVolumeSource type for use with
+// NFSVolumeSourceApplyConfiguration constructs a declarative configuration of the NFSVolumeSource type for use with
 // apply.
 func NFSVolumeSource() *NFSVolumeSourceApplyConfiguration {
 	return &NFSVolumeSourceApplyConfiguration{}
 }
+func (b NFSVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithServer sets the Server field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

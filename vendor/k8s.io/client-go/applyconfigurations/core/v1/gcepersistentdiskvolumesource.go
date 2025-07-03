@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// GCEPersistentDiskVolumeSourceApplyConfiguration represents an declarative configuration of the GCEPersistentDiskVolumeSource type for use
+// GCEPersistentDiskVolumeSourceApplyConfiguration represents a declarative configuration of the GCEPersistentDiskVolumeSource type for use
 // with apply.
 type GCEPersistentDiskVolumeSourceApplyConfiguration struct {
 	PDName    *string `json:"pdName,omitempty"`
@@ -27,11 +27,12 @@ type GCEPersistentDiskVolumeSourceApplyConfiguration struct {
 	ReadOnly  *bool   `json:"readOnly,omitempty"`
 }
 
-// GCEPersistentDiskVolumeSourceApplyConfiguration constructs an declarative configuration of the GCEPersistentDiskVolumeSource type for use with
+// GCEPersistentDiskVolumeSourceApplyConfiguration constructs a declarative configuration of the GCEPersistentDiskVolumeSource type for use with
 // apply.
 func GCEPersistentDiskVolumeSource() *GCEPersistentDiskVolumeSourceApplyConfiguration {
 	return &GCEPersistentDiskVolumeSourceApplyConfiguration{}
 }
+func (b GCEPersistentDiskVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPDName sets the PDName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

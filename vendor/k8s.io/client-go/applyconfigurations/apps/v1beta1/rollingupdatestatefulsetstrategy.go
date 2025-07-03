@@ -22,18 +22,19 @@ import (
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// RollingUpdateStatefulSetStrategyApplyConfiguration represents an declarative configuration of the RollingUpdateStatefulSetStrategy type for use
+// RollingUpdateStatefulSetStrategyApplyConfiguration represents a declarative configuration of the RollingUpdateStatefulSetStrategy type for use
 // with apply.
 type RollingUpdateStatefulSetStrategyApplyConfiguration struct {
 	Partition      *int32              `json:"partition,omitempty"`
 	MaxUnavailable *intstr.IntOrString `json:"maxUnavailable,omitempty"`
 }
 
-// RollingUpdateStatefulSetStrategyApplyConfiguration constructs an declarative configuration of the RollingUpdateStatefulSetStrategy type for use with
+// RollingUpdateStatefulSetStrategyApplyConfiguration constructs a declarative configuration of the RollingUpdateStatefulSetStrategy type for use with
 // apply.
 func RollingUpdateStatefulSetStrategy() *RollingUpdateStatefulSetStrategyApplyConfiguration {
 	return &RollingUpdateStatefulSetStrategyApplyConfiguration{}
 }
+func (b RollingUpdateStatefulSetStrategyApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPartition sets the Partition field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

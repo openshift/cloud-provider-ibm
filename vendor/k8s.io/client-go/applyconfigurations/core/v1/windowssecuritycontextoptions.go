@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// WindowsSecurityContextOptionsApplyConfiguration represents an declarative configuration of the WindowsSecurityContextOptions type for use
+// WindowsSecurityContextOptionsApplyConfiguration represents a declarative configuration of the WindowsSecurityContextOptions type for use
 // with apply.
 type WindowsSecurityContextOptionsApplyConfiguration struct {
 	GMSACredentialSpecName *string `json:"gmsaCredentialSpecName,omitempty"`
@@ -27,11 +27,12 @@ type WindowsSecurityContextOptionsApplyConfiguration struct {
 	HostProcess            *bool   `json:"hostProcess,omitempty"`
 }
 
-// WindowsSecurityContextOptionsApplyConfiguration constructs an declarative configuration of the WindowsSecurityContextOptions type for use with
+// WindowsSecurityContextOptionsApplyConfiguration constructs a declarative configuration of the WindowsSecurityContextOptions type for use with
 // apply.
 func WindowsSecurityContextOptions() *WindowsSecurityContextOptionsApplyConfiguration {
 	return &WindowsSecurityContextOptionsApplyConfiguration{}
 }
+func (b WindowsSecurityContextOptionsApplyConfiguration) IsApplyConfiguration() {}
 
 // WithGMSACredentialSpecName sets the GMSACredentialSpecName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
