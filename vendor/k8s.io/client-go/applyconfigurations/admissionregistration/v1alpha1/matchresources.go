@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// MatchResourcesApplyConfiguration represents an declarative configuration of the MatchResources type for use
+// MatchResourcesApplyConfiguration represents a declarative configuration of the MatchResources type for use
 // with apply.
 type MatchResourcesApplyConfiguration struct {
 	NamespaceSelector    *v1.LabelSelectorApplyConfiguration            `json:"namespaceSelector,omitempty"`
@@ -33,11 +33,12 @@ type MatchResourcesApplyConfiguration struct {
 	MatchPolicy          *admissionregistrationv1alpha1.MatchPolicyType `json:"matchPolicy,omitempty"`
 }
 
-// MatchResourcesApplyConfiguration constructs an declarative configuration of the MatchResources type for use with
+// MatchResourcesApplyConfiguration constructs a declarative configuration of the MatchResources type for use with
 // apply.
 func MatchResources() *MatchResourcesApplyConfiguration {
 	return &MatchResourcesApplyConfiguration{}
 }
+func (b MatchResourcesApplyConfiguration) IsApplyConfiguration() {}
 
 // WithNamespaceSelector sets the NamespaceSelector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

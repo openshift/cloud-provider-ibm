@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// SecretReferenceApplyConfiguration represents an declarative configuration of the SecretReference type for use
+// SecretReferenceApplyConfiguration represents a declarative configuration of the SecretReference type for use
 // with apply.
 type SecretReferenceApplyConfiguration struct {
 	Name      *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
 }
 
-// SecretReferenceApplyConfiguration constructs an declarative configuration of the SecretReference type for use with
+// SecretReferenceApplyConfiguration constructs a declarative configuration of the SecretReference type for use with
 // apply.
 func SecretReference() *SecretReferenceApplyConfiguration {
 	return &SecretReferenceApplyConfiguration{}
 }
+func (b SecretReferenceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

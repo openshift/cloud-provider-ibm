@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// VolumeAttachmentStatusApplyConfiguration represents an declarative configuration of the VolumeAttachmentStatus type for use
+// VolumeAttachmentStatusApplyConfiguration represents a declarative configuration of the VolumeAttachmentStatus type for use
 // with apply.
 type VolumeAttachmentStatusApplyConfiguration struct {
 	Attached           *bool                          `json:"attached,omitempty"`
@@ -27,11 +27,12 @@ type VolumeAttachmentStatusApplyConfiguration struct {
 	DetachError        *VolumeErrorApplyConfiguration `json:"detachError,omitempty"`
 }
 
-// VolumeAttachmentStatusApplyConfiguration constructs an declarative configuration of the VolumeAttachmentStatus type for use with
+// VolumeAttachmentStatusApplyConfiguration constructs a declarative configuration of the VolumeAttachmentStatus type for use with
 // apply.
 func VolumeAttachmentStatus() *VolumeAttachmentStatusApplyConfiguration {
 	return &VolumeAttachmentStatusApplyConfiguration{}
 }
+func (b VolumeAttachmentStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithAttached sets the Attached field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

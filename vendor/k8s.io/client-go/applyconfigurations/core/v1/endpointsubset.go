@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// EndpointSubsetApplyConfiguration represents an declarative configuration of the EndpointSubset type for use
+// EndpointSubsetApplyConfiguration represents a declarative configuration of the EndpointSubset type for use
 // with apply.
 type EndpointSubsetApplyConfiguration struct {
 	Addresses         []EndpointAddressApplyConfiguration `json:"addresses,omitempty"`
@@ -26,11 +26,12 @@ type EndpointSubsetApplyConfiguration struct {
 	Ports             []EndpointPortApplyConfiguration    `json:"ports,omitempty"`
 }
 
-// EndpointSubsetApplyConfiguration constructs an declarative configuration of the EndpointSubset type for use with
+// EndpointSubsetApplyConfiguration constructs a declarative configuration of the EndpointSubset type for use with
 // apply.
 func EndpointSubset() *EndpointSubsetApplyConfiguration {
 	return &EndpointSubsetApplyConfiguration{}
 }
+func (b EndpointSubsetApplyConfiguration) IsApplyConfiguration() {}
 
 // WithAddresses adds the given value to the Addresses field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

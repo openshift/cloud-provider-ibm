@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta1
 
-// VolumeNodeResourcesApplyConfiguration represents an declarative configuration of the VolumeNodeResources type for use
+// VolumeNodeResourcesApplyConfiguration represents a declarative configuration of the VolumeNodeResources type for use
 // with apply.
 type VolumeNodeResourcesApplyConfiguration struct {
 	Count *int32 `json:"count,omitempty"`
 }
 
-// VolumeNodeResourcesApplyConfiguration constructs an declarative configuration of the VolumeNodeResources type for use with
+// VolumeNodeResourcesApplyConfiguration constructs a declarative configuration of the VolumeNodeResources type for use with
 // apply.
 func VolumeNodeResources() *VolumeNodeResourcesApplyConfiguration {
 	return &VolumeNodeResourcesApplyConfiguration{}
 }
+func (b VolumeNodeResourcesApplyConfiguration) IsApplyConfiguration() {}
 
 // WithCount sets the Count field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

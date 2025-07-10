@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// PodAntiAffinityApplyConfiguration represents an declarative configuration of the PodAntiAffinity type for use
+// PodAntiAffinityApplyConfiguration represents a declarative configuration of the PodAntiAffinity type for use
 // with apply.
 type PodAntiAffinityApplyConfiguration struct {
 	RequiredDuringSchedulingIgnoredDuringExecution  []PodAffinityTermApplyConfiguration         `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty"`
 	PreferredDuringSchedulingIgnoredDuringExecution []WeightedPodAffinityTermApplyConfiguration `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty"`
 }
 
-// PodAntiAffinityApplyConfiguration constructs an declarative configuration of the PodAntiAffinity type for use with
+// PodAntiAffinityApplyConfiguration constructs a declarative configuration of the PodAntiAffinity type for use with
 // apply.
 func PodAntiAffinity() *PodAntiAffinityApplyConfiguration {
 	return &PodAntiAffinityApplyConfiguration{}
 }
+func (b PodAntiAffinityApplyConfiguration) IsApplyConfiguration() {}
 
 // WithRequiredDuringSchedulingIgnoredDuringExecution adds the given value to the RequiredDuringSchedulingIgnoredDuringExecution field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

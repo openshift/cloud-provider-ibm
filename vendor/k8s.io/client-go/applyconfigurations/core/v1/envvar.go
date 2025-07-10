@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// EnvVarApplyConfiguration represents an declarative configuration of the EnvVar type for use
+// EnvVarApplyConfiguration represents a declarative configuration of the EnvVar type for use
 // with apply.
 type EnvVarApplyConfiguration struct {
 	Name      *string                         `json:"name,omitempty"`
@@ -26,11 +26,12 @@ type EnvVarApplyConfiguration struct {
 	ValueFrom *EnvVarSourceApplyConfiguration `json:"valueFrom,omitempty"`
 }
 
-// EnvVarApplyConfiguration constructs an declarative configuration of the EnvVar type for use with
+// EnvVarApplyConfiguration constructs a declarative configuration of the EnvVar type for use with
 // apply.
 func EnvVar() *EnvVarApplyConfiguration {
 	return &EnvVarApplyConfiguration{}
 }
+func (b EnvVarApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

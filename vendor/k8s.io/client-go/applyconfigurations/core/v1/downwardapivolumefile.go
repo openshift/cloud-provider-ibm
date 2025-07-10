@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// DownwardAPIVolumeFileApplyConfiguration represents an declarative configuration of the DownwardAPIVolumeFile type for use
+// DownwardAPIVolumeFileApplyConfiguration represents a declarative configuration of the DownwardAPIVolumeFile type for use
 // with apply.
 type DownwardAPIVolumeFileApplyConfiguration struct {
 	Path             *string                                  `json:"path,omitempty"`
@@ -27,11 +27,12 @@ type DownwardAPIVolumeFileApplyConfiguration struct {
 	Mode             *int32                                   `json:"mode,omitempty"`
 }
 
-// DownwardAPIVolumeFileApplyConfiguration constructs an declarative configuration of the DownwardAPIVolumeFile type for use with
+// DownwardAPIVolumeFileApplyConfiguration constructs a declarative configuration of the DownwardAPIVolumeFile type for use with
 // apply.
 func DownwardAPIVolumeFile() *DownwardAPIVolumeFileApplyConfiguration {
 	return &DownwardAPIVolumeFileApplyConfiguration{}
 }
+func (b DownwardAPIVolumeFileApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPath sets the Path field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

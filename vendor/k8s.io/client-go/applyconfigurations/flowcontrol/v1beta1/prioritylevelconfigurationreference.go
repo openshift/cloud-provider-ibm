@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta1
 
-// PriorityLevelConfigurationReferenceApplyConfiguration represents an declarative configuration of the PriorityLevelConfigurationReference type for use
+// PriorityLevelConfigurationReferenceApplyConfiguration represents a declarative configuration of the PriorityLevelConfigurationReference type for use
 // with apply.
 type PriorityLevelConfigurationReferenceApplyConfiguration struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// PriorityLevelConfigurationReferenceApplyConfiguration constructs an declarative configuration of the PriorityLevelConfigurationReference type for use with
+// PriorityLevelConfigurationReferenceApplyConfiguration constructs a declarative configuration of the PriorityLevelConfigurationReference type for use with
 // apply.
 func PriorityLevelConfigurationReference() *PriorityLevelConfigurationReferenceApplyConfiguration {
 	return &PriorityLevelConfigurationReferenceApplyConfiguration{}
 }
+func (b PriorityLevelConfigurationReferenceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

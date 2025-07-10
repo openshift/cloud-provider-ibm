@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// NetworkPolicySpecApplyConfiguration represents an declarative configuration of the NetworkPolicySpec type for use
+// NetworkPolicySpecApplyConfiguration represents a declarative configuration of the NetworkPolicySpec type for use
 // with apply.
 type NetworkPolicySpecApplyConfiguration struct {
 	PodSelector *v1.LabelSelectorApplyConfiguration          `json:"podSelector,omitempty"`
@@ -32,11 +32,12 @@ type NetworkPolicySpecApplyConfiguration struct {
 	PolicyTypes []extensionsv1beta1.PolicyType               `json:"policyTypes,omitempty"`
 }
 
-// NetworkPolicySpecApplyConfiguration constructs an declarative configuration of the NetworkPolicySpec type for use with
+// NetworkPolicySpecApplyConfiguration constructs a declarative configuration of the NetworkPolicySpec type for use with
 // apply.
 func NetworkPolicySpec() *NetworkPolicySpecApplyConfiguration {
 	return &NetworkPolicySpecApplyConfiguration{}
 }
+func (b NetworkPolicySpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPodSelector sets the PodSelector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

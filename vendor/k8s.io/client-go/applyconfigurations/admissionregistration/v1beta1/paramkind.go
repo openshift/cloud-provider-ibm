@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1beta1
 
-// ParamKindApplyConfiguration represents an declarative configuration of the ParamKind type for use
+// ParamKindApplyConfiguration represents a declarative configuration of the ParamKind type for use
 // with apply.
 type ParamKindApplyConfiguration struct {
 	APIVersion *string `json:"apiVersion,omitempty"`
 	Kind       *string `json:"kind,omitempty"`
 }
 
-// ParamKindApplyConfiguration constructs an declarative configuration of the ParamKind type for use with
+// ParamKindApplyConfiguration constructs a declarative configuration of the ParamKind type for use with
 // apply.
 func ParamKind() *ParamKindApplyConfiguration {
 	return &ParamKindApplyConfiguration{}
 }
+func (b ParamKindApplyConfiguration) IsApplyConfiguration() {}
 
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// EndpointAddressApplyConfiguration represents an declarative configuration of the EndpointAddress type for use
+// EndpointAddressApplyConfiguration represents a declarative configuration of the EndpointAddress type for use
 // with apply.
 type EndpointAddressApplyConfiguration struct {
 	IP        *string                            `json:"ip,omitempty"`
@@ -27,11 +27,12 @@ type EndpointAddressApplyConfiguration struct {
 	TargetRef *ObjectReferenceApplyConfiguration `json:"targetRef,omitempty"`
 }
 
-// EndpointAddressApplyConfiguration constructs an declarative configuration of the EndpointAddress type for use with
+// EndpointAddressApplyConfiguration constructs a declarative configuration of the EndpointAddress type for use with
 // apply.
 func EndpointAddress() *EndpointAddressApplyConfiguration {
 	return &EndpointAddressApplyConfiguration{}
 }
+func (b EndpointAddressApplyConfiguration) IsApplyConfiguration() {}
 
 // WithIP sets the IP field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

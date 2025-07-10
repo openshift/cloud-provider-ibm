@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// ContainerImageApplyConfiguration represents an declarative configuration of the ContainerImage type for use
+// ContainerImageApplyConfiguration represents a declarative configuration of the ContainerImage type for use
 // with apply.
 type ContainerImageApplyConfiguration struct {
 	Names     []string `json:"names,omitempty"`
 	SizeBytes *int64   `json:"sizeBytes,omitempty"`
 }
 
-// ContainerImageApplyConfiguration constructs an declarative configuration of the ContainerImage type for use with
+// ContainerImageApplyConfiguration constructs a declarative configuration of the ContainerImage type for use with
 // apply.
 func ContainerImage() *ContainerImageApplyConfiguration {
 	return &ContainerImageApplyConfiguration{}
 }
+func (b ContainerImageApplyConfiguration) IsApplyConfiguration() {}
 
 // WithNames adds the given value to the Names field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

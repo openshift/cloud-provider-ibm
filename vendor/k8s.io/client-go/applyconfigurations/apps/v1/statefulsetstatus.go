@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// StatefulSetStatusApplyConfiguration represents an declarative configuration of the StatefulSetStatus type for use
+// StatefulSetStatusApplyConfiguration represents a declarative configuration of the StatefulSetStatus type for use
 // with apply.
 type StatefulSetStatusApplyConfiguration struct {
 	ObservedGeneration *int64                                   `json:"observedGeneration,omitempty"`
@@ -33,11 +33,12 @@ type StatefulSetStatusApplyConfiguration struct {
 	AvailableReplicas  *int32                                   `json:"availableReplicas,omitempty"`
 }
 
-// StatefulSetStatusApplyConfiguration constructs an declarative configuration of the StatefulSetStatus type for use with
+// StatefulSetStatusApplyConfiguration constructs a declarative configuration of the StatefulSetStatus type for use with
 // apply.
 func StatefulSetStatus() *StatefulSetStatusApplyConfiguration {
 	return &StatefulSetStatusApplyConfiguration{}
 }
+func (b StatefulSetStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithObservedGeneration sets the ObservedGeneration field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

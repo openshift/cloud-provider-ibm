@@ -23,7 +23,7 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// ContainerResourceMetricStatusApplyConfiguration represents an declarative configuration of the ContainerResourceMetricStatus type for use
+// ContainerResourceMetricStatusApplyConfiguration represents a declarative configuration of the ContainerResourceMetricStatus type for use
 // with apply.
 type ContainerResourceMetricStatusApplyConfiguration struct {
 	Name                      *v1.ResourceName   `json:"name,omitempty"`
@@ -32,11 +32,12 @@ type ContainerResourceMetricStatusApplyConfiguration struct {
 	Container                 *string            `json:"container,omitempty"`
 }
 
-// ContainerResourceMetricStatusApplyConfiguration constructs an declarative configuration of the ContainerResourceMetricStatus type for use with
+// ContainerResourceMetricStatusApplyConfiguration constructs a declarative configuration of the ContainerResourceMetricStatus type for use with
 // apply.
 func ContainerResourceMetricStatus() *ContainerResourceMetricStatusApplyConfiguration {
 	return &ContainerResourceMetricStatusApplyConfiguration{}
 }
+func (b ContainerResourceMetricStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

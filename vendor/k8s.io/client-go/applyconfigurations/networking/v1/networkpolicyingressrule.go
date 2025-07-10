@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// NetworkPolicyIngressRuleApplyConfiguration represents an declarative configuration of the NetworkPolicyIngressRule type for use
+// NetworkPolicyIngressRuleApplyConfiguration represents a declarative configuration of the NetworkPolicyIngressRule type for use
 // with apply.
 type NetworkPolicyIngressRuleApplyConfiguration struct {
 	Ports []NetworkPolicyPortApplyConfiguration `json:"ports,omitempty"`
 	From  []NetworkPolicyPeerApplyConfiguration `json:"from,omitempty"`
 }
 
-// NetworkPolicyIngressRuleApplyConfiguration constructs an declarative configuration of the NetworkPolicyIngressRule type for use with
+// NetworkPolicyIngressRuleApplyConfiguration constructs a declarative configuration of the NetworkPolicyIngressRule type for use with
 // apply.
 func NetworkPolicyIngressRule() *NetworkPolicyIngressRuleApplyConfiguration {
 	return &NetworkPolicyIngressRuleApplyConfiguration{}
 }
+func (b NetworkPolicyIngressRuleApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPorts adds the given value to the Ports field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v2
 
-// PodsMetricStatusApplyConfiguration represents an declarative configuration of the PodsMetricStatus type for use
+// PodsMetricStatusApplyConfiguration represents a declarative configuration of the PodsMetricStatus type for use
 // with apply.
 type PodsMetricStatusApplyConfiguration struct {
 	Metric  *MetricIdentifierApplyConfiguration  `json:"metric,omitempty"`
 	Current *MetricValueStatusApplyConfiguration `json:"current,omitempty"`
 }
 
-// PodsMetricStatusApplyConfiguration constructs an declarative configuration of the PodsMetricStatus type for use with
+// PodsMetricStatusApplyConfiguration constructs a declarative configuration of the PodsMetricStatus type for use with
 // apply.
 func PodsMetricStatus() *PodsMetricStatusApplyConfiguration {
 	return &PodsMetricStatusApplyConfiguration{}
 }
+func (b PodsMetricStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMetric sets the Metric field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

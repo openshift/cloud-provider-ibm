@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// ScaleIOVolumeSourceApplyConfiguration represents an declarative configuration of the ScaleIOVolumeSource type for use
+// ScaleIOVolumeSourceApplyConfiguration represents a declarative configuration of the ScaleIOVolumeSource type for use
 // with apply.
 type ScaleIOVolumeSourceApplyConfiguration struct {
 	Gateway          *string                                 `json:"gateway,omitempty"`
@@ -33,11 +33,12 @@ type ScaleIOVolumeSourceApplyConfiguration struct {
 	ReadOnly         *bool                                   `json:"readOnly,omitempty"`
 }
 
-// ScaleIOVolumeSourceApplyConfiguration constructs an declarative configuration of the ScaleIOVolumeSource type for use with
+// ScaleIOVolumeSourceApplyConfiguration constructs a declarative configuration of the ScaleIOVolumeSource type for use with
 // apply.
 func ScaleIOVolumeSource() *ScaleIOVolumeSourceApplyConfiguration {
 	return &ScaleIOVolumeSourceApplyConfiguration{}
 }
+func (b ScaleIOVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithGateway sets the Gateway field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

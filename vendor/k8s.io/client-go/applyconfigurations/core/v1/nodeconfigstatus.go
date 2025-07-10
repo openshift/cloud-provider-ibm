@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// NodeConfigStatusApplyConfiguration represents an declarative configuration of the NodeConfigStatus type for use
+// NodeConfigStatusApplyConfiguration represents a declarative configuration of the NodeConfigStatus type for use
 // with apply.
 type NodeConfigStatusApplyConfiguration struct {
 	Assigned      *NodeConfigSourceApplyConfiguration `json:"assigned,omitempty"`
@@ -27,11 +27,12 @@ type NodeConfigStatusApplyConfiguration struct {
 	Error         *string                             `json:"error,omitempty"`
 }
 
-// NodeConfigStatusApplyConfiguration constructs an declarative configuration of the NodeConfigStatus type for use with
+// NodeConfigStatusApplyConfiguration constructs a declarative configuration of the NodeConfigStatus type for use with
 // apply.
 func NodeConfigStatus() *NodeConfigStatusApplyConfiguration {
 	return &NodeConfigStatusApplyConfiguration{}
 }
+func (b NodeConfigStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithAssigned sets the Assigned field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

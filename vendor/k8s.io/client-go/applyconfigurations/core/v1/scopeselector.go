@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// ScopeSelectorApplyConfiguration represents an declarative configuration of the ScopeSelector type for use
+// ScopeSelectorApplyConfiguration represents a declarative configuration of the ScopeSelector type for use
 // with apply.
 type ScopeSelectorApplyConfiguration struct {
 	MatchExpressions []ScopedResourceSelectorRequirementApplyConfiguration `json:"matchExpressions,omitempty"`
 }
 
-// ScopeSelectorApplyConfiguration constructs an declarative configuration of the ScopeSelector type for use with
+// ScopeSelectorApplyConfiguration constructs a declarative configuration of the ScopeSelector type for use with
 // apply.
 func ScopeSelector() *ScopeSelectorApplyConfiguration {
 	return &ScopeSelectorApplyConfiguration{}
 }
+func (b ScopeSelectorApplyConfiguration) IsApplyConfiguration() {}
 
 // WithMatchExpressions adds the given value to the MatchExpressions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// PersistentVolumeClaimVolumeSourceApplyConfiguration represents an declarative configuration of the PersistentVolumeClaimVolumeSource type for use
+// PersistentVolumeClaimVolumeSourceApplyConfiguration represents a declarative configuration of the PersistentVolumeClaimVolumeSource type for use
 // with apply.
 type PersistentVolumeClaimVolumeSourceApplyConfiguration struct {
 	ClaimName *string `json:"claimName,omitempty"`
 	ReadOnly  *bool   `json:"readOnly,omitempty"`
 }
 
-// PersistentVolumeClaimVolumeSourceApplyConfiguration constructs an declarative configuration of the PersistentVolumeClaimVolumeSource type for use with
+// PersistentVolumeClaimVolumeSourceApplyConfiguration constructs a declarative configuration of the PersistentVolumeClaimVolumeSource type for use with
 // apply.
 func PersistentVolumeClaimVolumeSource() *PersistentVolumeClaimVolumeSourceApplyConfiguration {
 	return &PersistentVolumeClaimVolumeSourceApplyConfiguration{}
 }
+func (b PersistentVolumeClaimVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithClaimName sets the ClaimName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// PersistentVolumeSourceApplyConfiguration represents an declarative configuration of the PersistentVolumeSource type for use
+// PersistentVolumeSourceApplyConfiguration represents a declarative configuration of the PersistentVolumeSource type for use
 // with apply.
 type PersistentVolumeSourceApplyConfiguration struct {
 	GCEPersistentDisk    *GCEPersistentDiskVolumeSourceApplyConfiguration    `json:"gcePersistentDisk,omitempty"`
@@ -45,11 +45,12 @@ type PersistentVolumeSourceApplyConfiguration struct {
 	CSI                  *CSIPersistentVolumeSourceApplyConfiguration        `json:"csi,omitempty"`
 }
 
-// PersistentVolumeSourceApplyConfiguration constructs an declarative configuration of the PersistentVolumeSource type for use with
+// PersistentVolumeSourceApplyConfiguration constructs a declarative configuration of the PersistentVolumeSource type for use with
 // apply.
 func PersistentVolumeSource() *PersistentVolumeSourceApplyConfiguration {
 	return &PersistentVolumeSourceApplyConfiguration{}
 }
+func (b PersistentVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithGCEPersistentDisk sets the GCEPersistentDisk field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

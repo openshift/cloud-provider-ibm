@@ -23,7 +23,7 @@ import (
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// PodDisruptionBudgetStatusApplyConfiguration represents an declarative configuration of the PodDisruptionBudgetStatus type for use
+// PodDisruptionBudgetStatusApplyConfiguration represents a declarative configuration of the PodDisruptionBudgetStatus type for use
 // with apply.
 type PodDisruptionBudgetStatusApplyConfiguration struct {
 	ObservedGeneration *int64                               `json:"observedGeneration,omitempty"`
@@ -35,11 +35,12 @@ type PodDisruptionBudgetStatusApplyConfiguration struct {
 	Conditions         []metav1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// PodDisruptionBudgetStatusApplyConfiguration constructs an declarative configuration of the PodDisruptionBudgetStatus type for use with
+// PodDisruptionBudgetStatusApplyConfiguration constructs a declarative configuration of the PodDisruptionBudgetStatus type for use with
 // apply.
 func PodDisruptionBudgetStatus() *PodDisruptionBudgetStatusApplyConfiguration {
 	return &PodDisruptionBudgetStatusApplyConfiguration{}
 }
+func (b PodDisruptionBudgetStatusApplyConfiguration) IsApplyConfiguration() {}
 
 // WithObservedGeneration sets the ObservedGeneration field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

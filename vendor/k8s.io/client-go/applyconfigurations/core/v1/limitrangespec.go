@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// LimitRangeSpecApplyConfiguration represents an declarative configuration of the LimitRangeSpec type for use
+// LimitRangeSpecApplyConfiguration represents a declarative configuration of the LimitRangeSpec type for use
 // with apply.
 type LimitRangeSpecApplyConfiguration struct {
 	Limits []LimitRangeItemApplyConfiguration `json:"limits,omitempty"`
 }
 
-// LimitRangeSpecApplyConfiguration constructs an declarative configuration of the LimitRangeSpec type for use with
+// LimitRangeSpecApplyConfiguration constructs a declarative configuration of the LimitRangeSpec type for use with
 // apply.
 func LimitRangeSpec() *LimitRangeSpecApplyConfiguration {
 	return &LimitRangeSpecApplyConfiguration{}
 }
+func (b LimitRangeSpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithLimits adds the given value to the Limits field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

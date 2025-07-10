@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// ServiceBackendPortApplyConfiguration represents an declarative configuration of the ServiceBackendPort type for use
+// ServiceBackendPortApplyConfiguration represents a declarative configuration of the ServiceBackendPort type for use
 // with apply.
 type ServiceBackendPortApplyConfiguration struct {
 	Name   *string `json:"name,omitempty"`
 	Number *int32  `json:"number,omitempty"`
 }
 
-// ServiceBackendPortApplyConfiguration constructs an declarative configuration of the ServiceBackendPort type for use with
+// ServiceBackendPortApplyConfiguration constructs a declarative configuration of the ServiceBackendPort type for use with
 // apply.
 func ServiceBackendPort() *ServiceBackendPortApplyConfiguration {
 	return &ServiceBackendPortApplyConfiguration{}
 }
+func (b ServiceBackendPortApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

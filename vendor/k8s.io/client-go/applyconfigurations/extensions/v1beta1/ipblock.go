@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1beta1
 
-// IPBlockApplyConfiguration represents an declarative configuration of the IPBlock type for use
+// IPBlockApplyConfiguration represents a declarative configuration of the IPBlock type for use
 // with apply.
 type IPBlockApplyConfiguration struct {
 	CIDR   *string  `json:"cidr,omitempty"`
 	Except []string `json:"except,omitempty"`
 }
 
-// IPBlockApplyConfiguration constructs an declarative configuration of the IPBlock type for use with
+// IPBlockApplyConfiguration constructs a declarative configuration of the IPBlock type for use with
 // apply.
 func IPBlock() *IPBlockApplyConfiguration {
 	return &IPBlockApplyConfiguration{}
 }
+func (b IPBlockApplyConfiguration) IsApplyConfiguration() {}
 
 // WithCIDR sets the CIDR field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

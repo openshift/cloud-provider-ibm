@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// PolicyRulesWithSubjectsApplyConfiguration represents an declarative configuration of the PolicyRulesWithSubjects type for use
+// PolicyRulesWithSubjectsApplyConfiguration represents a declarative configuration of the PolicyRulesWithSubjects type for use
 // with apply.
 type PolicyRulesWithSubjectsApplyConfiguration struct {
 	Subjects         []SubjectApplyConfiguration               `json:"subjects,omitempty"`
@@ -26,11 +26,12 @@ type PolicyRulesWithSubjectsApplyConfiguration struct {
 	NonResourceRules []NonResourcePolicyRuleApplyConfiguration `json:"nonResourceRules,omitempty"`
 }
 
-// PolicyRulesWithSubjectsApplyConfiguration constructs an declarative configuration of the PolicyRulesWithSubjects type for use with
+// PolicyRulesWithSubjectsApplyConfiguration constructs a declarative configuration of the PolicyRulesWithSubjects type for use with
 // apply.
 func PolicyRulesWithSubjects() *PolicyRulesWithSubjectsApplyConfiguration {
 	return &PolicyRulesWithSubjectsApplyConfiguration{}
 }
+func (b PolicyRulesWithSubjectsApplyConfiguration) IsApplyConfiguration() {}
 
 // WithSubjects adds the given value to the Subjects field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

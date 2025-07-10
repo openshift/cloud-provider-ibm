@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1beta1
 
-// TypeCheckingApplyConfiguration represents an declarative configuration of the TypeChecking type for use
+// TypeCheckingApplyConfiguration represents a declarative configuration of the TypeChecking type for use
 // with apply.
 type TypeCheckingApplyConfiguration struct {
 	ExpressionWarnings []ExpressionWarningApplyConfiguration `json:"expressionWarnings,omitempty"`
 }
 
-// TypeCheckingApplyConfiguration constructs an declarative configuration of the TypeChecking type for use with
+// TypeCheckingApplyConfiguration constructs a declarative configuration of the TypeChecking type for use with
 // apply.
 func TypeChecking() *TypeCheckingApplyConfiguration {
 	return &TypeCheckingApplyConfiguration{}
 }
+func (b TypeCheckingApplyConfiguration) IsApplyConfiguration() {}
 
 // WithExpressionWarnings adds the given value to the ExpressionWarnings field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

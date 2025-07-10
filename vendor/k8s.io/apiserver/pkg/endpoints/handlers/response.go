@@ -38,8 +38,8 @@ import (
 	"k8s.io/apiserver/pkg/endpoints/handlers/responsewriters"
 	"k8s.io/apiserver/pkg/endpoints/metrics"
 	endpointsrequest "k8s.io/apiserver/pkg/endpoints/request"
-
-	klog "k8s.io/klog/v2"
+	"k8s.io/apiserver/pkg/util/apihelpers"
+	"k8s.io/klog/v2"
 )
 
 // watchEmbeddedEncoder performs encoding of the embedded object.
@@ -141,11 +141,11 @@ func (e *watchEmbeddedEncoder) embeddedIdentifier() runtime.Identifier {
 //
 // NOTE: watchEncoder is NOT thread-safe.
 type watchEncoder struct {
-	ctx             context.Context
-	kind            schema.GroupVersionKind
-	embeddedEncoder runtime.Encoder
-	encoder         runtime.Encoder
-	framer          io.Writer
+	ctx                  context.Context
+	groupVersionResource schema.GroupVersionResource
+	embeddedEncoder      runtime.Encoder
+	encoder              runtime.Encoder
+	framer               io.Writer
 
 	buffer      runtime.Splice
 	eventBuffer runtime.Splice
@@ -154,15 +154,15 @@ type watchEncoder struct {
 	identifiers               map[watch.EventType]runtime.Identifier
 }
 
-func newWatchEncoder(ctx context.Context, kind schema.GroupVersionKind, embeddedEncoder runtime.Encoder, encoder runtime.Encoder, framer io.Writer) *watchEncoder {
+func newWatchEncoder(ctx context.Context, gvr schema.GroupVersionResource, embeddedEncoder runtime.Encoder, encoder runtime.Encoder, framer io.Writer) *watchEncoder {
 	return &watchEncoder{
-		ctx:             ctx,
-		kind:            kind,
-		embeddedEncoder: embeddedEncoder,
-		encoder:         encoder,
-		framer:          framer,
-		buffer:          runtime.NewSpliceBuffer(),
-		eventBuffer:     runtime.NewSpliceBuffer(),
+		ctx:                  ctx,
+		groupVersionResource: gvr,
+		embeddedEncoder:      embeddedEncoder,
+		encoder:              encoder,
+		framer:               framer,
+		buffer:               runtime.NewSpliceBuffer(),
+		eventBuffer:          runtime.NewSpliceBuffer(),
 	}
 }
 
@@ -192,7 +192,7 @@ func (e *watchEncoder) doEncode(obj runtime.Object, event watch.Event, w io.Writ
 		Type:   string(event.Type),
 		Object: runtime.RawExtension{Raw: e.buffer.Bytes()},
 	}
-	metrics.WatchEventsSizes.WithContext(e.ctx).WithLabelValues(e.kind.Group, e.kind.Version, e.kind.Kind).Observe(float64(len(outEvent.Object.Raw)))
+	metrics.WatchEventsSizes.WithContext(e.ctx).WithLabelValues(e.groupVersionResource.Group, e.groupVersionResource.Version, e.groupVersionResource.Resource).Observe(float64(len(outEvent.Object.Raw)))
 
 	defer e.eventBuffer.Reset()
 	if err := e.encoder.Encode(outEvent, e.eventBuffer); err != nil {
@@ -270,7 +270,7 @@ func doTransformObject(ctx context.Context, obj runtime.Object, opts interface{}
 		return asTable(ctx, obj, options, scope, target.GroupVersion())
 
 	default:
-		accepted, _ := negotiation.MediaTypesForSerializer(metainternalversionscheme.Codecs)
+		accepted, _ := negotiation.MediaTypesForSerializer(apihelpers.GetMetaInternalVersionCodecs())
 		err := negotiation.NewNotAcceptableError(accepted)
 		return nil, err
 	}
@@ -304,7 +304,7 @@ func targetEncodingForTransform(scope *RequestScope, mediaType negotiation.Media
 	case target == nil:
 	case (target.Kind == "PartialObjectMetadata" || target.Kind == "PartialObjectMetadataList" || target.Kind == "Table") &&
 		(target.GroupVersion() == metav1beta1.SchemeGroupVersion || target.GroupVersion() == metav1.SchemeGroupVersion):
-		return *target, metainternalversionscheme.Codecs, true
+		return *target, apihelpers.GetMetaInternalVersionCodecs(), true
 	}
 	return scope.Kind, scope.Serializer, false
 }

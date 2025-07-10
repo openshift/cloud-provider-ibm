@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// VolumeDeviceApplyConfiguration represents an declarative configuration of the VolumeDevice type for use
+// VolumeDeviceApplyConfiguration represents a declarative configuration of the VolumeDevice type for use
 // with apply.
 type VolumeDeviceApplyConfiguration struct {
 	Name       *string `json:"name,omitempty"`
 	DevicePath *string `json:"devicePath,omitempty"`
 }
 
-// VolumeDeviceApplyConfiguration constructs an declarative configuration of the VolumeDevice type for use with
+// VolumeDeviceApplyConfiguration constructs a declarative configuration of the VolumeDevice type for use with
 // apply.
 func VolumeDevice() *VolumeDeviceApplyConfiguration {
 	return &VolumeDeviceApplyConfiguration{}
 }
+func (b VolumeDeviceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

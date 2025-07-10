@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1beta2
 
-// ServiceAccountSubjectApplyConfiguration represents an declarative configuration of the ServiceAccountSubject type for use
+// ServiceAccountSubjectApplyConfiguration represents a declarative configuration of the ServiceAccountSubject type for use
 // with apply.
 type ServiceAccountSubjectApplyConfiguration struct {
 	Namespace *string `json:"namespace,omitempty"`
 	Name      *string `json:"name,omitempty"`
 }
 
-// ServiceAccountSubjectApplyConfiguration constructs an declarative configuration of the ServiceAccountSubject type for use with
+// ServiceAccountSubjectApplyConfiguration constructs a declarative configuration of the ServiceAccountSubject type for use with
 // apply.
 func ServiceAccountSubject() *ServiceAccountSubjectApplyConfiguration {
 	return &ServiceAccountSubjectApplyConfiguration{}
 }
+func (b ServiceAccountSubjectApplyConfiguration) IsApplyConfiguration() {}
 
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

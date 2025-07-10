@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// DownwardAPIProjectionApplyConfiguration represents an declarative configuration of the DownwardAPIProjection type for use
+// DownwardAPIProjectionApplyConfiguration represents a declarative configuration of the DownwardAPIProjection type for use
 // with apply.
 type DownwardAPIProjectionApplyConfiguration struct {
 	Items []DownwardAPIVolumeFileApplyConfiguration `json:"items,omitempty"`
 }
 
-// DownwardAPIProjectionApplyConfiguration constructs an declarative configuration of the DownwardAPIProjection type for use with
+// DownwardAPIProjectionApplyConfiguration constructs a declarative configuration of the DownwardAPIProjection type for use with
 // apply.
 func DownwardAPIProjection() *DownwardAPIProjectionApplyConfiguration {
 	return &DownwardAPIProjectionApplyConfiguration{}
 }
+func (b DownwardAPIProjectionApplyConfiguration) IsApplyConfiguration() {}
 
 // WithItems adds the given value to the Items field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

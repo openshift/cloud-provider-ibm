@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// PreferredSchedulingTermApplyConfiguration represents an declarative configuration of the PreferredSchedulingTerm type for use
+// PreferredSchedulingTermApplyConfiguration represents a declarative configuration of the PreferredSchedulingTerm type for use
 // with apply.
 type PreferredSchedulingTermApplyConfiguration struct {
 	Weight     *int32                              `json:"weight,omitempty"`
 	Preference *NodeSelectorTermApplyConfiguration `json:"preference,omitempty"`
 }
 
-// PreferredSchedulingTermApplyConfiguration constructs an declarative configuration of the PreferredSchedulingTerm type for use with
+// PreferredSchedulingTermApplyConfiguration constructs a declarative configuration of the PreferredSchedulingTerm type for use with
 // apply.
 func PreferredSchedulingTerm() *PreferredSchedulingTermApplyConfiguration {
 	return &PreferredSchedulingTermApplyConfiguration{}
 }
+func (b PreferredSchedulingTermApplyConfiguration) IsApplyConfiguration() {}
 
 // WithWeight sets the Weight field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

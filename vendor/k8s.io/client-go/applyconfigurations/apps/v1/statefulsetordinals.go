@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// StatefulSetOrdinalsApplyConfiguration represents an declarative configuration of the StatefulSetOrdinals type for use
+// StatefulSetOrdinalsApplyConfiguration represents a declarative configuration of the StatefulSetOrdinals type for use
 // with apply.
 type StatefulSetOrdinalsApplyConfiguration struct {
 	Start *int32 `json:"start,omitempty"`
 }
 
-// StatefulSetOrdinalsApplyConfiguration constructs an declarative configuration of the StatefulSetOrdinals type for use with
+// StatefulSetOrdinalsApplyConfiguration constructs a declarative configuration of the StatefulSetOrdinals type for use with
 // apply.
 func StatefulSetOrdinals() *StatefulSetOrdinalsApplyConfiguration {
 	return &StatefulSetOrdinalsApplyConfiguration{}
 }
+func (b StatefulSetOrdinalsApplyConfiguration) IsApplyConfiguration() {}
 
 // WithStart sets the Start field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

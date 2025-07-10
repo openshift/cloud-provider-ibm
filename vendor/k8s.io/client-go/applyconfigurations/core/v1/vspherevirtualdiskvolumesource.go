@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// VsphereVirtualDiskVolumeSourceApplyConfiguration represents an declarative configuration of the VsphereVirtualDiskVolumeSource type for use
+// VsphereVirtualDiskVolumeSourceApplyConfiguration represents a declarative configuration of the VsphereVirtualDiskVolumeSource type for use
 // with apply.
 type VsphereVirtualDiskVolumeSourceApplyConfiguration struct {
 	VolumePath        *string `json:"volumePath,omitempty"`
@@ -27,11 +27,12 @@ type VsphereVirtualDiskVolumeSourceApplyConfiguration struct {
 	StoragePolicyID   *string `json:"storagePolicyID,omitempty"`
 }
 
-// VsphereVirtualDiskVolumeSourceApplyConfiguration constructs an declarative configuration of the VsphereVirtualDiskVolumeSource type for use with
+// VsphereVirtualDiskVolumeSourceApplyConfiguration constructs a declarative configuration of the VsphereVirtualDiskVolumeSource type for use with
 // apply.
 func VsphereVirtualDiskVolumeSource() *VsphereVirtualDiskVolumeSourceApplyConfiguration {
 	return &VsphereVirtualDiskVolumeSourceApplyConfiguration{}
 }
+func (b VsphereVirtualDiskVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithVolumePath sets the VolumePath field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

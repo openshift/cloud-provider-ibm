@@ -22,7 +22,7 @@ import (
 	admissionregistrationv1beta1 "k8s.io/api/admissionregistration/v1beta1"
 )
 
-// ValidatingAdmissionPolicyBindingSpecApplyConfiguration represents an declarative configuration of the ValidatingAdmissionPolicyBindingSpec type for use
+// ValidatingAdmissionPolicyBindingSpecApplyConfiguration represents a declarative configuration of the ValidatingAdmissionPolicyBindingSpec type for use
 // with apply.
 type ValidatingAdmissionPolicyBindingSpecApplyConfiguration struct {
 	PolicyName        *string                                         `json:"policyName,omitempty"`
@@ -31,11 +31,12 @@ type ValidatingAdmissionPolicyBindingSpecApplyConfiguration struct {
 	ValidationActions []admissionregistrationv1beta1.ValidationAction `json:"validationActions,omitempty"`
 }
 
-// ValidatingAdmissionPolicyBindingSpecApplyConfiguration constructs an declarative configuration of the ValidatingAdmissionPolicyBindingSpec type for use with
+// ValidatingAdmissionPolicyBindingSpecApplyConfiguration constructs a declarative configuration of the ValidatingAdmissionPolicyBindingSpec type for use with
 // apply.
 func ValidatingAdmissionPolicyBindingSpec() *ValidatingAdmissionPolicyBindingSpecApplyConfiguration {
 	return &ValidatingAdmissionPolicyBindingSpecApplyConfiguration{}
 }
+func (b ValidatingAdmissionPolicyBindingSpecApplyConfiguration) IsApplyConfiguration() {}
 
 // WithPolicyName sets the PolicyName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

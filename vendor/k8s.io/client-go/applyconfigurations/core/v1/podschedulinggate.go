@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// PodSchedulingGateApplyConfiguration represents an declarative configuration of the PodSchedulingGate type for use
+// PodSchedulingGateApplyConfiguration represents a declarative configuration of the PodSchedulingGate type for use
 // with apply.
 type PodSchedulingGateApplyConfiguration struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// PodSchedulingGateApplyConfiguration constructs an declarative configuration of the PodSchedulingGate type for use with
+// PodSchedulingGateApplyConfiguration constructs a declarative configuration of the PodSchedulingGate type for use with
 // apply.
 func PodSchedulingGate() *PodSchedulingGateApplyConfiguration {
 	return &PodSchedulingGateApplyConfiguration{}
 }
+func (b PodSchedulingGateApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

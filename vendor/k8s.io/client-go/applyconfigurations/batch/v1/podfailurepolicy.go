@@ -18,17 +18,18 @@ limitations under the License.
 
 package v1
 
-// PodFailurePolicyApplyConfiguration represents an declarative configuration of the PodFailurePolicy type for use
+// PodFailurePolicyApplyConfiguration represents a declarative configuration of the PodFailurePolicy type for use
 // with apply.
 type PodFailurePolicyApplyConfiguration struct {
 	Rules []PodFailurePolicyRuleApplyConfiguration `json:"rules,omitempty"`
 }
 
-// PodFailurePolicyApplyConfiguration constructs an declarative configuration of the PodFailurePolicy type for use with
+// PodFailurePolicyApplyConfiguration constructs a declarative configuration of the PodFailurePolicy type for use with
 // apply.
 func PodFailurePolicy() *PodFailurePolicyApplyConfiguration {
 	return &PodFailurePolicyApplyConfiguration{}
 }
+func (b PodFailurePolicyApplyConfiguration) IsApplyConfiguration() {}
 
 // WithRules adds the given value to the Rules field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.

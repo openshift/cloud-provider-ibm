@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// SysctlApplyConfiguration represents an declarative configuration of the Sysctl type for use
+// SysctlApplyConfiguration represents a declarative configuration of the Sysctl type for use
 // with apply.
 type SysctlApplyConfiguration struct {
 	Name  *string `json:"name,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
-// SysctlApplyConfiguration constructs an declarative configuration of the Sysctl type for use with
+// SysctlApplyConfiguration constructs a declarative configuration of the Sysctl type for use with
 // apply.
 func Sysctl() *SysctlApplyConfiguration {
 	return &SysctlApplyConfiguration{}
 }
+func (b SysctlApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

@@ -22,18 +22,19 @@ import (
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
-// IngressBackendApplyConfiguration represents an declarative configuration of the IngressBackend type for use
+// IngressBackendApplyConfiguration represents a declarative configuration of the IngressBackend type for use
 // with apply.
 type IngressBackendApplyConfiguration struct {
 	Service  *IngressServiceBackendApplyConfiguration            `json:"service,omitempty"`
 	Resource *corev1.TypedLocalObjectReferenceApplyConfiguration `json:"resource,omitempty"`
 }
 
-// IngressBackendApplyConfiguration constructs an declarative configuration of the IngressBackend type for use with
+// IngressBackendApplyConfiguration constructs a declarative configuration of the IngressBackend type for use with
 // apply.
 func IngressBackend() *IngressBackendApplyConfiguration {
 	return &IngressBackendApplyConfiguration{}
 }
+func (b IngressBackendApplyConfiguration) IsApplyConfiguration() {}
 
 // WithService sets the Service field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

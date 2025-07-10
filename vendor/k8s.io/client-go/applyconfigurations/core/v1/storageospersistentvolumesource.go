@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// StorageOSPersistentVolumeSourceApplyConfiguration represents an declarative configuration of the StorageOSPersistentVolumeSource type for use
+// StorageOSPersistentVolumeSourceApplyConfiguration represents a declarative configuration of the StorageOSPersistentVolumeSource type for use
 // with apply.
 type StorageOSPersistentVolumeSourceApplyConfiguration struct {
 	VolumeName      *string                            `json:"volumeName,omitempty"`
@@ -28,11 +28,12 @@ type StorageOSPersistentVolumeSourceApplyConfiguration struct {
 	SecretRef       *ObjectReferenceApplyConfiguration `json:"secretRef,omitempty"`
 }
 
-// StorageOSPersistentVolumeSourceApplyConfiguration constructs an declarative configuration of the StorageOSPersistentVolumeSource type for use with
+// StorageOSPersistentVolumeSourceApplyConfiguration constructs a declarative configuration of the StorageOSPersistentVolumeSource type for use with
 // apply.
 func StorageOSPersistentVolumeSource() *StorageOSPersistentVolumeSourceApplyConfiguration {
 	return &StorageOSPersistentVolumeSourceApplyConfiguration{}
 }
+func (b StorageOSPersistentVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithVolumeName sets the VolumeName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

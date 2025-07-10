@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// GitRepoVolumeSourceApplyConfiguration represents an declarative configuration of the GitRepoVolumeSource type for use
+// GitRepoVolumeSourceApplyConfiguration represents a declarative configuration of the GitRepoVolumeSource type for use
 // with apply.
 type GitRepoVolumeSourceApplyConfiguration struct {
 	Repository *string `json:"repository,omitempty"`
@@ -26,11 +26,12 @@ type GitRepoVolumeSourceApplyConfiguration struct {
 	Directory  *string `json:"directory,omitempty"`
 }
 
-// GitRepoVolumeSourceApplyConfiguration constructs an declarative configuration of the GitRepoVolumeSource type for use with
+// GitRepoVolumeSourceApplyConfiguration constructs a declarative configuration of the GitRepoVolumeSource type for use with
 // apply.
 func GitRepoVolumeSource() *GitRepoVolumeSourceApplyConfiguration {
 	return &GitRepoVolumeSourceApplyConfiguration{}
 }
+func (b GitRepoVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithRepository sets the Repository field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

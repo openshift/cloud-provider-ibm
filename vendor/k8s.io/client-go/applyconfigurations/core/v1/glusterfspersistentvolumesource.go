@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// GlusterfsPersistentVolumeSourceApplyConfiguration represents an declarative configuration of the GlusterfsPersistentVolumeSource type for use
+// GlusterfsPersistentVolumeSourceApplyConfiguration represents a declarative configuration of the GlusterfsPersistentVolumeSource type for use
 // with apply.
 type GlusterfsPersistentVolumeSourceApplyConfiguration struct {
 	EndpointsName      *string `json:"endpoints,omitempty"`
@@ -27,11 +27,12 @@ type GlusterfsPersistentVolumeSourceApplyConfiguration struct {
 	EndpointsNamespace *string `json:"endpointsNamespace,omitempty"`
 }
 
-// GlusterfsPersistentVolumeSourceApplyConfiguration constructs an declarative configuration of the GlusterfsPersistentVolumeSource type for use with
+// GlusterfsPersistentVolumeSourceApplyConfiguration constructs a declarative configuration of the GlusterfsPersistentVolumeSource type for use with
 // apply.
 func GlusterfsPersistentVolumeSource() *GlusterfsPersistentVolumeSourceApplyConfiguration {
 	return &GlusterfsPersistentVolumeSourceApplyConfiguration{}
 }
+func (b GlusterfsPersistentVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithEndpointsName sets the EndpointsName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

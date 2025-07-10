@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1beta1
 
-// QueuingConfigurationApplyConfiguration represents an declarative configuration of the QueuingConfiguration type for use
+// QueuingConfigurationApplyConfiguration represents a declarative configuration of the QueuingConfiguration type for use
 // with apply.
 type QueuingConfigurationApplyConfiguration struct {
 	Queues           *int32 `json:"queues,omitempty"`
@@ -26,11 +26,12 @@ type QueuingConfigurationApplyConfiguration struct {
 	QueueLengthLimit *int32 `json:"queueLengthLimit,omitempty"`
 }
 
-// QueuingConfigurationApplyConfiguration constructs an declarative configuration of the QueuingConfiguration type for use with
+// QueuingConfigurationApplyConfiguration constructs a declarative configuration of the QueuingConfiguration type for use with
 // apply.
 func QueuingConfiguration() *QueuingConfigurationApplyConfiguration {
 	return &QueuingConfigurationApplyConfiguration{}
 }
+func (b QueuingConfigurationApplyConfiguration) IsApplyConfiguration() {}
 
 // WithQueues sets the Queues field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

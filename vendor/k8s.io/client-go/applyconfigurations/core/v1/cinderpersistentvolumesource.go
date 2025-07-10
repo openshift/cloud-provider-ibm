@@ -18,7 +18,7 @@ limitations under the License.
 
 package v1
 
-// CinderPersistentVolumeSourceApplyConfiguration represents an declarative configuration of the CinderPersistentVolumeSource type for use
+// CinderPersistentVolumeSourceApplyConfiguration represents a declarative configuration of the CinderPersistentVolumeSource type for use
 // with apply.
 type CinderPersistentVolumeSourceApplyConfiguration struct {
 	VolumeID  *string                            `json:"volumeID,omitempty"`
@@ -27,11 +27,12 @@ type CinderPersistentVolumeSourceApplyConfiguration struct {
 	SecretRef *SecretReferenceApplyConfiguration `json:"secretRef,omitempty"`
 }
 
-// CinderPersistentVolumeSourceApplyConfiguration constructs an declarative configuration of the CinderPersistentVolumeSource type for use with
+// CinderPersistentVolumeSourceApplyConfiguration constructs a declarative configuration of the CinderPersistentVolumeSource type for use with
 // apply.
 func CinderPersistentVolumeSource() *CinderPersistentVolumeSourceApplyConfiguration {
 	return &CinderPersistentVolumeSourceApplyConfiguration{}
 }
+func (b CinderPersistentVolumeSourceApplyConfiguration) IsApplyConfiguration() {}
 
 // WithVolumeID sets the VolumeID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.

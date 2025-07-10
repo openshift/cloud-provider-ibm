@@ -18,18 +18,19 @@ limitations under the License.
 
 package v1
 
-// MatchConditionApplyConfiguration represents an declarative configuration of the MatchCondition type for use
+// MatchConditionApplyConfiguration represents a declarative configuration of the MatchCondition type for use
 // with apply.
 type MatchConditionApplyConfiguration struct {
 	Name       *string `json:"name,omitempty"`
 	Expression *string `json:"expression,omitempty"`
 }
 
-// MatchConditionApplyConfiguration constructs an declarative configuration of the MatchCondition type for use with
+// MatchConditionApplyConfiguration constructs a declarative configuration of the MatchCondition type for use with
 // apply.
 func MatchCondition() *MatchConditionApplyConfiguration {
 	return &MatchConditionApplyConfiguration{}
 }
+func (b MatchConditionApplyConfiguration) IsApplyConfiguration() {}
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
