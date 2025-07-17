@@ -32,26 +32,15 @@ const (
 )
 
 var (
-	encryptionConfigAutomaticReloadFailureTotal = metrics.NewCounterVec(
+	encryptionConfigAutomaticReloadsTotal = metrics.NewCounterVec(
 		&metrics.CounterOpts{
 			Namespace:      namespace,
 			Subsystem:      subsystem,
-			Name:           "automatic_reload_failures_total",
-			Help:           "Total number of failed automatic reloads of encryption configuration split by apiserver identity.",
+			Name:           "automatic_reloads_total",
+			Help:           "Total number of reload successes and failures of encryption configuration split by apiserver identity.",
 			StabilityLevel: metrics.ALPHA,
 		},
-		[]string{"apiserver_id_hash"},
-	)
-
-	encryptionConfigAutomaticReloadSuccessTotal = metrics.NewCounterVec(
-		&metrics.CounterOpts{
-			Namespace:      namespace,
-			Subsystem:      subsystem,
-			Name:           "automatic_reload_success_total",
-			Help:           "Total number of successful automatic reloads of encryption configuration split by apiserver identity.",
-			StabilityLevel: metrics.ALPHA,
-		},
-		[]string{"apiserver_id_hash"},
+		[]string{"status", "apiserver_id_hash"},
 	)
 
 	encryptionConfigAutomaticReloadLastTimestampSeconds = metrics.NewGaugeVec(
@@ -76,21 +65,20 @@ func RegisterMetrics() {
 				return sha256.New()
 			},
 		}
-		legacyregistry.MustRegister(encryptionConfigAutomaticReloadFailureTotal)
-		legacyregistry.MustRegister(encryptionConfigAutomaticReloadSuccessTotal)
+		legacyregistry.MustRegister(encryptionConfigAutomaticReloadsTotal)
 		legacyregistry.MustRegister(encryptionConfigAutomaticReloadLastTimestampSeconds)
 	})
 }
 
 func RecordEncryptionConfigAutomaticReloadFailure(apiServerID string) {
 	apiServerIDHash := getHash(apiServerID)
-	encryptionConfigAutomaticReloadFailureTotal.WithLabelValues(apiServerIDHash).Inc()
+	encryptionConfigAutomaticReloadsTotal.WithLabelValues("failure", apiServerIDHash).Inc()
 	recordEncryptionConfigAutomaticReloadTimestamp("failure", apiServerIDHash)
 }
 
 func RecordEncryptionConfigAutomaticReloadSuccess(apiServerID string) {
 	apiServerIDHash := getHash(apiServerID)
-	encryptionConfigAutomaticReloadSuccessTotal.WithLabelValues(apiServerIDHash).Inc()
+	encryptionConfigAutomaticReloadsTotal.WithLabelValues("success", apiServerIDHash).Inc()
 	recordEncryptionConfigAutomaticReloadTimestamp("success", apiServerIDHash)
 }
 
