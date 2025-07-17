@@ -45,14 +45,14 @@ YAML_FILES=$(shell find . -type f -name '*.y*ml' -not -path "./build-tools/*" -n
 INI_FILES=$(shell find . -type f -name '*.ini' -not -path "./build-tools/*")
 OSS_FILES := go.mod
 
-GOLANGCI_LINT_VERSION := 1.64.6
+GOLANGCI_LINT_VERSION := 1.64.8
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
 HUB_RLS ?= 2.14.2
 REGISTRY ?= armada-master
-TAG ?= v1.33.1
+TAG ?= v1.34.0-alpha.3
 
-NANCY_VERSION := 1.0.46
+NANCY_VERSION := 1.0.51
 
 WORKSPACE=$(GOPATH)/src/k8s.io
 

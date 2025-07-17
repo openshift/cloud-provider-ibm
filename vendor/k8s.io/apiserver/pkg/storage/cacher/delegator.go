@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/audit"
@@ -64,7 +65,7 @@ func NewCacheDelegator(cacher *Cacher, storage storage.Interface) *CacheDelegato
 		stopCh:  make(chan struct{}),
 	}
 	if ConsistencyCheckerEnabled {
-		d.checker = newConsistencyChecker(cacher.resourcePrefix, cacher.newListFunc, cacher, storage)
+		d.checker = newConsistencyChecker(cacher.resourcePrefix, cacher.groupResource, cacher.newListFunc, cacher, storage)
 		d.wg.Add(1)
 		go func() {
 			defer d.wg.Done()
@@ -96,6 +97,10 @@ func (c *CacheDelegator) Create(ctx context.Context, key string, obj, out runtim
 
 func (c *CacheDelegator) GetCurrentResourceVersion(ctx context.Context) (uint64, error) {
 	return c.storage.GetCurrentResourceVersion(ctx)
+}
+
+func (c *CacheDelegator) SetKeysFunc(keys storage.KeysFunc) {
+	c.storage.SetKeysFunc(keys)
 }
 
 func (c *CacheDelegator) Delete(ctx context.Context, key string, out runtime.Object, preconditions *storage.Preconditions, validateDeletion storage.ValidateObjectFunc, cachedExistingObject runtime.Object, opts storage.DeleteOptions) error {
@@ -206,37 +211,29 @@ func (c *CacheDelegator) GetList(ctx context.Context, key string, opts storage.L
 			return c.storage.GetList(ctx, key, opts, listObj)
 		}
 	}
-	if result.ConsistentRead {
-		listRV, err = c.storage.GetCurrentResourceVersion(ctx)
-		if err != nil {
-			return err
-		}
-		// Setting resource version for consistent read in cache based on current ResourceVersion in etcd.
-		opts.ResourceVersion = strconv.FormatInt(int64(listRV), 10)
-	}
 	err = c.cacher.GetList(ctx, key, opts, listObj)
 	success := "true"
 	fallback := "false"
 	if err != nil {
-		if errors.IsResourceExpired(err) {
+		if errors.IsResourceExpired(err) && utilfeature.DefaultFeatureGate.Enabled(features.ListFromCacheSnapshot) {
 			return c.storage.GetList(ctx, key, opts, listObj)
 		}
 		if result.ConsistentRead {
+			// IsTooLargeResourceVersion occurs when the requested RV is higher than cache's current RV
+			// and cache hasn't caught up within the timeout period. Fall back to etcd.
 			if storage.IsTooLargeResourceVersion(err) {
 				fallback = "true"
-				// Reset resourceVersion during fallback from consistent read.
-				opts.ResourceVersion = ""
 				err = c.storage.GetList(ctx, key, opts, listObj)
 			}
 			if err != nil {
 				success = "false"
 			}
-			metrics.ConsistentReadTotal.WithLabelValues(c.cacher.resourcePrefix, success, fallback).Add(1)
+			metrics.ConsistentReadTotal.WithLabelValues(c.cacher.groupResource.Group, c.cacher.groupResource.Resource, success, fallback).Add(1)
 		}
 		return err
 	}
 	if result.ConsistentRead {
-		metrics.ConsistentReadTotal.WithLabelValues(c.cacher.resourcePrefix, success, fallback).Add(1)
+		metrics.ConsistentReadTotal.WithLabelValues(c.cacher.groupResource.Group, c.cacher.groupResource.Resource, success, fallback).Add(1)
 	}
 	return nil
 }
@@ -264,8 +261,8 @@ func (c *CacheDelegator) GuaranteedUpdate(ctx context.Context, key string, desti
 	return c.storage.GuaranteedUpdate(ctx, key, destination, ignoreNotFound, preconditions, tryUpdate, nil)
 }
 
-func (c *CacheDelegator) Count(pathPrefix string) (int64, error) {
-	return c.storage.Count(pathPrefix)
+func (c *CacheDelegator) Stats(ctx context.Context) (storage.Stats, error) {
+	return c.storage.Stats(ctx)
 }
 
 func (c *CacheDelegator) ReadinessCheck() error {
@@ -286,8 +283,9 @@ func (c *CacheDelegator) Stop() {
 	c.wg.Wait()
 }
 
-func newConsistencyChecker(resourcePrefix string, newListFunc func() runtime.Object, cacher getListerReady, etcd getLister) *consistencyChecker {
+func newConsistencyChecker(resourcePrefix string, groupResource schema.GroupResource, newListFunc func() runtime.Object, cacher getListerReady, etcd getLister) *consistencyChecker {
 	return &consistencyChecker{
+		groupResource:  groupResource,
 		resourcePrefix: resourcePrefix,
 		newListFunc:    newListFunc,
 		cacher:         cacher,
@@ -297,6 +295,7 @@ func newConsistencyChecker(resourcePrefix string, newListFunc func() runtime.Obj
 
 type consistencyChecker struct {
 	resourcePrefix string
+	groupResource  schema.GroupResource
 	newListFunc    func() runtime.Object
 
 	cacher getListerReady
@@ -318,25 +317,25 @@ func (c consistencyChecker) startChecking(stopCh <-chan struct{}) {
 		return false, nil
 	})
 	if err != nil {
-		klog.InfoS("Cache consistency check exiting", "resource", c.resourcePrefix, "err", err)
+		klog.InfoS("Cache consistency check exiting", "group", c.groupResource.Group, "resource", c.groupResource.Resource, "err", err)
 	}
 }
 
 func (c *consistencyChecker) check(ctx context.Context) {
 	digests, err := c.calculateDigests(ctx)
 	if err != nil {
-		klog.ErrorS(err, "Cache consistency check error", "resource", c.resourcePrefix)
-		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.resourcePrefix, "error").Inc()
+		klog.ErrorS(err, "Cache consistency check error", "group", c.groupResource.Group, "resource", c.groupResource.Resource)
+		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.groupResource.Group, c.groupResource.Resource, "error").Inc()
 		return
 	}
 	if digests.CacheDigest == digests.EtcdDigest {
-		klog.V(3).InfoS("Cache consistency check passed", "resource", c.resourcePrefix, "resourceVersion", digests.ResourceVersion, "digest", digests.CacheDigest)
-		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.resourcePrefix, "success").Inc()
+		klog.V(3).InfoS("Cache consistency check passed", "group", c.groupResource.Group, "resource", c.groupResource.Resource, "resourceVersion", digests.ResourceVersion, "digest", digests.CacheDigest)
+		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.groupResource.Group, c.groupResource.Resource, "success").Inc()
 	} else {
-		klog.ErrorS(nil, "Cache consistency check failed", "resource", c.resourcePrefix, "resourceVersion", digests.ResourceVersion, "etcdDigest", digests.EtcdDigest, "cacheDigest", digests.CacheDigest)
-		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.resourcePrefix, "failure").Inc()
+		klog.ErrorS(nil, "Cache consistency check failed", "group", c.groupResource.Group, "resource", c.groupResource.Resource, "resourceVersion", digests.ResourceVersion, "etcdDigest", digests.EtcdDigest, "cacheDigest", digests.CacheDigest)
+		metrics.StorageConsistencyCheckTotal.WithLabelValues(c.groupResource.Group, c.groupResource.Resource, "failure").Inc()
 		// Panic on internal consistency checking enabled only by environment variable. R
-		panic(fmt.Sprintf("Cache consistency check failed, resource: %q, resourceVersion: %q, etcdDigest: %q, cacheDigest: %q", c.resourcePrefix, digests.ResourceVersion, digests.EtcdDigest, digests.CacheDigest))
+		panic(fmt.Sprintf("Cache consistency check failed, group: %q, resource: %q, resourceVersion: %q, etcdDigest: %q, cacheDigest: %q", c.groupResource.Group, c.groupResource.Resource, digests.ResourceVersion, digests.EtcdDigest, digests.CacheDigest))
 	}
 }
 
