@@ -1,0 +1,26 @@
+# This workflow will run markdownlint against markdown files
+
+name: Markdown Lint
+
+on:
+  push:
+    paths:
+      - "**.md"
+      - ".github/workflows/markdown.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "**.md"
+      - ".github/workflows/markdown.yml"
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - uses: DavidAnson/markdownlint-cli2-action@v20
+        with:
+          globs: '**/*.md'

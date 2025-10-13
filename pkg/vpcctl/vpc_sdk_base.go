@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -61,7 +61,7 @@ func NewCloudVpcSdk(c *ConfigVpc) (CloudVpcSdk, error) {
 	case VpcProviderTypeFake:
 		return NewVpcSdkFake()
 	default:
-		return nil, fmt.Errorf("Invalid VPC ProviderType: %s", c.ProviderType)
+		return nil, fmt.Errorf("invalid VPC ProviderType: %s", c.ProviderType)
 	}
 }
 
@@ -82,13 +82,13 @@ func extractFieldsFromPoolName(poolName string) (*VpcPoolNameFields, error) {
 func extractProtocolPortsFromPoolName(poolName string) (string, int, int, error) {
 	pool := strings.Split(poolName, "-")
 	if len(pool) != 3 {
-		return "", -1, -1, fmt.Errorf("Invalid pool name, format not <protocol>-<port>-<nodePort>: [%s]", poolName)
+		return "", -1, -1, fmt.Errorf("invalid pool name, format not <protocol>-<port>-<nodePort>: [%s]", poolName)
 	}
 	protocol := pool[0]
 	portString := pool[1]
 	nodePortString := pool[2]
 	if protocol != "tcp" && protocol != "udp" {
-		return "", -1, -1, fmt.Errorf("Invalid protocol in pool name [%s], only tcp and udp supported", poolName)
+		return "", -1, -1, fmt.Errorf("invalid protocol in pool name [%s], only tcp and udp supported", poolName)
 	}
 	port, err := strconv.Atoi(portString)
 	if err != nil {
