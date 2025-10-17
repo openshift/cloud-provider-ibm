@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2017, 2022 All Rights Reserved.
+* (C) Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -96,7 +96,7 @@ func TestInstanceMetadata(t *testing.T) {
 	expectedAccountID := "testaccount"
 	expectedClusterID := "testcluster"
 	expectedInstanceType := "testmachinetype"
-	fakeclient := k8sfake.NewSimpleClientset()
+	fakeclient := k8sfake.NewClientset()
 	metadataSvc := NewMetadataService(nil, fakeclient)
 
 	expectedMetadata := cloudprovider.InstanceMetadata{

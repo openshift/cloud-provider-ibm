@@ -28,7 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-var mockCloud = CloudVpc{KubeClient: fake.NewSimpleClientset()}
+var mockCloud = CloudVpc{KubeClient: fake.NewClientset()}
 
 // Node without InternalIP label but with status
 var mockNode1 = &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "192.168.1.1",
@@ -214,7 +214,7 @@ func TestConfigVpc_validate(t *testing.T) {
 }
 
 func TestNewCloudVpc(t *testing.T) {
-	kubeClient := fake.NewSimpleClientset()
+	kubeClient := fake.NewClientset()
 	vpc, err := NewCloudVpc(kubeClient, nil, nil)
 	assert.Nil(t, vpc)
 	assert.NotNil(t, err)
@@ -363,7 +363,7 @@ func TestCloudVpc_GetServiceNodeSelectorFilter(t *testing.T) {
 }
 
 func TestCloudVpc_getServicePoolNames(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: "echo-server", Namespace: "default",
 			Annotations: map[string]string{}},
