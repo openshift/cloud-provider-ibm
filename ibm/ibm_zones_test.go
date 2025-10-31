@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+* (C) Copyright IBM Corp. 2017, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -75,10 +75,10 @@ func TestGetZone(t *testing.T) {
 	if nil != err {
 		t.Fatalf("GetZone failed: %s", err)
 	}
-	if "" != zone.Region {
+	if zone.Region != "" {
 		t.Fatalf("Zone Region is not empty")
 	}
-	if "" != zone.FailureDomain {
+	if zone.FailureDomain != "" {
 		t.Fatalf("Zone FailureDomain is not empty")
 	}
 
@@ -112,10 +112,10 @@ func TestGetZoneByNodeName(t *testing.T) {
 	if nil != err {
 		t.Fatalf("GetZoneByNodeName failed: %s", err)
 	}
-	if "" != zone.Region {
+	if zone.Region != "" {
 		t.Fatalf("Zone Region is not empty")
 	}
-	if "" != zone.FailureDomain {
+	if zone.FailureDomain != "" {
 		t.Fatalf("Zone FailureDomain is not empty")
 	}
 }

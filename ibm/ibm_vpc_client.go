@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2024 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -40,7 +40,7 @@ type vpcClient struct {
 var newVpcSdkClient = func(provider Provider) (*vpcv1.VpcV1, error) {
 	// check id used to allocate worker nodes
 	if provider.AccountID != provider.G2WorkerServiceAccountID {
-		return nil, errors.New("Cluster nodes allocated under different account")
+		return nil, errors.New("cluster nodes allocated under different account")
 	}
 
 	// read VPC credentials from mounted secret

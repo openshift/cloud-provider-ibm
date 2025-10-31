@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2024 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -37,7 +37,7 @@ func TestCloudVpc_EnsureLoadBalancer(t *testing.T) {
 	status, err := c.EnsureLoadBalancer("", service, []*v1.Node{node})
 	assert.Nil(t, status)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Required argument is missing")
+	assert.Contains(t, err.Error(), "required argument is missing")
 
 	// EnsureLoadBalancer failed, failed to get find the LB
 	c.SetFakeSdkError("FindLoadBalancer")
@@ -166,7 +166,7 @@ func TestCloudVpc_GatherLoadBalancers(t *testing.T) {
 	assert.Nil(t, lbMap)
 	assert.Nil(t, vpcMap)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Required argument is missing")
+	assert.Contains(t, err.Error(), "required argument is missing")
 
 	// GatherLoadBalancers failed, SDK List LB failed
 	c.SetFakeSdkError("ListLoadBalancers")
