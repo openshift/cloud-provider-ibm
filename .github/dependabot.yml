@@ -21,7 +21,7 @@ updates:
       - "release-1.35"
     ignore:
       - dependency-name: "golangci/golangci-lint-action" # Ignore the older v6 version
-        versions: ["6"]
+        versions: [">=7"]
     target-branch: "release-1.35"
 
   - package-ecosystem: "github-actions"
