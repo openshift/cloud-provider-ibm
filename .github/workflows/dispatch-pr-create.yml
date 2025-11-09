@@ -35,7 +35,7 @@ jobs:
 
       - name: Install golangci-lint v2
         if: startsWith(steps.get-ver.outputs.golangci_version, 'v2')
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v8
         with:
           version: ${{ steps.get-ver.outputs.golangci_version }}
 
