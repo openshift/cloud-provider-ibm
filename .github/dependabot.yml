@@ -43,8 +43,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.33"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.33"
 
   - package-ecosystem: "github-actions"
@@ -57,8 +55,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.32"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.32"
 
   - package-ecosystem: "github-actions"
@@ -71,8 +67,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.31"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.31"
 
   - package-ecosystem: "github-actions"
@@ -85,8 +79,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.30"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.30"
 
   - package-ecosystem: "github-actions"
@@ -99,8 +91,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.29"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.29"
 
   - package-ecosystem: "github-actions"
@@ -113,8 +103,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.28"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.28"
 
   - package-ecosystem: "github-actions"
@@ -127,8 +115,6 @@ updates:
       - "dependencies"
       - "github-actions"
       - "release-1.27"
-    ignore:
-      - dependency-name: "golangci/golangci-lint-action" # Need to use older version
     target-branch: "release-1.27"
 
   # ------------------------------------------------------------------------------------------------------------
