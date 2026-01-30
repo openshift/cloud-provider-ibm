@@ -120,9 +120,6 @@ updates:
       kubernetes-1.35:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.35:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -152,9 +149,6 @@ updates:
       kubernetes-1.34:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.34:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -184,9 +178,6 @@ updates:
       kubernetes-1.33:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.33:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -216,9 +207,6 @@ updates:
       kubernetes-1.32:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.32:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -248,9 +236,6 @@ updates:
       kubernetes-1.31:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.31:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -280,9 +265,6 @@ updates:
       kubernetes-1.30:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.30:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
@@ -312,9 +294,6 @@ updates:
       kubernetes-1.29:
         patterns:
           - "k8s.io/*"
-      ibm-sdk-1.29:
-        patterns:
-          - "github.com/IBM/*"
     labels:
       - "dependencies"
       - "go"
