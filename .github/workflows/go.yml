@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Extract Go and golangci-lint versions
         id: get-ver
         run: |
@@ -39,7 +39,7 @@ jobs:
         with:
           go-version: ${{ steps.get-ver.outputs.go_version }}
       - name: Install golangci-lint v2
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ steps.get-ver.outputs.golangci_version }}
       - name: Run go fmt (via golangci-lint)
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Extract Go version
         id: get-ver
         run: |
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Extract Go version
         id: get-ver
         run: |

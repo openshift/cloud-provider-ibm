@@ -37,7 +37,7 @@ func TestCloudVpc_CreateLoadBalancer(t *testing.T) {
 			Type:                  v1.ServiceTypeLoadBalancer,
 			Ports:                 []v1.ServicePort{{Protocol: v1.ProtocolTCP, Port: 80, NodePort: 31000}},
 		}}
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(),
+	c, _ := NewCloudVpc(fake.NewClientset(),
 		&ConfigVpc{
 			ClusterID:    "clusterID",
 			ProviderType: VpcProviderTypeFake,
@@ -116,7 +116,7 @@ func TestCloudVpc_CreateLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_DeleteLoadBalancer(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	// Delete load balancer failed, LB not specified
 	err := c.DeleteLoadBalancer(nil, nil)
@@ -130,7 +130,7 @@ func TestCloudVpc_DeleteLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_FindLoadBalancer(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	// Load balancer failed, name not specified
 	lb, err := c.FindLoadBalancer("", nil)
@@ -149,7 +149,7 @@ func TestCloudVpc_FindLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_GetLoadBalancerStatus(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	service := &v1.Service{ObjectMeta: metav1.ObjectMeta{
 		Name: "echo-server", Namespace: "default"}}
@@ -179,7 +179,7 @@ func TestCloudVpc_UpdateLoadBalancer(t *testing.T) {
 			Type:                  v1.ServiceTypeLoadBalancer,
 			Ports:                 []v1.ServicePort{{Protocol: v1.ProtocolTCP, Port: 80, NodePort: 30303}},
 		}}
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	// Update load balancer failed, name not specified
 	lb, err := c.UpdateLoadBalancer(nil, service, []*v1.Node{node})
@@ -387,7 +387,7 @@ func TestCloudVpc_UpdateLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_WaitLoadBalancerReady(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	lb := &VpcLoadBalancer{
 		ID:                 "Ready",
 		OperatingStatus:    LoadBalancerOperatingStatusOffline,
