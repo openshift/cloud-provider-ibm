@@ -29,7 +29,7 @@ import (
 )
 
 func TestCloudVpc_EnsureLoadBalancer(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "192.168.0.1", Labels: map[string]string{}}}
 
 	// EnsureLoadBalancer failed, required argument is missing
@@ -80,7 +80,7 @@ func TestCloudVpc_EnsureLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_EnsureLoadBalancerDeleted(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	// EnsureLoadBalancerDeleted failed, failed to get find the LB
 	c.SetFakeSdkError("FindLoadBalancer")
@@ -112,7 +112,7 @@ func TestCloudVpc_EnsureLoadBalancerDeleted(t *testing.T) {
 }
 
 func TestCloud_EnsureLoadBalancerUpdated(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "192.168.0.1", Labels: map[string]string{}}}
 
 	// EnsureLoadBalancerUpdated failed, failed to get find the LB
@@ -149,7 +149,7 @@ func TestCloud_EnsureLoadBalancerUpdated(t *testing.T) {
 }
 
 func TestCloudVpc_GatherLoadBalancers(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	serviceNodePort := v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: "nodePort", Namespace: "default", UID: "NodePort"},
 		Spec:       v1.ServiceSpec{Type: v1.ServiceTypeNodePort}}
@@ -188,7 +188,7 @@ func TestCloudVpc_GatherLoadBalancers(t *testing.T) {
 
 func TestCloudVpc_GenerateLoadBalancerName(t *testing.T) {
 	clusterID := "12345678901234567890"
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: clusterID, ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: clusterID, ProviderType: VpcProviderTypeFake}, nil)
 	kubeService := &v1.Service{ObjectMeta: metav1.ObjectMeta{
 		Name: "echo-server", Namespace: "default", UID: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"}}
 	lbName := "kube-" + clusterID + "-" + string(kubeService.UID)
@@ -203,7 +203,7 @@ func TestCloudVpc_GenerateLoadBalancerName(t *testing.T) {
 }
 
 func TestCloudVpc_GetLoadBalancer(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 
 	// GetLoadBalancer failed, failed to get find the LB
 	c.SetFakeSdkError("FindLoadBalancer")
@@ -253,7 +253,7 @@ func TestCloudVpc_GetLoadBalancer(t *testing.T) {
 }
 
 func TestCloudVpc_MonitorLoadBalancers(t *testing.T) {
-	c, _ := NewCloudVpc(fake.NewSimpleClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
+	c, _ := NewCloudVpc(fake.NewClientset(), &ConfigVpc{ClusterID: "clusterID", ProviderType: VpcProviderTypeFake}, nil)
 	serviceNodePort := v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "nodePort", Namespace: "default", UID: "NodePort"},
 		Spec: v1.ServiceSpec{Type: v1.ServiceTypeNodePort}}
 	serviceNotFound := v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "notFound", Namespace: "default", UID: "NotFound"},

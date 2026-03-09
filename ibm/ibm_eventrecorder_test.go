@@ -60,7 +60,7 @@ func createTestResources() (*apps.Deployment, *v1.Service) {
 }
 
 func TestNewCloudEventRecorder(t *testing.T) {
-	cer := NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events(lbDeploymentNamespace))
+	cer := NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events(lbDeploymentNamespace))
 	if nil == cer {
 		t.Fatalf("Failed to create cloud event recorder")
 	} else if strings.Compare("ibm-cloud-provider", cer.Name) != 0 {
@@ -71,7 +71,7 @@ func TestNewCloudEventRecorder(t *testing.T) {
 func TestLoadBalancerServiceWarningEvent(t *testing.T) {
 	errorMessage := "TestLoadBalancerServiceWarningEvent"
 	_, lbService := createTestResources()
-	fakeClient := fake.NewSimpleClientset()
+	fakeClient := fake.NewClientset()
 	cer := NewCloudEventRecorderV1("ibm", fakeClient.CoreV1().Events(lbDeploymentNamespace))
 	err := cer.LoadBalancerServiceWarningEvent(lbService, DeletingCloudLoadBalancerFailed, errorMessage)
 	if nil == err {

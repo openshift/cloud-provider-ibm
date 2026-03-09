@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.client_payload.pr_branch }}
 
@@ -35,7 +35,7 @@ jobs:
 
       - name: Install golangci-lint v2
         if: startsWith(steps.get-ver.outputs.golangci_version, 'v2')
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ steps.get-ver.outputs.golangci_version }}
 

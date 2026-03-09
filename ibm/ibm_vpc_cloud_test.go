@@ -1,6 +1,6 @@
 /*******************************************************************************
 * IBM Cloud Kubernetes Service, 5737-D43
-* (C) Copyright IBM Corp. 2021, 2025 All Rights Reserved.
+* (C) Copyright IBM Corp. 2021, 2026 All Rights Reserved.
 *
 * SPDX-License-Identifier: Apache2.0
 *
@@ -46,7 +46,7 @@ func TestShouldPrivateEndpointBeEnabled(t *testing.T) {
 }
 
 func TestCloud_InitCloudVpc(t *testing.T) {
-	c := Cloud{Config: &CloudConfig{Prov: Provider{ClusterID: cluster}}, KubeClient: fake.NewSimpleClientset()}
+	c := Cloud{Config: &CloudConfig{Prov: Provider{ClusterID: cluster}}, KubeClient: fake.NewClientset()}
 	v, err := c.InitCloudVpc(shouldPrivateEndpointBeEnabled())
 	assert.Nil(t, v)
 	assert.NotNil(t, err)
@@ -70,7 +70,7 @@ func TestCloud_NewConfigVpc(t *testing.T) {
 	assert.Equal(t, err.Error(), "cloud config not initialized")
 
 	// Test failure to read credentials from file
-	c.Config = &CloudConfig{Prov: Provider{
+	c.Config = &CloudConfig{Prov: Provider{ // #nosec G101 "Potential hardcoded credentials" - ignore, invalid warning
 		Region:                   "us-south",
 		AccountID:                "accountID",
 		ClusterID:                "clusterID",
@@ -112,8 +112,8 @@ func TestCloud_NewConfigVpc(t *testing.T) {
 func TestCloud_VpcEnsureLoadBalancer(t *testing.T) {
 	cloud := Cloud{
 		Config:     &CloudConfig{Prov: Provider{ClusterID: "clusterID", ProviderType: vpcctl.VpcProviderTypeGen2}},
-		KubeClient: fake.NewSimpleClientset(),
-		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+		KubeClient: fake.NewClientset(),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events("")),
 	}
 	node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "192.168.0.1", Labels: map[string]string{}}}
 
@@ -144,8 +144,8 @@ func TestCloud_VpcEnsureLoadBalancer(t *testing.T) {
 func TestCloud_VpcEnsureLoadBalancerDeleted(t *testing.T) {
 	cloud := Cloud{
 		Config:     &CloudConfig{Prov: Provider{ClusterID: "clusterID", ProviderType: vpcctl.VpcProviderTypeGen2}},
-		KubeClient: fake.NewSimpleClientset(),
-		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+		KubeClient: fake.NewClientset(),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events("")),
 	}
 	service := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "echo-server", Namespace: "default", UID: "Ready"}}
 
@@ -172,8 +172,8 @@ func TestCloud_VpcEnsureLoadBalancerDeleted(t *testing.T) {
 func TestCloud_VpcGetLoadBalancer(t *testing.T) {
 	cloud := Cloud{
 		Config:     &CloudConfig{Prov: Provider{ClusterID: "clusterID", ProviderType: vpcctl.VpcProviderTypeGen2}},
-		KubeClient: fake.NewSimpleClientset(),
-		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+		KubeClient: fake.NewClientset(),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events("")),
 	}
 	service := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "echo-server", Namespace: "default", UID: "Ready"}}
 
@@ -220,8 +220,8 @@ func TestCloud_VpcGetLoadBalancerName(t *testing.T) {
 func TestCloud_VpcMonitorLoadBalancers(t *testing.T) {
 	cloud := Cloud{
 		Config:     &CloudConfig{Prov: Provider{ClusterID: "clusterID", ProviderType: vpcctl.VpcProviderTypeGen2}},
-		KubeClient: fake.NewSimpleClientset(),
-		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+		KubeClient: fake.NewClientset(),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events("")),
 	}
 	serviceNodePort := v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "nodePort", Namespace: "default", UID: "NodePort"},
 		Spec: v1.ServiceSpec{Type: v1.ServiceTypeNodePort}}
@@ -246,8 +246,8 @@ func TestCloud_VpcMonitorLoadBalancers(t *testing.T) {
 func TestCloud_VpcUpdateLoadBalancer(t *testing.T) {
 	cloud := Cloud{
 		Config:     &CloudConfig{Prov: Provider{ClusterID: "clusterID", ProviderType: vpcctl.VpcProviderTypeGen2}},
-		KubeClient: fake.NewSimpleClientset(),
-		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewSimpleClientset().CoreV1().Events("")),
+		KubeClient: fake.NewClientset(),
+		Recorder:   NewCloudEventRecorderV1("ibm", fake.NewClientset().CoreV1().Events("")),
 	}
 	node := &v1.Node{ObjectMeta: metav1.ObjectMeta{Name: "192.168.0.1", Labels: map[string]string{}}}
 	service := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: "echo-server", Namespace: "default", UID: "Ready"}}
