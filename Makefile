@@ -22,10 +22,10 @@ export
 GOPACKAGES=$(shell go list ./...)
 SHFILES=$(shell find . -type f -name '*.sh')
 
-GOLANGCI_LINT_VERSION := 2.10.1
+GOLANGCI_LINT_VERSION := 2.12.2
 GOLANGCI_LINT_EXISTS := $(shell golangci-lint --version 2>/dev/null)
 
-TAG ?= v1.35.2
+TAG ?= v1.36.1
 
 .PHONY: all
 all: fmt lint lint-sh vet test ccm
