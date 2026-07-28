@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI SDK Code Generator Version: 3.114.0-a902401e-20260427-192904
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2026-01-20
+// API Version: 2026-06-16
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,8 +46,8 @@ type VpcV1 struct {
 	// `2`.
 	Generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2025-12-09`
-	// and `2026-01-30`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-04-07`
+	// and `2026-06-17`.
 	Version *string
 }
 
@@ -67,8 +67,8 @@ type VpcV1Options struct {
 	// `2`.
 	Generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2025-12-09`
-	// and `2026-01-30`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-04-07`
+	// and `2026-06-17`.
 	Version *string
 }
 
@@ -133,7 +133,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2026-01-27")
+		options.Version = core.StringPtr("2026-06-16")
 	}
 
 	service = &VpcV1{
@@ -8992,10 +8992,8 @@ func (vpc *VpcV1) CreateImageWithContext(ctx context.Context, createImageOptions
 // This request deletes an image. Any active image export jobs will be completed first. This operation cannot be
 // reversed. An image with `remote.account` set is not allowed to be deleted. Additionally, an image cannot be deleted
 // if it:
-//   - has a `status` of `deleting`
-//   - has a `status` of `pending` with a `status_reasons` code of
-//     `image_request_in_progress`
-//   - has `catalog_offering.managed` set to `true`.
+// - has a `status` of `deleting`
+// - has `catalog_offering.managed` set to `true`.
 func (vpc *VpcV1) DeleteImage(deleteImageOptions *DeleteImageOptions) (response *core.DetailedResponse, err error) {
 	response, err = vpc.DeleteImageWithContext(context.Background(), deleteImageOptions)
 	err = core.RepurposeSDKProblem(err, "")
@@ -12371,6 +12369,12 @@ func (vpc *VpcV1) ListInstanceProfilesWithContext(ctx context.Context, listInsta
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+	if listInstanceProfilesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listInstanceProfilesOptions.Start))
+	}
+	if listInstanceProfilesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listInstanceProfilesOptions.Limit))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -17959,6 +17963,9 @@ func (vpc *VpcV1) UpdateLoadBalancerPoolWithContext(ctx context.Context, updateL
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/merge-patch+json")
+	if updateLoadBalancerPoolOptions.IfMatch != nil {
+		builder.AddHeader("If-Match", fmt.Sprint(*updateLoadBalancerPoolOptions.IfMatch))
+	}
 
 	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
 	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
@@ -20882,6 +20889,10 @@ func (vpc *VpcV1) UnpublishPrivatePathServiceGatewayWithContext(ctx context.Cont
 // public address range is a contiguous block of public IP addresses that can be bound to a `target` that specifies a
 // `vpc` and a `zone`. Incoming traffic for these IP addresses will be routed according to the VPC's ingress routing
 // table.
+//
+// The public address ranges will be sorted by their `created_at` property values, with newest public address ranges
+// first. Public address ranges with identical `created_at` property values will in turn be sorted by ascending `id`
+// property values.
 func (vpc *VpcV1) ListPublicAddressRanges(listPublicAddressRangesOptions *ListPublicAddressRangesOptions) (result *PublicAddressRangeCollection, response *core.DetailedResponse, err error) {
 	result, response, err = vpc.ListPublicAddressRangesWithContext(context.Background(), listPublicAddressRangesOptions)
 	err = core.RepurposeSDKProblem(err, "")
@@ -25062,6 +25073,9 @@ func (vpc *VpcV1) ListSnapshotConsistencyGroupsWithContext(ctx context.Context, 
 	if listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID != nil {
 		builder.AddQuery("backup_policy_plan.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID))
 	}
+	if listSnapshotConsistencyGroupsOptions.BackupPolicyJobID != nil {
+		builder.AddQuery("backup_policy_job.id", fmt.Sprint(*listSnapshotConsistencyGroupsOptions.BackupPolicyJobID))
+	}
 
 	request, err := builder.Build()
 	if err != nil {
@@ -28781,6 +28795,9 @@ func (vpc *VpcV1) ListVolumesWithContext(ctx context.Context, listVolumesOptions
 	if listVolumesOptions.OperatingSystemArchitecture != nil {
 		builder.AddQuery("operating_system.architecture", fmt.Sprint(*listVolumesOptions.OperatingSystemArchitecture))
 	}
+	if listVolumesOptions.StorageGeneration != nil {
+		builder.AddQuery("storage_generation", fmt.Sprint(*listVolumesOptions.StorageGeneration))
+	}
 	if listVolumesOptions.Tag != nil {
 		builder.AddQuery("tag", fmt.Sprint(*listVolumesOptions.Tag))
 	}
@@ -29181,6 +29198,467 @@ func (vpc *VpcV1) ListVolumeInstanceProfilesWithContext(ctx context.Context, lis
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeInstanceProfileCollection)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListVolumeJobs : List jobs for a volume
+// This request lists jobs for a volume. Each job represents an action performed on the volume and includes metadata
+// such as:
+//
+//   - `job_type`: Currently, only the `migrate` job type is supported.
+//   - `status`: Indicates the current state of the job (e.g., queued, running,
+//     succeeded, failed).
+//
+// The jobs will be sorted by their `created_at` property values, with newest jobs first.
+func (vpc *VpcV1) ListVolumeJobs(listVolumeJobsOptions *ListVolumeJobsOptions) (result *VolumeJobCollection, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.ListVolumeJobsWithContext(context.Background(), listVolumeJobsOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// ListVolumeJobsWithContext is an alternate form of the ListVolumeJobs method which supports a Context parameter
+func (vpc *VpcV1) ListVolumeJobsWithContext(ctx context.Context, listVolumeJobsOptions *ListVolumeJobsOptions) (result *VolumeJobCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVolumeJobsOptions, "listVolumeJobsOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(listVolumeJobsOptions, "listVolumeJobsOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *listVolumeJobsOptions.VolumeID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumeJobs")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range listVolumeJobsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+	if listVolumeJobsOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listVolumeJobsOptions.Start))
+	}
+	if listVolumeJobsOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listVolumeJobsOptions.Limit))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "list_volume_jobs", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJobCollection)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CreateVolumeJob : Create a job for a volume
+// This request creates and queues a new job for the volume specified in the URL using the volume job prototype object.
+func (vpc *VpcV1) CreateVolumeJob(createVolumeJobOptions *CreateVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.CreateVolumeJobWithContext(context.Background(), createVolumeJobOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// CreateVolumeJobWithContext is an alternate form of the CreateVolumeJob method which supports a Context parameter
+func (vpc *VpcV1) CreateVolumeJobWithContext(ctx context.Context, createVolumeJobOptions *CreateVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createVolumeJobOptions, "createVolumeJobOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(createVolumeJobOptions, "createVolumeJobOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *createVolumeJobOptions.VolumeID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateVolumeJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range createVolumeJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+	if createVolumeJobOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*createVolumeJobOptions.Start))
+	}
+	if createVolumeJobOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*createVolumeJobOptions.Limit))
+	}
+
+	_, err = builder.SetBodyContentJSON(createVolumeJobOptions.VolumeJobPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "create_volume_job", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJob)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// DeleteVolumeJob : Delete a volume job
+// This request deletes a volume job. This operation cannot be reversed. If the job has not completed, the job will be
+// canceled, and the incomplete volume job will be deleted.
+func (vpc *VpcV1) DeleteVolumeJob(deleteVolumeJobOptions *DeleteVolumeJobOptions) (response *core.DetailedResponse, err error) {
+	response, err = vpc.DeleteVolumeJobWithContext(context.Background(), deleteVolumeJobOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// DeleteVolumeJobWithContext is an alternate form of the DeleteVolumeJob method which supports a Context parameter
+func (vpc *VpcV1) DeleteVolumeJobWithContext(ctx context.Context, deleteVolumeJobOptions *DeleteVolumeJobOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(deleteVolumeJobOptions, "deleteVolumeJobOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(deleteVolumeJobOptions, "deleteVolumeJobOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *deleteVolumeJobOptions.VolumeID,
+		"id":        *deleteVolumeJobOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.DELETE)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "DeleteVolumeJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range deleteVolumeJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "delete_volume_job", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+
+	return
+}
+
+// GetVolumeJob : Retrieve a volume job
+// This request retrieves a single volume job specified by the identifier in the URL.
+func (vpc *VpcV1) GetVolumeJob(getVolumeJobOptions *GetVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.GetVolumeJobWithContext(context.Background(), getVolumeJobOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetVolumeJobWithContext is an alternate form of the GetVolumeJob method which supports a Context parameter
+func (vpc *VpcV1) GetVolumeJobWithContext(ctx context.Context, getVolumeJobOptions *GetVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVolumeJobOptions, "getVolumeJobOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(getVolumeJobOptions, "getVolumeJobOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *getVolumeJobOptions.VolumeID,
+		"id":        *getVolumeJobOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolumeJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range getVolumeJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "get_volume_job", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJob)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateVolumeJob : Update a volume job
+// This request updates an volume job with the information in a provided volume job patch. The volume job patch object
+// is structured in the same way as a retrieved volume job and contains only the information to be updated.
+func (vpc *VpcV1) UpdateVolumeJob(updateVolumeJobOptions *UpdateVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.UpdateVolumeJobWithContext(context.Background(), updateVolumeJobOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// UpdateVolumeJobWithContext is an alternate form of the UpdateVolumeJob method which supports a Context parameter
+func (vpc *VpcV1) UpdateVolumeJobWithContext(ctx context.Context, updateVolumeJobOptions *UpdateVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVolumeJobOptions, "updateVolumeJobOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(updateVolumeJobOptions, "updateVolumeJobOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *updateVolumeJobOptions.VolumeID,
+		"id":        *updateVolumeJobOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVolumeJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range updateVolumeJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	_, err = builder.SetBodyContentJSON(updateVolumeJobOptions.VolumeJobPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "update_volume_job", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJob)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// CancelVolumeJob : Cancel a queued or running volume job
+// This request cancels a `queued` or `running` volume job.
+func (vpc *VpcV1) CancelVolumeJob(cancelVolumeJobOptions *CancelVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.CancelVolumeJobWithContext(context.Background(), cancelVolumeJobOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// CancelVolumeJobWithContext is an alternate form of the CancelVolumeJob method which supports a Context parameter
+func (vpc *VpcV1) CancelVolumeJobWithContext(ctx context.Context, cancelVolumeJobOptions *CancelVolumeJobOptions) (result VolumeJobIntf, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(cancelVolumeJobOptions, "cancelVolumeJobOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(cancelVolumeJobOptions, "cancelVolumeJobOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *cancelVolumeJobOptions.VolumeID,
+		"id":        *cancelVolumeJobOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/jobs/{id}/cancel`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CancelVolumeJob")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range cancelVolumeJobOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "cancel_volume_job", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJob)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
 			return
@@ -32005,17 +32483,26 @@ func (vpc *VpcV1) CreateIkePolicyWithContext(ctx context.Context, createIkePolic
 	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
 
 	body := make(map[string]interface{})
+	if createIkePolicyOptions.IkeVersion != nil {
+		body["ike_version"] = createIkePolicyOptions.IkeVersion
+	}
 	if createIkePolicyOptions.AuthenticationAlgorithm != nil {
 		body["authentication_algorithm"] = createIkePolicyOptions.AuthenticationAlgorithm
+	}
+	if createIkePolicyOptions.AuthenticationAlgorithms != nil {
+		body["authentication_algorithms"] = createIkePolicyOptions.AuthenticationAlgorithms
 	}
 	if createIkePolicyOptions.DhGroup != nil {
 		body["dh_group"] = createIkePolicyOptions.DhGroup
 	}
+	if createIkePolicyOptions.DhGroups != nil {
+		body["dh_groups"] = createIkePolicyOptions.DhGroups
+	}
 	if createIkePolicyOptions.EncryptionAlgorithm != nil {
 		body["encryption_algorithm"] = createIkePolicyOptions.EncryptionAlgorithm
 	}
-	if createIkePolicyOptions.IkeVersion != nil {
-		body["ike_version"] = createIkePolicyOptions.IkeVersion
+	if createIkePolicyOptions.EncryptionAlgorithms != nil {
+		body["encryption_algorithms"] = createIkePolicyOptions.EncryptionAlgorithms
 	}
 	if createIkePolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = createIkePolicyOptions.KeyLifetime
@@ -32466,17 +32953,26 @@ func (vpc *VpcV1) CreateIpsecPolicyWithContext(ctx context.Context, createIpsecP
 	if createIpsecPolicyOptions.AuthenticationAlgorithm != nil {
 		body["authentication_algorithm"] = createIpsecPolicyOptions.AuthenticationAlgorithm
 	}
+	if createIpsecPolicyOptions.AuthenticationAlgorithms != nil {
+		body["authentication_algorithms"] = createIpsecPolicyOptions.AuthenticationAlgorithms
+	}
 	if createIpsecPolicyOptions.EncryptionAlgorithm != nil {
 		body["encryption_algorithm"] = createIpsecPolicyOptions.EncryptionAlgorithm
 	}
-	if createIpsecPolicyOptions.Pfs != nil {
-		body["pfs"] = createIpsecPolicyOptions.Pfs
+	if createIpsecPolicyOptions.EncryptionAlgorithms != nil {
+		body["encryption_algorithms"] = createIpsecPolicyOptions.EncryptionAlgorithms
 	}
 	if createIpsecPolicyOptions.KeyLifetime != nil {
 		body["key_lifetime"] = createIpsecPolicyOptions.KeyLifetime
 	}
 	if createIpsecPolicyOptions.Name != nil {
 		body["name"] = createIpsecPolicyOptions.Name
+	}
+	if createIpsecPolicyOptions.Pfs != nil {
+		body["pfs"] = createIpsecPolicyOptions.Pfs
+	}
+	if createIpsecPolicyOptions.PfsGroups != nil {
+		body["pfs_groups"] = createIpsecPolicyOptions.PfsGroups
 	}
 	if createIpsecPolicyOptions.ResourceGroup != nil {
 		body["resource_group"] = createIpsecPolicyOptions.ResourceGroup
@@ -35677,7 +36173,7 @@ func (vpc *VpcV1) UpdateVPNServerRouteWithContext(ctx context.Context, updateVPN
 	return
 }
 func getServiceComponentInfo() *core.ProblemComponent {
-	return core.NewProblemComponent(DefaultServiceName, "2026-01-27")
+	return core.NewProblemComponent(DefaultServiceName, "2026-06-16")
 }
 
 // AccountIdentity : Identifies an account by a unique property.
@@ -36839,6 +37335,55 @@ func (resp *BackupPolicyJobCollection) GetNextStart() (*string, error) {
 		return nil, nil
 	}
 	return start, nil
+}
+
+// BackupPolicyJobReference : BackupPolicyJobReference struct
+type BackupPolicyJobReference struct {
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *Deleted `json:"deleted,omitempty"`
+
+	// The URL for this backup policy job.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this backup policy job.
+	ID *string `json:"id" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the BackupPolicyJobReference.ResourceType property.
+// The resource type.
+const (
+	BackupPolicyJobReferenceResourceTypeBackupPolicyJobConst = "backup_policy_job"
+)
+
+// UnmarshalBackupPolicyJobReference unmarshals an instance of BackupPolicyJobReference from the specified map of raw messages.
+func UnmarshalBackupPolicyJobReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BackupPolicyJobReference)
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDeleted)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "deleted-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
 }
 
 // BackupPolicyJobSource : The source this backup was created from (may be
@@ -39114,12 +39659,13 @@ type BareMetalServerInitializationPrototype struct {
 	// cloud-init vendor data. For cloud-init enabled images, these keys will also be added as SSH authorized keys for the
 	// [default user](https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
 	//
-	// For Windows images, at least one key must be specified, and one will be selected to encrypt the administrator
-	// password. Keys are optional for other images, but if no keys are specified, the bare metal server will be
-	// inaccessible unless the specified image provides another means of access.
+	// For Windows images, at least one SSH key of type `rsa` must be specified. One of the provided keys is selected to
+	// encrypt the administrator password. SSH keys are optional for other images; however, if no keys are specified, the
+	// bare metal server will be inaccessible unless the selected image provides an alternative access mechanism.
 	Keys []KeyIdentityIntf `json:"keys" validate:"required"`
 
-	// The user data to be made available when initializing the bare metal server.
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the bare metal
+	// server.
 	UserData *string `json:"user_data,omitempty"`
 }
 
@@ -41745,7 +42291,13 @@ func UnmarshalBareMetalServerProfileDiskSize(m map[string]json.RawMessage, resul
 
 // BareMetalServerProfileDiskSupportedInterfaces : BareMetalServerProfileDiskSupportedInterfaces struct
 type BareMetalServerProfileDiskSupportedInterfaces struct {
-	// The default value for this profile field.
+	// The default interface type supported by a bare metal server with this profile.
+	// - `fcp`: Fiber Channel Protocol
+	// - `sata`: Serial Advanced Technology Attachment
+	// - `nvme`: Non-Volatile Memory Express
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Default *string `json:"default" validate:"required"`
 
 	// The type for this profile field.
@@ -41756,7 +42308,13 @@ type BareMetalServerProfileDiskSupportedInterfaces struct {
 }
 
 // Constants associated with the BareMetalServerProfileDiskSupportedInterfaces.Default property.
-// The default value for this profile field.
+// The default interface type supported by a bare metal server with this profile.
+// - `fcp`: Fiber Channel Protocol
+// - `sata`: Serial Advanced Technology Attachment
+// - `nvme`: Non-Volatile Memory Express
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 const (
 	BareMetalServerProfileDiskSupportedInterfacesDefaultFcpConst  = "fcp"
 	BareMetalServerProfileDiskSupportedInterfacesDefaultNvmeConst = "nvme"
@@ -42759,6 +43317,44 @@ func UnmarshalBareMetalServerTrustedPlatformModulePrototype(m map[string]json.Ra
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// CancelVolumeJobOptions : The CancelVolumeJob options.
+type CancelVolumeJobOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume job identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewCancelVolumeJobOptions : Instantiate CancelVolumeJobOptions
+func (*VpcV1) NewCancelVolumeJobOptions(volumeID string, id string) *CancelVolumeJobOptions {
+	return &CancelVolumeJobOptions{
+		VolumeID: core.StringPtr(volumeID),
+		ID:       core.StringPtr(id),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *CancelVolumeJobOptions) SetVolumeID(volumeID string) *CancelVolumeJobOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *CancelVolumeJobOptions) SetID(id string) *CancelVolumeJobOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CancelVolumeJobOptions) SetHeaders(param map[string]string) *CancelVolumeJobOptions {
+	options.Headers = param
+	return options
 }
 
 // CatalogOfferingIdentity : Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique
@@ -46240,17 +46836,62 @@ func (options *CreateFlowLogCollectorOptions) SetHeaders(param map[string]string
 
 // CreateIkePolicyOptions : The CreateIkePolicy options.
 type CreateIkePolicyOptions struct {
-	// The authentication algorithm.
-	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
-
-	// The Diffie-Hellman group.
-	DhGroup *int64 `json:"dh_group" validate:"required"`
-
-	// The encryption algorithm.
-	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
-
 	// The IKE protocol version.
 	IkeVersion *int64 `json:"ike_version" validate:"required"`
+
+	// The authentication algorithm.
+	//
+	// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+	//
+	// If  specified, `authentication_algorithms` must not be specified.
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
+
+	// The authentication algorithms to use for IKE Negotiation.
+	//
+	// If specified, `authentication_algorithm` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms,omitempty"`
+
+	// The Diffie-Hellman group.
+	//
+	// `dh_group` has been deprecated. Use `dh_groups` instead.
+	//
+	// If  specified, `dh_groups` must not be specified.
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	DhGroup *int64 `json:"dh_group,omitempty"`
+
+	// The Diffie-Hellman groups to use for IKE negotiation.
+	//
+	// If  specified, `dh_group` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each
+	// Diffie-Hellman group having priority over the one after it.
+	DhGroups []int64 `json:"dh_groups,omitempty"`
+
+	// The encryption algorithm.
+	//
+	// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+	//
+	// If  specified, `encryption_algorithms` must not be specified.
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
+
+	// The encryption algorithms to use for IKE Negotiation.
+	//
+	// If  specified, `encryption_algorithm` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	EncryptionAlgorithms []string `json:"encryption_algorithms,omitempty"`
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
@@ -46269,51 +46910,91 @@ type CreateIkePolicyOptions struct {
 
 // Constants associated with the CreateIkePolicyOptions.AuthenticationAlgorithm property.
 // The authentication algorithm.
+//
+// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+//
+// If  specified, `authentication_algorithms` must not be specified.
 const (
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha256Const = "sha256"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha384Const = "sha384"
 	CreateIkePolicyOptionsAuthenticationAlgorithmSha512Const = "sha512"
 )
 
+// Constants associated with the CreateIkePolicyOptions.AuthenticationAlgorithms property.
+const (
+	CreateIkePolicyOptionsAuthenticationAlgorithmsSha256Const = "sha256"
+	CreateIkePolicyOptionsAuthenticationAlgorithmsSha384Const = "sha384"
+	CreateIkePolicyOptionsAuthenticationAlgorithmsSha512Const = "sha512"
+)
+
 // Constants associated with the CreateIkePolicyOptions.EncryptionAlgorithm property.
 // The encryption algorithm.
+//
+// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+//
+// If  specified, `encryption_algorithms` must not be specified.
 const (
 	CreateIkePolicyOptionsEncryptionAlgorithmAes128Const = "aes128"
 	CreateIkePolicyOptionsEncryptionAlgorithmAes192Const = "aes192"
 	CreateIkePolicyOptionsEncryptionAlgorithmAes256Const = "aes256"
 )
 
+// Constants associated with the CreateIkePolicyOptions.EncryptionAlgorithms property.
+const (
+	CreateIkePolicyOptionsEncryptionAlgorithmsAes128Const = "aes128"
+	CreateIkePolicyOptionsEncryptionAlgorithmsAes192Const = "aes192"
+	CreateIkePolicyOptionsEncryptionAlgorithmsAes256Const = "aes256"
+)
+
 // NewCreateIkePolicyOptions : Instantiate CreateIkePolicyOptions
-func (*VpcV1) NewCreateIkePolicyOptions(authenticationAlgorithm string, dhGroup int64, encryptionAlgorithm string, ikeVersion int64) *CreateIkePolicyOptions {
+func (*VpcV1) NewCreateIkePolicyOptions(ikeVersion int64) *CreateIkePolicyOptions {
 	return &CreateIkePolicyOptions{
-		AuthenticationAlgorithm: core.StringPtr(authenticationAlgorithm),
-		DhGroup:                 core.Int64Ptr(dhGroup),
-		EncryptionAlgorithm:     core.StringPtr(encryptionAlgorithm),
-		IkeVersion:              core.Int64Ptr(ikeVersion),
+		IkeVersion: core.Int64Ptr(ikeVersion),
 	}
-}
-
-// SetAuthenticationAlgorithm : Allow user to set AuthenticationAlgorithm
-func (_options *CreateIkePolicyOptions) SetAuthenticationAlgorithm(authenticationAlgorithm string) *CreateIkePolicyOptions {
-	_options.AuthenticationAlgorithm = core.StringPtr(authenticationAlgorithm)
-	return _options
-}
-
-// SetDhGroup : Allow user to set DhGroup
-func (_options *CreateIkePolicyOptions) SetDhGroup(dhGroup int64) *CreateIkePolicyOptions {
-	_options.DhGroup = core.Int64Ptr(dhGroup)
-	return _options
-}
-
-// SetEncryptionAlgorithm : Allow user to set EncryptionAlgorithm
-func (_options *CreateIkePolicyOptions) SetEncryptionAlgorithm(encryptionAlgorithm string) *CreateIkePolicyOptions {
-	_options.EncryptionAlgorithm = core.StringPtr(encryptionAlgorithm)
-	return _options
 }
 
 // SetIkeVersion : Allow user to set IkeVersion
 func (_options *CreateIkePolicyOptions) SetIkeVersion(ikeVersion int64) *CreateIkePolicyOptions {
 	_options.IkeVersion = core.Int64Ptr(ikeVersion)
+	return _options
+}
+
+// SetAuthenticationAlgorithm : Allow user to set AuthenticationAlgorithm
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *CreateIkePolicyOptions) SetAuthenticationAlgorithm(authenticationAlgorithm string) *CreateIkePolicyOptions {
+	_options.AuthenticationAlgorithm = core.StringPtr(authenticationAlgorithm)
+	return _options
+}
+
+// SetAuthenticationAlgorithms : Allow user to set AuthenticationAlgorithms
+func (_options *CreateIkePolicyOptions) SetAuthenticationAlgorithms(authenticationAlgorithms []string) *CreateIkePolicyOptions {
+	_options.AuthenticationAlgorithms = authenticationAlgorithms
+	return _options
+}
+
+// SetDhGroup : Allow user to set DhGroup
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *CreateIkePolicyOptions) SetDhGroup(dhGroup int64) *CreateIkePolicyOptions {
+	_options.DhGroup = core.Int64Ptr(dhGroup)
+	return _options
+}
+
+// SetDhGroups : Allow user to set DhGroups
+func (_options *CreateIkePolicyOptions) SetDhGroups(dhGroups []int64) *CreateIkePolicyOptions {
+	_options.DhGroups = dhGroups
+	return _options
+}
+
+// SetEncryptionAlgorithm : Allow user to set EncryptionAlgorithm
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *CreateIkePolicyOptions) SetEncryptionAlgorithm(encryptionAlgorithm string) *CreateIkePolicyOptions {
+	_options.EncryptionAlgorithm = core.StringPtr(encryptionAlgorithm)
+	return _options
+}
+
+// SetEncryptionAlgorithms : Allow user to set EncryptionAlgorithms
+func (_options *CreateIkePolicyOptions) SetEncryptionAlgorithms(encryptionAlgorithms []string) *CreateIkePolicyOptions {
+	_options.EncryptionAlgorithms = encryptionAlgorithms
 	return _options
 }
 
@@ -47048,26 +47729,57 @@ func (options *CreateInstanceVolumeAttachmentOptions) SetHeaders(param map[strin
 
 // CreateIpsecPolicyOptions : The CreateIpsecPolicy options.
 type CreateIpsecPolicyOptions struct {
-	// The authentication algorithm
+	// The authentication algorithm.
+	//
+	// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+	//
+	// If specified, `authentication_algorithms` must not be specified.
 	//
 	// Must be `disabled` if and only if the `encryption_algorithm` is `aes128gcm16`,
 	// `aes192gcm16`, or `aes256gcm16`
 	//
 	// The `md5` and `sha1` algorithms have been deprecated.
-	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
-	// The encryption algorithm
+	// The authentication algorithms to use for IPsec negotiation.
+	//
+	// If specified, `authentication_algorithm` must not be specified.
+	//
+	// Must be `["disabled"]` when `encryption_algorithms` has only combined-mode algorithms
+	// (`aes128gcm16`, `aes192gcm16`, and `aes256gcm16`).
+	//
+	// The `md5` and `sha1` algorithms have been deprecated.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms,omitempty"`
+
+	// The encryption algorithm.
+	//
+	// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+	//
+	// If specified, `encryption_algorithms` must not be specified.
 	//
 	// The `authentication_algorithm` must be `disabled` if and only if
 	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`
 	//
 	// The `triple_des` algorithm has been deprecated.
-	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
 
-	// The Perfect Forward Secrecy group.
+	// The encryption algorithms to use for IPsec negotiation.
 	//
-	// Groups `group_2` and `group_5` have been deprecated.
-	Pfs *string `json:"pfs" validate:"required"`
+	// If specified, `encryption_algorithm` must not be specified.
+	//
+	// If only combined-mode encryption algorithms (`aes128gcm16`, `aes192gcm16`, and
+	// `aes256gcm16`) are to be used, then `authentication_algorithms` must be `["disabled"]`.
+	//
+	// The `triple_des` algorithm has been deprecated.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	EncryptionAlgorithms []string `json:"encryption_algorithms,omitempty"`
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
@@ -47075,6 +47787,26 @@ type CreateIpsecPolicyOptions struct {
 	// The name for this IPsec policy. The name must not be used by another IPsec policy in the region. If unspecified, the
 	// name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
+
+	// The Perfect Forward Secrecy group.
+	//
+	// `pfs` has been deprecated. Use `pfs_groups` instead.
+	//
+	// If specified, `pfs_groups` must not be specified.
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
+	// Deprecated: this field is deprecated and may be removed in a future release.
+	Pfs *string `json:"pfs,omitempty"`
+
+	// The Perfect Forward Secrecy groups to use for IPsec negotiation.
+	//
+	// If specified, `pfs` must not be specified.
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
+	//
+	// The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each
+	// Perfect Forward Secrecy group having priority over the one after it.
+	PfsGroups []string `json:"pfs_groups,omitempty"`
 
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
@@ -47085,7 +47817,11 @@ type CreateIpsecPolicyOptions struct {
 }
 
 // Constants associated with the CreateIpsecPolicyOptions.AuthenticationAlgorithm property.
-// The authentication algorithm
+// The authentication algorithm.
+//
+// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+//
+// If specified, `authentication_algorithms` must not be specified.
 //
 // Must be `disabled` if and only if the `encryption_algorithm` is `aes128gcm16`,
 // `aes192gcm16`, or `aes256gcm16`
@@ -47098,8 +47834,20 @@ const (
 	CreateIpsecPolicyOptionsAuthenticationAlgorithmSha512Const   = "sha512"
 )
 
+// Constants associated with the CreateIpsecPolicyOptions.AuthenticationAlgorithms property.
+const (
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmsDisabledConst = "disabled"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmsSha256Const   = "sha256"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmsSha384Const   = "sha384"
+	CreateIpsecPolicyOptionsAuthenticationAlgorithmsSha512Const   = "sha512"
+)
+
 // Constants associated with the CreateIpsecPolicyOptions.EncryptionAlgorithm property.
-// The encryption algorithm
+// The encryption algorithm.
+//
+// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+//
+// If specified, `encryption_algorithms` must not be specified.
 //
 // The `authentication_algorithm` must be `disabled` if and only if
 // `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`
@@ -47114,8 +47862,22 @@ const (
 	CreateIpsecPolicyOptionsEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
 )
 
+// Constants associated with the CreateIpsecPolicyOptions.EncryptionAlgorithms property.
+const (
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes128Const      = "aes128"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes128gcm16Const = "aes128gcm16"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes192Const      = "aes192"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes192gcm16Const = "aes192gcm16"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes256Const      = "aes256"
+	CreateIpsecPolicyOptionsEncryptionAlgorithmsAes256gcm16Const = "aes256gcm16"
+)
+
 // Constants associated with the CreateIpsecPolicyOptions.Pfs property.
 // The Perfect Forward Secrecy group.
+//
+// `pfs` has been deprecated. Use `pfs_groups` instead.
+//
+// If specified, `pfs_groups` must not be specified.
 //
 // Groups `group_2` and `group_5` have been deprecated.
 const (
@@ -47134,30 +47896,51 @@ const (
 	CreateIpsecPolicyOptionsPfsGroup31Const  = "group_31"
 )
 
+// Constants associated with the CreateIpsecPolicyOptions.PfsGroups property.
+const (
+	CreateIpsecPolicyOptionsPfsGroupsDisabledConst = "disabled"
+	CreateIpsecPolicyOptionsPfsGroupsGroup14Const  = "group_14"
+	CreateIpsecPolicyOptionsPfsGroupsGroup15Const  = "group_15"
+	CreateIpsecPolicyOptionsPfsGroupsGroup16Const  = "group_16"
+	CreateIpsecPolicyOptionsPfsGroupsGroup17Const  = "group_17"
+	CreateIpsecPolicyOptionsPfsGroupsGroup18Const  = "group_18"
+	CreateIpsecPolicyOptionsPfsGroupsGroup19Const  = "group_19"
+	CreateIpsecPolicyOptionsPfsGroupsGroup20Const  = "group_20"
+	CreateIpsecPolicyOptionsPfsGroupsGroup21Const  = "group_21"
+	CreateIpsecPolicyOptionsPfsGroupsGroup22Const  = "group_22"
+	CreateIpsecPolicyOptionsPfsGroupsGroup23Const  = "group_23"
+	CreateIpsecPolicyOptionsPfsGroupsGroup24Const  = "group_24"
+	CreateIpsecPolicyOptionsPfsGroupsGroup31Const  = "group_31"
+)
+
 // NewCreateIpsecPolicyOptions : Instantiate CreateIpsecPolicyOptions
-func (*VpcV1) NewCreateIpsecPolicyOptions(authenticationAlgorithm string, encryptionAlgorithm string, pfs string) *CreateIpsecPolicyOptions {
-	return &CreateIpsecPolicyOptions{
-		AuthenticationAlgorithm: core.StringPtr(authenticationAlgorithm),
-		EncryptionAlgorithm:     core.StringPtr(encryptionAlgorithm),
-		Pfs:                     core.StringPtr(pfs),
-	}
+func (*VpcV1) NewCreateIpsecPolicyOptions() *CreateIpsecPolicyOptions {
+	return &CreateIpsecPolicyOptions{}
 }
 
 // SetAuthenticationAlgorithm : Allow user to set AuthenticationAlgorithm
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (_options *CreateIpsecPolicyOptions) SetAuthenticationAlgorithm(authenticationAlgorithm string) *CreateIpsecPolicyOptions {
 	_options.AuthenticationAlgorithm = core.StringPtr(authenticationAlgorithm)
 	return _options
 }
 
+// SetAuthenticationAlgorithms : Allow user to set AuthenticationAlgorithms
+func (_options *CreateIpsecPolicyOptions) SetAuthenticationAlgorithms(authenticationAlgorithms []string) *CreateIpsecPolicyOptions {
+	_options.AuthenticationAlgorithms = authenticationAlgorithms
+	return _options
+}
+
 // SetEncryptionAlgorithm : Allow user to set EncryptionAlgorithm
+// Deprecated: this method is deprecated and may be removed in a future release.
 func (_options *CreateIpsecPolicyOptions) SetEncryptionAlgorithm(encryptionAlgorithm string) *CreateIpsecPolicyOptions {
 	_options.EncryptionAlgorithm = core.StringPtr(encryptionAlgorithm)
 	return _options
 }
 
-// SetPfs : Allow user to set Pfs
-func (_options *CreateIpsecPolicyOptions) SetPfs(pfs string) *CreateIpsecPolicyOptions {
-	_options.Pfs = core.StringPtr(pfs)
+// SetEncryptionAlgorithms : Allow user to set EncryptionAlgorithms
+func (_options *CreateIpsecPolicyOptions) SetEncryptionAlgorithms(encryptionAlgorithms []string) *CreateIpsecPolicyOptions {
+	_options.EncryptionAlgorithms = encryptionAlgorithms
 	return _options
 }
 
@@ -47170,6 +47953,19 @@ func (_options *CreateIpsecPolicyOptions) SetKeyLifetime(keyLifetime int64) *Cre
 // SetName : Allow user to set Name
 func (_options *CreateIpsecPolicyOptions) SetName(name string) *CreateIpsecPolicyOptions {
 	_options.Name = core.StringPtr(name)
+	return _options
+}
+
+// SetPfs : Allow user to set Pfs
+// Deprecated: this method is deprecated and may be removed in a future release.
+func (_options *CreateIpsecPolicyOptions) SetPfs(pfs string) *CreateIpsecPolicyOptions {
+	_options.Pfs = core.StringPtr(pfs)
+	return _options
+}
+
+// SetPfsGroups : Allow user to set PfsGroups
+func (_options *CreateIpsecPolicyOptions) SetPfsGroups(pfsGroups []string) *CreateIpsecPolicyOptions {
+	_options.PfsGroups = pfsGroups
 	return _options
 }
 
@@ -47641,6 +48437,7 @@ const (
 	CreateLoadBalancerListenerPolicyRuleOptionsConditionContainsConst     = "contains"
 	CreateLoadBalancerListenerPolicyRuleOptionsConditionEqualsConst       = "equals"
 	CreateLoadBalancerListenerPolicyRuleOptionsConditionMatchesRegexConst = "matches_regex"
+	CreateLoadBalancerListenerPolicyRuleOptionsConditionStartsWithConst   = "starts_with"
 )
 
 // Constants associated with the CreateLoadBalancerListenerPolicyRuleOptions.Type property.
@@ -47998,6 +48795,10 @@ type CreateLoadBalancerPoolOptions struct {
 	// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp` and `udp` (if
 	// `udp_supported` is `true`). Load balancers in the
 	// `application` family support `tcp`, `http`, and `https`.
+	//
+	// **NOTE**: HTTP sends data in plain text, making it vulnerable to eavesdropping and tampering. Additionally, HTTP has
+	// no built-in mechanism to verify the identity of the server you are connecting to. It is recommended to choose
+	// `https` instead of `http`. For more details, see: https://www.cloudflare.com/learning/ssl/why-is-http-not-secure.
 	Protocol *string `json:"protocol" validate:"required"`
 
 	// The failsafe policy to use for this pool.
@@ -48045,6 +48846,10 @@ const (
 // The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp` and `udp` (if
 // `udp_supported` is `true`). Load balancers in the
 // `application` family support `tcp`, `http`, and `https`.
+//
+// **NOTE**: HTTP sends data in plain text, making it vulnerable to eavesdropping and tampering. Additionally, HTTP has
+// no built-in mechanism to verify the identity of the server you are connecting to. It is recommended to choose `https`
+// instead of `http`. For more details, see: https://www.cloudflare.com/learning/ssl/why-is-http-not-secure.
 const (
 	CreateLoadBalancerPoolOptionsProtocolHTTPConst  = "http"
 	CreateLoadBalancerPoolOptionsProtocolHTTPSConst = "https"
@@ -49265,6 +50070,62 @@ func (_options *CreateVirtualNetworkInterfaceOptions) SetSubnet(subnet SubnetIde
 
 // SetHeaders : Allow user to set Headers
 func (options *CreateVirtualNetworkInterfaceOptions) SetHeaders(param map[string]string) *CreateVirtualNetworkInterfaceOptions {
+	options.Headers = param
+	return options
+}
+
+// CreateVolumeJobOptions : The CreateVolumeJob options.
+type CreateVolumeJobOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume job prototype object.
+	VolumeJobPrototype VolumeJobPrototypeIntf `json:"VolumeJobPrototype" validate:"required"`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewCreateVolumeJobOptions : Instantiate CreateVolumeJobOptions
+func (*VpcV1) NewCreateVolumeJobOptions(volumeID string, volumeJobPrototype VolumeJobPrototypeIntf) *CreateVolumeJobOptions {
+	return &CreateVolumeJobOptions{
+		VolumeID:           core.StringPtr(volumeID),
+		VolumeJobPrototype: volumeJobPrototype,
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *CreateVolumeJobOptions) SetVolumeID(volumeID string) *CreateVolumeJobOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetVolumeJobPrototype : Allow user to set VolumeJobPrototype
+func (_options *CreateVolumeJobOptions) SetVolumeJobPrototype(volumeJobPrototype VolumeJobPrototypeIntf) *CreateVolumeJobOptions {
+	_options.VolumeJobPrototype = volumeJobPrototype
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *CreateVolumeJobOptions) SetStart(start string) *CreateVolumeJobOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *CreateVolumeJobOptions) SetLimit(limit int64) *CreateVolumeJobOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateVolumeJobOptions) SetHeaders(param map[string]string) *CreateVolumeJobOptions {
 	options.Headers = param
 	return options
 }
@@ -54877,6 +55738,44 @@ func (options *DeleteVirtualNetworkInterfacesOptions) SetHeaders(param map[strin
 	return options
 }
 
+// DeleteVolumeJobOptions : The DeleteVolumeJob options.
+type DeleteVolumeJobOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume job identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewDeleteVolumeJobOptions : Instantiate DeleteVolumeJobOptions
+func (*VpcV1) NewDeleteVolumeJobOptions(volumeID string, id string) *DeleteVolumeJobOptions {
+	return &DeleteVolumeJobOptions{
+		VolumeID: core.StringPtr(volumeID),
+		ID:       core.StringPtr(id),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *DeleteVolumeJobOptions) SetVolumeID(volumeID string) *DeleteVolumeJobOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *DeleteVolumeJobOptions) SetID(id string) *DeleteVolumeJobOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *DeleteVolumeJobOptions) SetHeaders(param map[string]string) *DeleteVolumeJobOptions {
+	options.Headers = param
+	return options
+}
+
 // DeleteVolumeOptions : The DeleteVolume options.
 type DeleteVolumeOptions struct {
 	// The volume identifier.
@@ -55495,8 +56394,9 @@ func (options *DisconnectVPNClientOptions) SetHeaders(param map[string]string) *
 // - EncryptionKeyIdentityByCRN
 type EncryptionKeyIdentity struct {
 	// The CRN of the [Key Protect Root
-	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto
-	// Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) for this resource.
+	//
+	// The use of Hyper Protect Crypto Services for encryption keys has been deprecated.
 	CRN *string `json:"crn,omitempty"`
 }
 
@@ -55534,8 +56434,9 @@ func (encryptionKeyIdentity *EncryptionKeyIdentity) asPatch() (_patch map[string
 // EncryptionKeyReference : EncryptionKeyReference struct
 type EncryptionKeyReference struct {
 	// The CRN of the [Key Protect Root
-	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto
-	// Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) for this resource.
+	//
+	// The use of Hyper Protect Crypto Services for encryption keys has been deprecated.
 	CRN *string `json:"crn" validate:"required"`
 }
 
@@ -57240,14 +58141,23 @@ type FloatingIPTargetPatch struct {
 	// If this bare metal server has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
 	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
-	// corresponding network attachment.
+	// corresponding network attachment or the unique identifier for this instance network interface.
+	//
+	// If this instance has network attachments, this network interface is a
+	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
+	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
+	// corresponding network attachment or the unique identifier for this virtual network interface.
 	ID *string `json:"id,omitempty"`
 
 	// The URL for this bare metal server network interface.
 	//
 	// If this bare metal server has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
-	// corresponding network attachment.
+	// corresponding network attachment or the URL for this instance network interface.
+	//
+	// If this instance has network attachments, this network interface is a
+	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
+	// corresponding network attachment or the URL for this virtual network interface.
 	Href *string `json:"href,omitempty"`
 
 	// The CRN for this virtual network interface.
@@ -57318,14 +58228,23 @@ type FloatingIPTargetPrototype struct {
 	// If this bare metal server has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
 	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
-	// corresponding network attachment.
+	// corresponding network attachment or the unique identifier for this instance network interface.
+	//
+	// If this instance has network attachments, this network interface is a
+	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
+	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
+	// corresponding network attachment or the unique identifier for this virtual network interface.
 	ID *string `json:"id,omitempty"`
 
 	// The URL for this bare metal server network interface.
 	//
 	// If this bare metal server has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
-	// corresponding network attachment.
+	// corresponding network attachment or the URL for this instance network interface.
+	//
+	// If this instance has network attachments, this network interface is a
+	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
+	// corresponding network attachment or the URL for this virtual network interface.
 	Href *string `json:"href,omitempty"`
 
 	// The CRN for this virtual network interface.
@@ -57661,7 +58580,8 @@ type FlowLogCollectorTarget struct {
 	//
 	// If this instance has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
-	// corresponding network attachment.
+	// corresponding network attachment or the URL for this virtual server instance or the URL for this subnet or the URL
+	// for this VPC or the URL for this instance network attachment or the URL for this virtual network interface.
 	Href *string `json:"href,omitempty"`
 
 	// The unique identifier for this instance network interface.
@@ -57669,21 +58589,28 @@ type FlowLogCollectorTarget struct {
 	// If this instance has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
 	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
-	// corresponding network attachment.
+	// corresponding network attachment or the unique identifier for this virtual server instance or the unique identifier
+	// for this subnet or the unique identifier for this VPC or the unique identifier for this instance network attachment
+	// or the unique identifier for this virtual network interface.
 	ID *string `json:"id,omitempty"`
 
-	// The name for this instance network interface.
+	// The name for this instance network interface or the name for this virtual server instance. The name is unique across
+	// all virtual server instances in the region or the name for this subnet. The name is unique across all subnets in the
+	// VPC or the name for this VPC. The name is unique across all VPCs in the region or the name for this instance network
+	// attachment. The name is unique across all network attachments for the instance or the name for this virtual network
+	// interface. The name is unique across all virtual network interfaces in the VPC.
 	Name *string `json:"name,omitempty"`
 
-	// The resource type.
+	// The resource type or the resource type or the resource type or the resource type or the resource type.
 	ResourceType *string `json:"resource_type,omitempty"`
 
-	// The CRN for this virtual server instance.
+	// The CRN for this virtual server instance or the CRN for this subnet or the CRN for this VPC or the CRN for this
+	// virtual network interface.
 	CRN *string `json:"crn,omitempty"`
 }
 
 // Constants associated with the FlowLogCollectorTarget.ResourceType property.
-// The resource type.
+// The resource type or the resource type or the resource type or the resource type or the resource type.
 const (
 	FlowLogCollectorTargetResourceTypeNetworkInterfaceConst = "network_interface"
 )
@@ -57757,17 +58684,21 @@ type FlowLogCollectorTargetPrototype struct {
 	// If this instance has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
 	// corresponding network attachment and its attached virtual network interface, and the identifier is that of the
-	// corresponding network attachment.
+	// corresponding network attachment or the unique identifier for this virtual server instance or the unique identifier
+	// for this subnet or the unique identifier for this VPC or the unique identifier for this virtual network interface or
+	// the unique identifier for this instance network attachment.
 	ID *string `json:"id,omitempty"`
 
 	// The URL for this instance network interface.
 	//
 	// If this instance has network attachments, this network interface is a
 	// [read-only representation](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#vni-old-api-clients) of its
-	// corresponding network attachment.
+	// corresponding network attachment or the URL for this virtual server instance or the URL for this subnet or the URL
+	// for this VPC or the URL for this virtual network interface or the URL for this instance network attachment.
 	Href *string `json:"href,omitempty"`
 
-	// The CRN for this virtual server instance.
+	// The CRN for this virtual server instance or the CRN for this subnet or the CRN for this VPC or the CRN for this
+	// virtual network interface.
 	CRN *string `json:"crn,omitempty"`
 }
 
@@ -60749,6 +61680,44 @@ func (options *GetVirtualNetworkInterfaceOptions) SetHeaders(param map[string]st
 	return options
 }
 
+// GetVolumeJobOptions : The GetVolumeJob options.
+type GetVolumeJobOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume job identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewGetVolumeJobOptions : Instantiate GetVolumeJobOptions
+func (*VpcV1) NewGetVolumeJobOptions(volumeID string, id string) *GetVolumeJobOptions {
+	return &GetVolumeJobOptions{
+		VolumeID: core.StringPtr(volumeID),
+		ID:       core.StringPtr(id),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *GetVolumeJobOptions) SetVolumeID(volumeID string) *GetVolumeJobOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetVolumeJobOptions) SetID(id string) *GetVolumeJobOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetVolumeJobOptions) SetHeaders(param map[string]string) *GetVolumeJobOptions {
+	options.Headers = param
+	return options
+}
+
 // GetVolumeOptions : The GetVolume options.
 type GetVolumeOptions struct {
 	// The volume identifier.
@@ -61361,7 +62330,17 @@ type IkePolicy struct {
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	//
+	// If `multiple`, the policy supports more than one authentication algorithm. Use the `authentication_algorithms`
+	// property to retrieve all supported algorithms.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
+
+	// The authentication algorithms to use for IKE Negotiation.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms" validate:"required"`
 
 	// The VPN gateway connections that use this IKE policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
@@ -61372,15 +62351,35 @@ type IkePolicy struct {
 	// The Diffie-Hellman group
 	//
 	// Groups `2` and `5` have been deprecated.
+	//
+	// If `65535`, the policy supports more than one Diffie-Hellman group. Use the `dh_groups` property to retrieve all
+	// supported Diffie-Hellman groups.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	DhGroup *int64 `json:"dh_group" validate:"required"`
 
+	// The Diffie-Hellman groups to use for IKE negotiation.
+	//
+	// The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each
+	// Diffie-Hellman group having priority over the one after it.
+	DhGroups []int64 `json:"dh_groups" validate:"required"`
+
 	// The encryption algorithm.
+	//
+	// If `multiple`, the policy supports more than one encryption algorithm. Use the `encryption_algorithms` property to
+	// retrieve all supported algorithms.
 	//
 	// The `triple_des` algorithm has been deprecated.
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+
+	// The encryption algorithms to use for IKE Negotiation.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	EncryptionAlgorithms []string `json:"encryption_algorithms" validate:"required"`
 
 	// The URL for this IKE policy.
 	Href *string `json:"href" validate:"required"`
@@ -61417,16 +62416,30 @@ type IkePolicy struct {
 //
 // The enumerated values for this property may
 // [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+//
+// If `multiple`, the policy supports more than one authentication algorithm. Use the `authentication_algorithms`
+// property to retrieve all supported algorithms.
 const (
-	IkePolicyAuthenticationAlgorithmMd5Const    = "md5"
-	IkePolicyAuthenticationAlgorithmSha1Const   = "sha1"
-	IkePolicyAuthenticationAlgorithmSha256Const = "sha256"
-	IkePolicyAuthenticationAlgorithmSha384Const = "sha384"
-	IkePolicyAuthenticationAlgorithmSha512Const = "sha512"
+	IkePolicyAuthenticationAlgorithmMd5Const      = "md5"
+	IkePolicyAuthenticationAlgorithmMultipleConst = "multiple"
+	IkePolicyAuthenticationAlgorithmSha1Const     = "sha1"
+	IkePolicyAuthenticationAlgorithmSha256Const   = "sha256"
+	IkePolicyAuthenticationAlgorithmSha384Const   = "sha384"
+	IkePolicyAuthenticationAlgorithmSha512Const   = "sha512"
+)
+
+// Constants associated with the IkePolicy.AuthenticationAlgorithms property.
+const (
+	IkePolicyAuthenticationAlgorithmsSha256Const = "sha256"
+	IkePolicyAuthenticationAlgorithmsSha384Const = "sha384"
+	IkePolicyAuthenticationAlgorithmsSha512Const = "sha512"
 )
 
 // Constants associated with the IkePolicy.EncryptionAlgorithm property.
 // The encryption algorithm.
+//
+// If `multiple`, the policy supports more than one encryption algorithm. Use the `encryption_algorithms` property to
+// retrieve all supported algorithms.
 //
 // The `triple_des` algorithm has been deprecated.
 //
@@ -61436,7 +62449,15 @@ const (
 	IkePolicyEncryptionAlgorithmAes128Const    = "aes128"
 	IkePolicyEncryptionAlgorithmAes192Const    = "aes192"
 	IkePolicyEncryptionAlgorithmAes256Const    = "aes256"
+	IkePolicyEncryptionAlgorithmMultipleConst  = "multiple"
 	IkePolicyEncryptionAlgorithmTripleDesConst = "triple_des"
+)
+
+// Constants associated with the IkePolicy.EncryptionAlgorithms property.
+const (
+	IkePolicyEncryptionAlgorithmsAes128Const = "aes128"
+	IkePolicyEncryptionAlgorithmsAes192Const = "aes192"
+	IkePolicyEncryptionAlgorithmsAes256Const = "aes256"
 )
 
 // Constants associated with the IkePolicy.NegotiationMode property.
@@ -61462,6 +62483,11 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 		err = core.SDKErrorf(err, "", "authentication_algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "authentication_algorithms", &obj.AuthenticationAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "authentication_algorithms-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "connections-error", common.GetComponentInfo())
@@ -61477,9 +62503,19 @@ func UnmarshalIkePolicy(m map[string]json.RawMessage, result interface{}) (err e
 		err = core.SDKErrorf(err, "", "dh_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "dh_groups", &obj.DhGroups)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "dh_groups-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "encryption_algorithm-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithms", &obj.EncryptionAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "encryption_algorithms-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
@@ -61661,13 +62697,73 @@ func (resp *IkePolicyConnectionCollection) GetNextStart() (*string, error) {
 // IkePolicyPatch : IkePolicyPatch struct
 type IkePolicyPatch struct {
 	// The authentication algorithm.
+	//
+	// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+	//
+	// If specified, `authentication_algorithms` must not be specified.
+	//
+	// Updating this property will also update the
+	// `authentication_algorithms` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
+	// The authentication algorithms to use for IKE Negotiation.
+	//
+	// If specified, `authentication_algorithm` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	//
+	// Updating this property will also update the
+	// `authentication_algorithm` field accordingly.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms,omitempty"`
+
 	// The Diffie-Hellman group.
+	//
+	// `dh_group` has been deprecated. Use `dh_groups` instead.
+	//
+	// If specified, `dh_groups` must not be specified.
+	//
+	// Updating this property will also update the `dh_groups` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	DhGroup *int64 `json:"dh_group,omitempty"`
 
+	// The Diffie-Hellman groups to use for IKE Negotiation.
+	//
+	// If specified, `dh_group` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each
+	// Diffie-Hellman group having priority over the one after it.
+	//
+	// Updating this property will also update the `dh_group` field accordingly.
+	DhGroups []int64 `json:"dh_groups,omitempty"`
+
 	// The encryption algorithm.
+	//
+	// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+	//
+	// If specified, `encryption_algorithms` must not be specified.
+	//
+	// Updating this property will also update the
+	// `encryption_algorithms` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
+
+	// The encryption algorithms to use for IKE negotiation.
+	//
+	// If specified, `encryption_algorithm` must not be specified.
+	//
+	// If the IKE policy's `ike_version` is `1`, this array must contain exactly one algorithm.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	//
+	// Updating this property will also update the `encryption_algorithm` field accordingly.
+	EncryptionAlgorithms []string `json:"encryption_algorithms,omitempty"`
 
 	// The IKE protocol version.
 	IkeVersion *int64 `json:"ike_version,omitempty"`
@@ -61681,18 +62777,46 @@ type IkePolicyPatch struct {
 
 // Constants associated with the IkePolicyPatch.AuthenticationAlgorithm property.
 // The authentication algorithm.
+//
+// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+//
+// If specified, `authentication_algorithms` must not be specified.
+//
+// Updating this property will also update the
+// `authentication_algorithms` field accordingly.
 const (
 	IkePolicyPatchAuthenticationAlgorithmSha256Const = "sha256"
 	IkePolicyPatchAuthenticationAlgorithmSha384Const = "sha384"
 	IkePolicyPatchAuthenticationAlgorithmSha512Const = "sha512"
 )
 
+// Constants associated with the IkePolicyPatch.AuthenticationAlgorithms property.
+const (
+	IkePolicyPatchAuthenticationAlgorithmsSha256Const = "sha256"
+	IkePolicyPatchAuthenticationAlgorithmsSha384Const = "sha384"
+	IkePolicyPatchAuthenticationAlgorithmsSha512Const = "sha512"
+)
+
 // Constants associated with the IkePolicyPatch.EncryptionAlgorithm property.
 // The encryption algorithm.
+//
+// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+//
+// If specified, `encryption_algorithms` must not be specified.
+//
+// Updating this property will also update the
+// `encryption_algorithms` field accordingly.
 const (
 	IkePolicyPatchEncryptionAlgorithmAes128Const = "aes128"
 	IkePolicyPatchEncryptionAlgorithmAes192Const = "aes192"
 	IkePolicyPatchEncryptionAlgorithmAes256Const = "aes256"
+)
+
+// Constants associated with the IkePolicyPatch.EncryptionAlgorithms property.
+const (
+	IkePolicyPatchEncryptionAlgorithmsAes128Const = "aes128"
+	IkePolicyPatchEncryptionAlgorithmsAes192Const = "aes192"
+	IkePolicyPatchEncryptionAlgorithmsAes256Const = "aes256"
 )
 
 // UnmarshalIkePolicyPatch unmarshals an instance of IkePolicyPatch from the specified map of raw messages.
@@ -61703,14 +62827,29 @@ func UnmarshalIkePolicyPatch(m map[string]json.RawMessage, result interface{}) (
 		err = core.SDKErrorf(err, "", "authentication_algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "authentication_algorithms", &obj.AuthenticationAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "authentication_algorithms-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "dh_group", &obj.DhGroup)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "dh_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "dh_groups", &obj.DhGroups)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "dh_groups-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "encryption_algorithm-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithms", &obj.EncryptionAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "encryption_algorithms-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "ike_version", &obj.IkeVersion)
@@ -61738,11 +62877,20 @@ func (ikePolicyPatch *IkePolicyPatch) AsPatch() (_patch map[string]interface{}, 
 	if !core.IsNil(ikePolicyPatch.AuthenticationAlgorithm) {
 		_patch["authentication_algorithm"] = ikePolicyPatch.AuthenticationAlgorithm
 	}
+	if !core.IsNil(ikePolicyPatch.AuthenticationAlgorithms) {
+		_patch["authentication_algorithms"] = ikePolicyPatch.AuthenticationAlgorithms
+	}
 	if !core.IsNil(ikePolicyPatch.DhGroup) {
 		_patch["dh_group"] = ikePolicyPatch.DhGroup
 	}
+	if !core.IsNil(ikePolicyPatch.DhGroups) {
+		_patch["dh_groups"] = ikePolicyPatch.DhGroups
+	}
 	if !core.IsNil(ikePolicyPatch.EncryptionAlgorithm) {
 		_patch["encryption_algorithm"] = ikePolicyPatch.EncryptionAlgorithm
+	}
+	if !core.IsNil(ikePolicyPatch.EncryptionAlgorithms) {
+		_patch["encryption_algorithms"] = ikePolicyPatch.EncryptionAlgorithms
 	}
 	if !core.IsNil(ikePolicyPatch.IkeVersion) {
 		_patch["ike_version"] = ikePolicyPatch.IkeVersion
@@ -61859,13 +63007,23 @@ func (ip *IP) asPatch() (_patch map[string]interface{}) {
 
 // IPsecPolicy : IPsecPolicy struct
 type IPsecPolicy struct {
-	// The authentication algorithm
+	// The authentication algorithms.
+	//
+	// If `multiple`, the policy supports more than one authentication algorithm. Use the `authentication_algorithms`
+	// property to retrieve all supported algorithms.
 	//
 	// The `md5` and `sha1` algorithms have been deprecated
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm" validate:"required"`
+
+	// The authentication algorithms to use for IPsec Negotiation.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms" validate:"required"`
 
 	// The VPN gateway connections that use this IPsec policy.
 	Connections []VPNGatewayConnectionReference `json:"connections" validate:"required"`
@@ -61879,13 +63037,23 @@ type IPsecPolicy struct {
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	EncapsulationMode *string `json:"encapsulation_mode" validate:"required"`
 
-	// The encryption algorithm
+	// The encryption algorithm.
+	//
+	// If `multiple`, the policy supports more than one encryption algorithm. Use the `encryption_algorithms` property to
+	// retrieve all supported algorithms.
 	//
 	// The `triple_des` algorithm has been deprecated
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	EncryptionAlgorithm *string `json:"encryption_algorithm" validate:"required"`
+
+	// The encryption algorithms to use for IKE Negotiation.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	EncryptionAlgorithms []string `json:"encryption_algorithms" validate:"required"`
 
 	// The URL for this IPsec policy.
 	Href *string `json:"href" validate:"required"`
@@ -61899,13 +63067,23 @@ type IPsecPolicy struct {
 	// The name for this IPsec policy. The name is unique across all IPsec policies in the region.
 	Name *string `json:"name" validate:"required"`
 
-	// The Perfect Forward Secrecy group
+	// The Perfect Forward Secrecy group.
+	//
+	// If `multiple`, the policy supports more than one PFS group. Use the `pfs_groups` property to retrieve all supported
+	// PFS groups.
 	//
 	// Groups `group_2` and `group_5` have been deprecated
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	Pfs *string `json:"pfs" validate:"required"`
+
+	// The Perfect Forward Secrecy groups to use for IPsec negotiation.
+	//
+	// The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each
+	// Perfect Forward Secrecy group having priority over the one after it.
+	PfsGroups []string `json:"pfs_groups" validate:"required"`
 
 	// The resource group for this IPsec policy.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
@@ -61921,7 +63099,10 @@ type IPsecPolicy struct {
 }
 
 // Constants associated with the IPsecPolicy.AuthenticationAlgorithm property.
-// The authentication algorithm
+// The authentication algorithms.
+//
+// If `multiple`, the policy supports more than one authentication algorithm. Use the `authentication_algorithms`
+// property to retrieve all supported algorithms.
 //
 // # The `md5` and `sha1` algorithms have been deprecated
 //
@@ -61929,11 +63110,18 @@ type IPsecPolicy struct {
 // [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 const (
 	IPsecPolicyAuthenticationAlgorithmDisabledConst = "disabled"
-	IPsecPolicyAuthenticationAlgorithmMd5Const      = "md5"
-	IPsecPolicyAuthenticationAlgorithmSha1Const     = "sha1"
+	IPsecPolicyAuthenticationAlgorithmMultipleConst = "multiple"
 	IPsecPolicyAuthenticationAlgorithmSha256Const   = "sha256"
 	IPsecPolicyAuthenticationAlgorithmSha384Const   = "sha384"
 	IPsecPolicyAuthenticationAlgorithmSha512Const   = "sha512"
+)
+
+// Constants associated with the IPsecPolicy.AuthenticationAlgorithms property.
+const (
+	IPsecPolicyAuthenticationAlgorithmsDisabledConst = "disabled"
+	IPsecPolicyAuthenticationAlgorithmsSha256Const   = "sha256"
+	IPsecPolicyAuthenticationAlgorithmsSha384Const   = "sha384"
+	IPsecPolicyAuthenticationAlgorithmsSha512Const   = "sha512"
 )
 
 // Constants associated with the IPsecPolicy.EncapsulationMode property.
@@ -61946,7 +63134,10 @@ const (
 )
 
 // Constants associated with the IPsecPolicy.EncryptionAlgorithm property.
-// The encryption algorithm
+// The encryption algorithm.
+//
+// If `multiple`, the policy supports more than one encryption algorithm. Use the `encryption_algorithms` property to
+// retrieve all supported algorithms.
 //
 // The `triple_des` algorithm has been deprecated
 //
@@ -61959,11 +63150,25 @@ const (
 	IPsecPolicyEncryptionAlgorithmAes192gcm16Const = "aes192gcm16"
 	IPsecPolicyEncryptionAlgorithmAes256Const      = "aes256"
 	IPsecPolicyEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
+	IPsecPolicyEncryptionAlgorithmMultipleConst    = "multiple"
 	IPsecPolicyEncryptionAlgorithmTripleDesConst   = "triple_des"
 )
 
+// Constants associated with the IPsecPolicy.EncryptionAlgorithms property.
+const (
+	IPsecPolicyEncryptionAlgorithmsAes128Const      = "aes128"
+	IPsecPolicyEncryptionAlgorithmsAes128gcm16Const = "aes128gcm16"
+	IPsecPolicyEncryptionAlgorithmsAes192Const      = "aes192"
+	IPsecPolicyEncryptionAlgorithmsAes192gcm16Const = "aes192gcm16"
+	IPsecPolicyEncryptionAlgorithmsAes256Const      = "aes256"
+	IPsecPolicyEncryptionAlgorithmsAes256gcm16Const = "aes256gcm16"
+)
+
 // Constants associated with the IPsecPolicy.Pfs property.
-// The Perfect Forward Secrecy group
+// The Perfect Forward Secrecy group.
+//
+// If `multiple`, the policy supports more than one PFS group. Use the `pfs_groups` property to retrieve all supported
+// PFS groups.
 //
 // Groups `group_2` and `group_5` have been deprecated
 //
@@ -61985,6 +63190,24 @@ const (
 	IPsecPolicyPfsGroup24Const  = "group_24"
 	IPsecPolicyPfsGroup31Const  = "group_31"
 	IPsecPolicyPfsGroup5Const   = "group_5"
+	IPsecPolicyPfsMultipleConst = "multiple"
+)
+
+// Constants associated with the IPsecPolicy.PfsGroups property.
+const (
+	IPsecPolicyPfsGroupsDisabledConst = "disabled"
+	IPsecPolicyPfsGroupsGroup14Const  = "group_14"
+	IPsecPolicyPfsGroupsGroup15Const  = "group_15"
+	IPsecPolicyPfsGroupsGroup16Const  = "group_16"
+	IPsecPolicyPfsGroupsGroup17Const  = "group_17"
+	IPsecPolicyPfsGroupsGroup18Const  = "group_18"
+	IPsecPolicyPfsGroupsGroup19Const  = "group_19"
+	IPsecPolicyPfsGroupsGroup20Const  = "group_20"
+	IPsecPolicyPfsGroupsGroup21Const  = "group_21"
+	IPsecPolicyPfsGroupsGroup22Const  = "group_22"
+	IPsecPolicyPfsGroupsGroup23Const  = "group_23"
+	IPsecPolicyPfsGroupsGroup24Const  = "group_24"
+	IPsecPolicyPfsGroupsGroup31Const  = "group_31"
 )
 
 // Constants associated with the IPsecPolicy.ResourceType property.
@@ -62010,6 +63233,11 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 		err = core.SDKErrorf(err, "", "authentication_algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "authentication_algorithms", &obj.AuthenticationAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "authentication_algorithms-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "connections", &obj.Connections, UnmarshalVPNGatewayConnectionReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "connections-error", common.GetComponentInfo())
@@ -62028,6 +63256,11 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "encryption_algorithm-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithms", &obj.EncryptionAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "encryption_algorithms-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
@@ -62053,6 +63286,11 @@ func UnmarshalIPsecPolicy(m map[string]json.RawMessage, result interface{}) (err
 	err = core.UnmarshalPrimitive(m, "pfs", &obj.Pfs)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "pfs-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "pfs_groups", &obj.PfsGroups)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "pfs_groups-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
@@ -62208,41 +63446,115 @@ func (resp *IPsecPolicyConnectionCollection) GetNextStart() (*string, error) {
 
 // IPsecPolicyPatch : IPsecPolicyPatch struct
 type IPsecPolicyPatch struct {
-	// The authentication algorithm
+	// The authentication algorithm.
+	//
+	// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+	//
+	// If specified, `authentication_algorithms` must not be specified.
 	//
 	// Must be `disabled` if and only if the `encryption_algorithm` is `aes128gcm16`,
 	// `aes192gcm16`, or `aes256gcm16`
 	//
 	// The `md5` and `sha1` algorithms have been deprecated.
+	//
+	// Updating this property will also update the
+	// `authentication_algorithms` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	AuthenticationAlgorithm *string `json:"authentication_algorithm,omitempty"`
 
-	// The encryption algorithm
+	// The authentication algorithms to use for IPsec negotiation.
+	//
+	// If specified, `authentication_algorithm` must not be specified.
+	//
+	// Must be `["disabled"]` when `encryption_algorithms` has only combined-mode algorithms
+	// (`aes128gcm16`, `aes192gcm16`, and `aes256gcm16`).
+	//
+	// The `md5` and `sha1` algorithms have been deprecated.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	//
+	// Updating this property will also update the
+	// `authentication_algorithm` field accordingly.
+	AuthenticationAlgorithms []string `json:"authentication_algorithms,omitempty"`
+
+	// The encryption algorithm.
+	//
+	// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+	//
+	// If specified, `encryption_algorithms` must not be specified.
 	//
 	// The `authentication_algorithm` must be `disabled` if and only if
 	// `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`
 	//
 	// The `triple_des` algorithm has been deprecated.
+	//
+	// Updating this property will also update the
+	// `encryption_algorithms` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	EncryptionAlgorithm *string `json:"encryption_algorithm,omitempty"`
+
+	// The encryption algorithms to use for IPsec negotiation.
+	//
+	// If specified, `encryption_algorithm` must not be specified.
+	//
+	// If only combined-mode encryption algorithms (`aes128gcm16`, `aes192gcm16`, and
+	// `aes256gcm16`) are to be used, then `authentication_algorithms` must be `["disabled"]`.
+	//
+	// The `triple_des` algorithm has been deprecated.
+	//
+	// The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having
+	// priority over the one after it.
+	//
+	// Updating this property will also update the `encryption_algorithm` field accordingly.
+	EncryptionAlgorithms []string `json:"encryption_algorithms,omitempty"`
 
 	// The key lifetime in seconds.
 	KeyLifetime *int64 `json:"key_lifetime,omitempty"`
 
-	// The name for this IPsec policy. The name must not be used by another IPsec policy in the region.
+	// The name for this IPsec policy. The name is unique across all IPsec policies in the region.
 	Name *string `json:"name,omitempty"`
 
 	// The Perfect Forward Secrecy group.
 	//
+	// `pfs` has been deprecated. Use `pfs_groups` instead.
+	//
+	// If specified, `pfs_groups` must not be specified.
+	//
 	// Groups `group_2` and `group_5` have been deprecated.
+	//
+	// Updating this property will also update the
+	// `pfs_groups` field accordingly.
+	// Deprecated: this field is deprecated and may be removed in a future release.
 	Pfs *string `json:"pfs,omitempty"`
+
+	// The Perfect Forward Secrecy groups to use for IPsec negotiation.
+	//
+	// If specified, `pfs_groups` must not be specified.
+	//
+	// Groups `group_2` and `group_5` have been deprecated.
+	//
+	// The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each
+	// Perfect Forward Secrecy group having priority over the one after it.
+	//
+	// Updating this property will also update the `pfs` field accordingly.
+	PfsGroups []string `json:"pfs_groups,omitempty"`
 }
 
 // Constants associated with the IPsecPolicyPatch.AuthenticationAlgorithm property.
-// The authentication algorithm
+// The authentication algorithm.
+//
+// `authentication_algorithm` has been deprecated. Use `authentication_algorithms` instead.
+//
+// If specified, `authentication_algorithms` must not be specified.
 //
 // Must be `disabled` if and only if the `encryption_algorithm` is `aes128gcm16`,
 // `aes192gcm16`, or `aes256gcm16`
 //
 // The `md5` and `sha1` algorithms have been deprecated.
+//
+// Updating this property will also update the
+// `authentication_algorithms` field accordingly.
 const (
 	IPsecPolicyPatchAuthenticationAlgorithmDisabledConst = "disabled"
 	IPsecPolicyPatchAuthenticationAlgorithmSha256Const   = "sha256"
@@ -62250,13 +63562,28 @@ const (
 	IPsecPolicyPatchAuthenticationAlgorithmSha512Const   = "sha512"
 )
 
+// Constants associated with the IPsecPolicyPatch.AuthenticationAlgorithms property.
+const (
+	IPsecPolicyPatchAuthenticationAlgorithmsDisabledConst = "disabled"
+	IPsecPolicyPatchAuthenticationAlgorithmsSha256Const   = "sha256"
+	IPsecPolicyPatchAuthenticationAlgorithmsSha384Const   = "sha384"
+	IPsecPolicyPatchAuthenticationAlgorithmsSha512Const   = "sha512"
+)
+
 // Constants associated with the IPsecPolicyPatch.EncryptionAlgorithm property.
-// The encryption algorithm
+// The encryption algorithm.
+//
+// `encryption_algorithm` has been deprecated. Use `encryption_algorithms` instead.
+//
+// If specified, `encryption_algorithms` must not be specified.
 //
 // The `authentication_algorithm` must be `disabled` if and only if
 // `encryption_algorithm` is `aes128gcm16`, `aes192gcm16`, or `aes256gcm16`
 //
 // The `triple_des` algorithm has been deprecated.
+//
+// Updating this property will also update the
+// `encryption_algorithms` field accordingly.
 const (
 	IPsecPolicyPatchEncryptionAlgorithmAes128Const      = "aes128"
 	IPsecPolicyPatchEncryptionAlgorithmAes128gcm16Const = "aes128gcm16"
@@ -62266,10 +63593,27 @@ const (
 	IPsecPolicyPatchEncryptionAlgorithmAes256gcm16Const = "aes256gcm16"
 )
 
+// Constants associated with the IPsecPolicyPatch.EncryptionAlgorithms property.
+const (
+	IPsecPolicyPatchEncryptionAlgorithmsAes128Const      = "aes128"
+	IPsecPolicyPatchEncryptionAlgorithmsAes128gcm16Const = "aes128gcm16"
+	IPsecPolicyPatchEncryptionAlgorithmsAes192Const      = "aes192"
+	IPsecPolicyPatchEncryptionAlgorithmsAes192gcm16Const = "aes192gcm16"
+	IPsecPolicyPatchEncryptionAlgorithmsAes256Const      = "aes256"
+	IPsecPolicyPatchEncryptionAlgorithmsAes256gcm16Const = "aes256gcm16"
+)
+
 // Constants associated with the IPsecPolicyPatch.Pfs property.
 // The Perfect Forward Secrecy group.
 //
+// `pfs` has been deprecated. Use `pfs_groups` instead.
+//
+// If specified, `pfs_groups` must not be specified.
+//
 // Groups `group_2` and `group_5` have been deprecated.
+//
+// Updating this property will also update the
+// `pfs_groups` field accordingly.
 const (
 	IPsecPolicyPatchPfsDisabledConst = "disabled"
 	IPsecPolicyPatchPfsGroup14Const  = "group_14"
@@ -62286,6 +63630,23 @@ const (
 	IPsecPolicyPatchPfsGroup31Const  = "group_31"
 )
 
+// Constants associated with the IPsecPolicyPatch.PfsGroups property.
+const (
+	IPsecPolicyPatchPfsGroupsDisabledConst = "disabled"
+	IPsecPolicyPatchPfsGroupsGroup14Const  = "group_14"
+	IPsecPolicyPatchPfsGroupsGroup15Const  = "group_15"
+	IPsecPolicyPatchPfsGroupsGroup16Const  = "group_16"
+	IPsecPolicyPatchPfsGroupsGroup17Const  = "group_17"
+	IPsecPolicyPatchPfsGroupsGroup18Const  = "group_18"
+	IPsecPolicyPatchPfsGroupsGroup19Const  = "group_19"
+	IPsecPolicyPatchPfsGroupsGroup20Const  = "group_20"
+	IPsecPolicyPatchPfsGroupsGroup21Const  = "group_21"
+	IPsecPolicyPatchPfsGroupsGroup22Const  = "group_22"
+	IPsecPolicyPatchPfsGroupsGroup23Const  = "group_23"
+	IPsecPolicyPatchPfsGroupsGroup24Const  = "group_24"
+	IPsecPolicyPatchPfsGroupsGroup31Const  = "group_31"
+)
+
 // UnmarshalIPsecPolicyPatch unmarshals an instance of IPsecPolicyPatch from the specified map of raw messages.
 func UnmarshalIPsecPolicyPatch(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(IPsecPolicyPatch)
@@ -62294,9 +63655,19 @@ func UnmarshalIPsecPolicyPatch(m map[string]json.RawMessage, result interface{})
 		err = core.SDKErrorf(err, "", "authentication_algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "authentication_algorithms", &obj.AuthenticationAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "authentication_algorithms-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "encryption_algorithm", &obj.EncryptionAlgorithm)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "encryption_algorithm-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "encryption_algorithms", &obj.EncryptionAlgorithms)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "encryption_algorithms-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "key_lifetime", &obj.KeyLifetime)
@@ -62314,6 +63685,11 @@ func UnmarshalIPsecPolicyPatch(m map[string]json.RawMessage, result interface{})
 		err = core.SDKErrorf(err, "", "pfs-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "pfs_groups", &obj.PfsGroups)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "pfs_groups-error", common.GetComponentInfo())
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -62324,8 +63700,14 @@ func (iPsecPolicyPatch *IPsecPolicyPatch) AsPatch() (_patch map[string]interface
 	if !core.IsNil(iPsecPolicyPatch.AuthenticationAlgorithm) {
 		_patch["authentication_algorithm"] = iPsecPolicyPatch.AuthenticationAlgorithm
 	}
+	if !core.IsNil(iPsecPolicyPatch.AuthenticationAlgorithms) {
+		_patch["authentication_algorithms"] = iPsecPolicyPatch.AuthenticationAlgorithms
+	}
 	if !core.IsNil(iPsecPolicyPatch.EncryptionAlgorithm) {
 		_patch["encryption_algorithm"] = iPsecPolicyPatch.EncryptionAlgorithm
+	}
+	if !core.IsNil(iPsecPolicyPatch.EncryptionAlgorithms) {
+		_patch["encryption_algorithms"] = iPsecPolicyPatch.EncryptionAlgorithms
 	}
 	if !core.IsNil(iPsecPolicyPatch.KeyLifetime) {
 		_patch["key_lifetime"] = iPsecPolicyPatch.KeyLifetime
@@ -62335,6 +63717,9 @@ func (iPsecPolicyPatch *IPsecPolicyPatch) AsPatch() (_patch map[string]interface
 	}
 	if !core.IsNil(iPsecPolicyPatch.Pfs) {
 		_patch["pfs"] = iPsecPolicyPatch.Pfs
+	}
+	if !core.IsNil(iPsecPolicyPatch.PfsGroups) {
+		_patch["pfs_groups"] = iPsecPolicyPatch.PfsGroups
 	}
 
 	return
@@ -62466,17 +63851,19 @@ type Image struct {
 	SourceVolume *VolumeReference `json:"source_volume,omitempty"`
 
 	// The status of this image:
-	// - available: image can be used to create resources
-	// - deleting: image is being deleted, and can no longer be used to create
+	// - `available`: image can be used to create resources
+	// - `deleting`: image is being deleted, and can no longer be used to create
 	//   resources
-	// - deprecated: image is slated to be deleted, but can still be used to create
+	// - `deprecated`: image is slated to be deleted, but can still be used to create
 	//   resources
-	// - failed: image was not created successfully, and cannot be used to create
+	// - `failed`: image was not created successfully, and cannot be used to create
 	//   resources
-	// - obsolete: image is slated to be deleted, and can no longer be used to create
+	// - `obsolete`: image is slated to be deleted, and can no longer be used to create
 	//   resources
-	// - pending: image is being imported, and cannot yet be used to create resources
-	// - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
+	// - `partially_available`: image can be used to create resources in the
+	//   zones listed in the `zones` property.
+	// - `pending`: image is being imported, and cannot yet be used to create resources
+	// - `unusable`: image cannot be used (see `status_reasons[]` for possible remediation)
 	//
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
@@ -62498,6 +63885,15 @@ type Image struct {
 	// - `private`: Visible only to this account
 	// - `public`: Visible to all accounts.
 	Visibility *string `json:"visibility" validate:"required"`
+
+	// The zones in which this image is available for use.
+	//
+	// If the image has a status of `available` or `deprecated`, this will include all zones in the region.
+	//
+	// If the image has a status of `partially_available`, this will include one or more zones in the region.
+	//
+	// If the image has a status of `failed`, `obsolete`, `pending`, `unusable`, or `deleting`, this will be empty.
+	Zones []ZoneReference `json:"zones" validate:"required"`
 }
 
 // Constants associated with the Image.Encryption property.
@@ -62515,28 +63911,31 @@ const (
 
 // Constants associated with the Image.Status property.
 // The status of this image:
-//   - available: image can be used to create resources
-//   - deleting: image is being deleted, and can no longer be used to create
+//   - `available`: image can be used to create resources
+//   - `deleting`: image is being deleted, and can no longer be used to create
 //     resources
-//   - deprecated: image is slated to be deleted, but can still be used to create
+//   - `deprecated`: image is slated to be deleted, but can still be used to create
 //     resources
-//   - failed: image was not created successfully, and cannot be used to create
+//   - `failed`: image was not created successfully, and cannot be used to create
 //     resources
-//   - obsolete: image is slated to be deleted, and can no longer be used to create
+//   - `obsolete`: image is slated to be deleted, and can no longer be used to create
 //     resources
-//   - pending: image is being imported, and cannot yet be used to create resources
-//   - unusable: image cannot be used (see `status_reasons[]` for possible remediation)
+//   - `partially_available`: image can be used to create resources in the
+//     zones listed in the `zones` property.
+//   - `pending`: image is being imported, and cannot yet be used to create resources
+//   - `unusable`: image cannot be used (see `status_reasons[]` for possible remediation)
 //
 // The enumerated values for this property may
 // [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 const (
-	ImageStatusAvailableConst  = "available"
-	ImageStatusDeletingConst   = "deleting"
-	ImageStatusDeprecatedConst = "deprecated"
-	ImageStatusFailedConst     = "failed"
-	ImageStatusObsoleteConst   = "obsolete"
-	ImageStatusPendingConst    = "pending"
-	ImageStatusUnusableConst   = "unusable"
+	ImageStatusAvailableConst          = "available"
+	ImageStatusDeletingConst           = "deleting"
+	ImageStatusDeprecatedConst         = "deprecated"
+	ImageStatusFailedConst             = "failed"
+	ImageStatusObsoleteConst           = "obsolete"
+	ImageStatusPartiallyAvailableConst = "partially_available"
+	ImageStatusPendingConst            = "pending"
+	ImageStatusUnusableConst           = "unusable"
 )
 
 // Constants associated with the Image.UserDataFormat property.
@@ -62673,6 +64072,11 @@ func UnmarshalImage(m map[string]json.RawMessage, result interface{}) (err error
 	err = core.UnmarshalPrimitive(m, "visibility", &obj.Visibility)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "visibility-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "zones-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -63023,10 +64427,11 @@ type ImageExportJob struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for the exported image. This
-	// key can be unwrapped with the image's `encryption_key` root key using either Key Protect or Hyper Protect Crypto
-	// Services.
+	// key can be unwrapped with the image's `encryption_key` root key using Key Protect.
 	//
 	// If absent, the export job is for an unencrypted image.
+	//
+	// The use of Hyper Protect Crypto Services for image encryption keys has been deprecated.
 	EncryptedDataKey *[]byte `json:"encrypted_data_key,omitempty"`
 
 	// The format of the exported image.
@@ -63616,10 +65021,11 @@ type ImagePrototype struct {
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
 	//
 	// That representation is created by wrapping the key's value with the `encryption_key` root key (which must also be
-	// specified), using either [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-wrap-keys) or the
-	// [Hyper Protect Crypto Services](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-wrap-keys).
+	// specified), using [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-wrap-keys).
 	//
 	// If unspecified, the imported image is treated as unencrypted.
+	//
+	// The use of Hyper Protect Crypto Services for image encryption keys has been deprecated.
 	EncryptedDataKey *string `json:"encrypted_data_key,omitempty"`
 
 	// The root key that was used to wrap the data key (which is ultimately represented as
@@ -68164,11 +69570,11 @@ func UnmarshalInstanceInitializationPassword(m map[string]json.RawMessage, resul
 // InstanceLifecycleReason : InstanceLifecycleReason struct
 type InstanceLifecycleReason struct {
 	// A reason code for this lifecycle state:
-	// - `failed_registration`: the instance's registration to Resource Controller has
+	// - `failed_registration`: The instance's registration to Resource Controller has
 	//   failed. Delete the instance and provision it again. If the problem persists,
 	//   contact IBM Support.
-	// - `internal_error`: internal error (contact IBM support)
-	// - `pending_registration`: the instance's registration to Resource Controller is
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `pending_registration`: The instance's registration to Resource Controller is
 	//   being processed.
 	// - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
 	//   support)
@@ -68186,11 +69592,11 @@ type InstanceLifecycleReason struct {
 
 // Constants associated with the InstanceLifecycleReason.Code property.
 // A reason code for this lifecycle state:
-//   - `failed_registration`: the instance's registration to Resource Controller has
+//   - `failed_registration`: The instance's registration to Resource Controller has
 //     failed. Delete the instance and provision it again. If the problem persists,
 //     contact IBM Support.
-//   - `internal_error`: internal error (contact IBM support)
-//   - `pending_registration`: the instance's registration to Resource Controller is
+//   - `internal_error`: Internal error (contact IBM support)
+//   - `pending_registration`: The instance's registration to Resource Controller is
 //     being processed.
 //   - `resource_suspended_by_provider`: The resource has been suspended (contact IBM
 //     support)
@@ -68896,9 +70302,11 @@ type InstancePatch struct {
 	// region. Changing the name will not affect the system hostname.
 	Name *string `json:"name,omitempty"`
 
-	// The placement restrictions to use for the virtual server instance.
+	// The placement restrictions to use for the virtual server instance. For the
+	// placement restrictions to be changed, the instance `status` must be `stopping` or
+	// `stopped`.
 	//
-	// If specified, `reservation_affinity.policy` must be `disabled`. If specifying a dedicated
+	// If set, `reservation_affinity.policy` must be `disabled`. If specifying a dedicated
 	// host or dedicated host group, the `vcpu.percentage` must be `100` and the instance must
 	// have two or more vCPUs.
 	PlacementTarget InstancePlacementTargetPatchIntf `json:"placement_target,omitempty"`
@@ -69207,21 +70615,23 @@ func UnmarshalInstancePlacementTarget(m map[string]json.RawMessage, result inter
 	return
 }
 
-// InstancePlacementTargetPatch : The placement restrictions to use for the virtual server instance.
+// InstancePlacementTargetPatch : The placement restrictions to use for the virtual server instance. For the placement restrictions to be changed, the
+// instance `status` must be `stopping` or
+// `stopped`.
 //
-// If specified, `reservation_affinity.policy` must be `disabled`. If specifying a dedicated host or dedicated host
-// group, the `vcpu.percentage` must be `100` and the instance must have two or more vCPUs.
+// If set, `reservation_affinity.policy` must be `disabled`. If specifying a dedicated host or dedicated host group, the
+// `vcpu.percentage` must be `100` and the instance must have two or more vCPUs.
 // Models which "extend" this model:
 // - InstancePlacementTargetPatchDedicatedHostIdentity
 // - InstancePlacementTargetPatchDedicatedHostGroupIdentity
 type InstancePlacementTargetPatch struct {
-	// The unique identifier for this dedicated host.
+	// The unique identifier for this dedicated host or the unique identifier for this dedicated host group.
 	ID *string `json:"id,omitempty"`
 
-	// The CRN for this dedicated host.
+	// The CRN for this dedicated host or the CRN for this dedicated host group.
 	CRN *string `json:"crn,omitempty"`
 
-	// The URL for this dedicated host.
+	// The URL for this dedicated host or the URL for this dedicated host group.
 	Href *string `json:"href,omitempty"`
 }
 
@@ -69281,13 +70691,14 @@ func (instancePlacementTargetPatch *InstancePlacementTargetPatch) asPatch() (_pa
 // - InstancePlacementTargetPrototypeDedicatedHostGroupIdentity
 // - InstancePlacementTargetPrototypePlacementGroupIdentity
 type InstancePlacementTargetPrototype struct {
-	// The unique identifier for this dedicated host.
+	// The unique identifier for this dedicated host or the unique identifier for this dedicated host group or the unique
+	// identifier for this placement group.
 	ID *string `json:"id,omitempty"`
 
-	// The CRN for this dedicated host.
+	// The CRN for this dedicated host or the CRN for this dedicated host group or the CRN for this placement group.
 	CRN *string `json:"crn,omitempty"`
 
-	// The URL for this dedicated host.
+	// The URL for this dedicated host or the URL for this dedicated host group or the URL for this placement group.
 	Href *string `json:"href,omitempty"`
 }
 
@@ -69402,6 +70813,9 @@ type InstanceProfile struct {
 	VcpuPercentage *InstanceProfileVcpuPercentage `json:"vcpu_percentage" validate:"required"`
 
 	VolumeBandwidthQosModes InstanceProfileVolumeBandwidthQoSModesIntf `json:"volume_bandwidth_qos_modes" validate:"required"`
+
+	// The zones in this region that support this instance profile.
+	Zones []ZoneReference `json:"zones" validate:"required"`
 }
 
 // Constants associated with the InstanceProfile.ResourceType property.
@@ -69583,6 +70997,11 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	err = core.UnmarshalModel(m, "volume_bandwidth_qos_modes", &obj.VolumeBandwidthQosModes, UnmarshalInstanceProfileVolumeBandwidthQoSModes)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "volume_bandwidth_qos_modes-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "zones-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -69854,20 +71273,68 @@ func UnmarshalInstanceProfileClusterNetworkAttachmentCount(m map[string]json.Raw
 
 // InstanceProfileCollection : InstanceProfileCollection struct
 type InstanceProfileCollection struct {
-	// The virtual server instance profiles.
+	// A link to the first page of resources.
+	First *PageLink `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PageLink `json:"next,omitempty"`
+
+	// A page of virtual server instance profiles.
 	Profiles []InstanceProfile `json:"profiles" validate:"required"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
 }
 
 // UnmarshalInstanceProfileCollection unmarshals an instance of InstanceProfileCollection from the specified map of raw messages.
 func UnmarshalInstanceProfileCollection(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(InstanceProfileCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "first-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "limit-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "next-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "profiles", &obj.Profiles, UnmarshalInstanceProfile)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "profiles-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "total_count-error", common.GetComponentInfo())
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *InstanceProfileCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "read-query-param-error", common.GetComponentInfo())
+		return nil, err
+	} else if start == nil {
+		return nil, nil
+	}
+	return start, nil
 }
 
 // InstanceProfileDisk : Disks provided by this profile.
@@ -72220,6 +73687,7 @@ func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{})
 			}
 		}
 	}
+
 	if isSourceSnapshot {
 		err = core.UnmarshalModel(m, "", result, UnmarshalInstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext)
 		if err != nil {
@@ -72227,7 +73695,6 @@ func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{})
 		}
 		return err
 	} else {
-
 		obj := new(InstanceTemplate)
 		err = core.UnmarshalModel(m, "availability", &obj.Availability, UnmarshalInstanceAvailabilityPrototype)
 		if err != nil {
@@ -75247,13 +76714,14 @@ type ListImagesOptions struct {
 
 // Constants associated with the ListImagesOptions.Status property.
 const (
-	ListImagesOptionsStatusAvailableConst  = "available"
-	ListImagesOptionsStatusDeletingConst   = "deleting"
-	ListImagesOptionsStatusDeprecatedConst = "deprecated"
-	ListImagesOptionsStatusFailedConst     = "failed"
-	ListImagesOptionsStatusObsoleteConst   = "obsolete"
-	ListImagesOptionsStatusPendingConst    = "pending"
-	ListImagesOptionsStatusUnusableConst   = "unusable"
+	ListImagesOptionsStatusAvailableConst          = "available"
+	ListImagesOptionsStatusDeletingConst           = "deleting"
+	ListImagesOptionsStatusDeprecatedConst         = "deprecated"
+	ListImagesOptionsStatusFailedConst             = "failed"
+	ListImagesOptionsStatusObsoleteConst           = "obsolete"
+	ListImagesOptionsStatusPartiallyAvailableConst = "partially_available"
+	ListImagesOptionsStatusPendingConst            = "pending"
+	ListImagesOptionsStatusUnusableConst           = "unusable"
 )
 
 // Constants associated with the ListImagesOptions.Visibility property.
@@ -75794,6 +77262,11 @@ func (options *ListInstanceNetworkInterfacesOptions) SetHeaders(param map[string
 
 // ListInstanceProfilesOptions : The ListInstanceProfiles options.
 type ListInstanceProfilesOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -75802,6 +77275,18 @@ type ListInstanceProfilesOptions struct {
 // NewListInstanceProfilesOptions : Instantiate ListInstanceProfilesOptions
 func (*VpcV1) NewListInstanceProfilesOptions() *ListInstanceProfilesOptions {
 	return &ListInstanceProfilesOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListInstanceProfilesOptions) SetStart(start string) *ListInstanceProfilesOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListInstanceProfilesOptions) SetLimit(limit int64) *ListInstanceProfilesOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
 }
 
 // SetHeaders : Allow user to set Headers
@@ -77640,6 +79125,10 @@ type ListSnapshotConsistencyGroupsOptions struct {
 	// identifier.
 	BackupPolicyPlanID *string `json:"backup_policy_plan.id,omitempty"`
 
+	// Filters the collection to snapshot consistency groups with a `backup_policy_job.id` property matching the specified
+	// identifier.
+	BackupPolicyJobID *string `json:"backup_policy_job.id,omitempty"`
+
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -77691,6 +79180,12 @@ func (_options *ListSnapshotConsistencyGroupsOptions) SetSort(sort string) *List
 // SetBackupPolicyPlanID : Allow user to set BackupPolicyPlanID
 func (_options *ListSnapshotConsistencyGroupsOptions) SetBackupPolicyPlanID(backupPolicyPlanID string) *ListSnapshotConsistencyGroupsOptions {
 	_options.BackupPolicyPlanID = core.StringPtr(backupPolicyPlanID)
+	return _options
+}
+
+// SetBackupPolicyJobID : Allow user to set BackupPolicyJobID
+func (_options *ListSnapshotConsistencyGroupsOptions) SetBackupPolicyJobID(backupPolicyJobID string) *ListSnapshotConsistencyGroupsOptions {
+	_options.BackupPolicyJobID = core.StringPtr(backupPolicyJobID)
 	return _options
 }
 
@@ -78348,6 +79843,52 @@ func (options *ListVolumeInstanceProfilesOptions) SetHeaders(param map[string]st
 	return options
 }
 
+// ListVolumeJobsOptions : The ListVolumeJobs options.
+type ListVolumeJobsOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewListVolumeJobsOptions : Instantiate ListVolumeJobsOptions
+func (*VpcV1) NewListVolumeJobsOptions(volumeID string) *ListVolumeJobsOptions {
+	return &ListVolumeJobsOptions{
+		VolumeID: core.StringPtr(volumeID),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *ListVolumeJobsOptions) SetVolumeID(volumeID string) *ListVolumeJobsOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListVolumeJobsOptions) SetStart(start string) *ListVolumeJobsOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListVolumeJobsOptions) SetLimit(limit int64) *ListVolumeJobsOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListVolumeJobsOptions) SetHeaders(param map[string]string) *ListVolumeJobsOptions {
+	options.Headers = param
+	return options
+}
+
 // ListVolumeProfilesOptions : The ListVolumeProfiles options.
 type ListVolumeProfilesOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -78413,6 +79954,9 @@ type ListVolumesOptions struct {
 	// This parameter also supports the values `null` and `not:null` which filter the collection to resources which have no
 	// operating system or any operating system, respectively.
 	OperatingSystemArchitecture *string `json:"operating_system.architecture,omitempty"`
+
+	// Filters the collection to volumes with a `storage_generation` property matching the specified value.
+	StorageGeneration *int64 `json:"storage_generation,omitempty"`
 
 	// Filters the collection to resources with an item in the `tags` property matching the exact specified tag.
 	Tag *string `json:"tag,omitempty"`
@@ -78483,6 +80027,12 @@ func (_options *ListVolumesOptions) SetOperatingSystemFamily(operatingSystemFami
 // SetOperatingSystemArchitecture : Allow user to set OperatingSystemArchitecture
 func (_options *ListVolumesOptions) SetOperatingSystemArchitecture(operatingSystemArchitecture string) *ListVolumesOptions {
 	_options.OperatingSystemArchitecture = core.StringPtr(operatingSystemArchitecture)
+	return _options
+}
+
+// SetStorageGeneration : Allow user to set StorageGeneration
+func (_options *ListVolumesOptions) SetStorageGeneration(storageGeneration int64) *ListVolumesOptions {
+	_options.StorageGeneration = core.Int64Ptr(storageGeneration)
 	return _options
 }
 
@@ -79379,6 +80929,9 @@ type LoadBalancer struct {
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	AccessMode *string `json:"access_mode" validate:"required"`
 
+	// Indicates whether this load balancer supports advanced health checks.
+	AdvancedHealthChecksSupported *bool `json:"advanced_health_checks_supported" validate:"required"`
+
 	// The load balancer pool members attached to this load balancer.
 	AttachedLoadBalancerPoolMembers []LoadBalancerPoolMemberReference `json:"attached_load_balancer_pool_members" validate:"required"`
 
@@ -79407,6 +80960,9 @@ type LoadBalancer struct {
 
 	// The supported `failsafe_policy.action` values for this load balancer's pools.
 	FailsafePolicyActions []string `json:"failsafe_policy_actions" validate:"required"`
+
+	// Indicates whether this load balancer supports pool members specified by their fully qualified domain names.
+	FqdnPoolMembersSupported *bool `json:"fqdn_pool_members_supported" validate:"required"`
 
 	// The fully qualified domain name assigned to this load balancer.
 	Hostname *string `json:"hostname" validate:"required"`
@@ -79595,6 +81151,11 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		err = core.SDKErrorf(err, "", "access_mode-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "advanced_health_checks_supported", &obj.AdvancedHealthChecksSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "advanced_health_checks_supported-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "attached_load_balancer_pool_members", &obj.AttachedLoadBalancerPoolMembers, UnmarshalLoadBalancerPoolMemberReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "attached_load_balancer_pool_members-error", common.GetComponentInfo())
@@ -79623,6 +81184,11 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 	err = core.UnmarshalPrimitive(m, "failsafe_policy_actions", &obj.FailsafePolicyActions)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "failsafe_policy_actions-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "fqdn_pool_members_supported", &obj.FqdnPoolMembersSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn_pool_members_supported-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "hostname", &obj.Hostname)
@@ -81057,6 +82623,7 @@ const (
 	LoadBalancerListenerPolicyRuleConditionContainsConst     = "contains"
 	LoadBalancerListenerPolicyRuleConditionEqualsConst       = "equals"
 	LoadBalancerListenerPolicyRuleConditionMatchesRegexConst = "matches_regex"
+	LoadBalancerListenerPolicyRuleConditionStartsWithConst   = "starts_with"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRule.ProvisioningStatus property.
@@ -81189,6 +82756,7 @@ const (
 	LoadBalancerListenerPolicyRulePatchConditionContainsConst     = "contains"
 	LoadBalancerListenerPolicyRulePatchConditionEqualsConst       = "equals"
 	LoadBalancerListenerPolicyRulePatchConditionMatchesRegexConst = "matches_regex"
+	LoadBalancerListenerPolicyRulePatchConditionStartsWithConst   = "starts_with"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRulePatch.Type property.
@@ -81296,6 +82864,7 @@ const (
 	LoadBalancerListenerPolicyRulePrototypeConditionContainsConst     = "contains"
 	LoadBalancerListenerPolicyRulePrototypeConditionEqualsConst       = "equals"
 	LoadBalancerListenerPolicyRulePrototypeConditionMatchesRegexConst = "matches_regex"
+	LoadBalancerListenerPolicyRulePrototypeConditionStartsWithConst   = "starts_with"
 )
 
 // Constants associated with the LoadBalancerListenerPolicyRulePrototype.Type property.
@@ -81519,13 +83088,13 @@ func UnmarshalLoadBalancerListenerPolicyTarget(m map[string]json.RawMessage, res
 // - LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerPolicyRedirectURLPatch
 // - LoadBalancerListenerPolicyTargetPatchLoadBalancerListenerIdentity
 type LoadBalancerListenerPolicyTargetPatch struct {
-	// The unique identifier for this load balancer pool.
+	// The unique identifier for this load balancer pool or the unique identifier for this load balancer listener.
 	ID *string `json:"id,omitempty"`
 
-	// The URL for this load balancer pool.
+	// The URL for this load balancer pool or the URL for this load balancer listener.
 	Href *string `json:"href,omitempty"`
 
-	// The HTTP status code for this redirect.
+	// The HTTP status code for this redirect or the HTTP status code for this redirect.
 	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
 
 	// The target listener.
@@ -81645,13 +83214,13 @@ func (loadBalancerListenerPolicyTargetPatch *LoadBalancerListenerPolicyTargetPat
 // - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyHTTPSRedirectPrototype
 // - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerListenerPolicyRedirectURLPrototype
 type LoadBalancerListenerPolicyTargetPrototype struct {
-	// The unique identifier for this load balancer pool.
+	// The unique identifier for this load balancer pool or the unique identifier for this load balancer listener.
 	ID *string `json:"id,omitempty"`
 
-	// The URL for this load balancer pool.
+	// The URL for this load balancer pool or the URL for this load balancer listener.
 	Href *string `json:"href,omitempty"`
 
-	// The HTTP status code for this redirect.
+	// The HTTP status code for this redirect or the HTTP status code for this redirect.
 	HTTPStatusCode *int64 `json:"http_status_code,omitempty"`
 
 	// The target listener.
@@ -82447,11 +84016,24 @@ type LoadBalancerPoolFailsafePolicyPatch struct {
 	// - Belong to this load balancer
 	// - Have the same `protocol` as this pool, or have a compatible protocol.
 	//   At present, the compatible protocols are `http` and `https`.
-	// - Not have a `failsafe_policy.action` of `forward` or `bypass`.
+	//
+	// For load balancers in the `application` family, the failsafe target pool must not
+	// already be the default pool or a failsafe target pool for the same listener.
+	//
+	// For load balancers in the `network` family, the pool specified in the URL must not
+	// be a failsafe target pool for another pool.
 	//
 	// If specified, `action` must be `forward`.
 	//
 	// Specify `null` to remove an existing failsafe target pool.
+	//
+	// **For more information, see:**
+	// - [Creating an application load balancer](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-load-balancers&interface=ui)
+	// - [Working with application load balancer pools](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-alb-pools&interface=ui)
+	// - [Working with network load balancer pools](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-pools&interface=ui).
 	Target LoadBalancerPoolFailsafePolicyTargetPatchIntf `json:"target,omitempty"`
 }
 
@@ -82519,9 +84101,22 @@ type LoadBalancerPoolFailsafePolicyPrototype struct {
 	// - Belong to this load balancer
 	// - Have the same `protocol` as this pool, or have a compatible protocol.
 	//   At present, the compatible protocols are `http` and `https`.
-	// - Have a `failsafe_policy.action` of `fail` or `drop`
+	//
+	// For load balancers in the `application` family, the failsafe target pool must not
+	// already be the default pool or a failsafe target pool for the same listener.
+	//
+	// For load balancers in the `network` family, the pool specified in the URL must not
+	// be a failsafe target pool for another pool.
 	//
 	// If specified, `action` must be `forward`.
+	//
+	// **For more information, see:**
+	// - [Creating an application load balancer](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-load-balancers&interface=ui)
+	// - [Working with application load balancer pools](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-alb-pools&interface=ui)
+	// - [Working with network load balancer pools](
+	//     https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-pools&interface=ui).
 	Target LoadBalancerPoolIdentityIntf `json:"target,omitempty"`
 }
 
@@ -82564,11 +84159,25 @@ func UnmarshalLoadBalancerPoolFailsafePolicyPrototype(m map[string]json.RawMessa
 //   - Belong to this load balancer
 //   - Have the same `protocol` as this pool, or have a compatible protocol.
 //     At present, the compatible protocols are `http` and `https`.
-//   - Not have a `failsafe_policy.action` of `forward` or `bypass`.
+//
+// For load balancers in the `application` family, the failsafe target pool must not already be the default pool or a
+// failsafe target pool for the same listener.
+//
+// For load balancers in the `network` family, the pool specified in the URL must not be a failsafe target pool for
+// another pool.
 //
 // If specified, `action` must be `forward`.
 //
 // Specify `null` to remove an existing failsafe target pool.
+//
+// **For more information, see:**
+//   - [Creating an application load balancer](
+//     https://cloud.ibm.com/docs/vpc?topic=vpc-load-balancers&interface=ui)
+//   - [Working with application load balancer pools](
+//     https://cloud.ibm.com/docs/vpc?topic=vpc-alb-pools&interface=ui)
+//   - [Working with network load balancer pools](
+//     https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-pools&interface=ui).
+//
 // Models which "extend" this model:
 // - LoadBalancerPoolFailsafePolicyTargetPatchLoadBalancerPoolIdentityByID
 // - LoadBalancerPoolFailsafePolicyTargetPatchLoadBalancerPoolIdentityByHref
@@ -82621,8 +84230,8 @@ func (loadBalancerPoolFailsafePolicyTargetPatch *LoadBalancerPoolFailsafePolicyT
 
 // LoadBalancerPoolHealthMonitor : LoadBalancerPoolHealthMonitor struct
 // Models which "extend" this model:
-// - LoadBalancerPoolHealthMonitorTypeTCP
 // - LoadBalancerPoolHealthMonitorTypeHttphttps
+// - LoadBalancerPoolHealthMonitorTypeTCP
 type LoadBalancerPoolHealthMonitor struct {
 	// The seconds to wait between health checks.
 	Delay *int64 `json:"delay" validate:"required"`
@@ -82643,6 +84252,10 @@ type LoadBalancerPoolHealthMonitor struct {
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Type *string `json:"type" validate:"required"`
+
+	Request *LoadBalancerPoolHealthMonitorTypeHttphttpsRequest `json:"request,omitempty"`
+
+	Response *LoadBalancerPoolHealthMonitorTypeHttphttpsResponse `json:"response,omitempty"`
 
 	// The health check URL path, in the format of an [origin-form request
 	// target](https://tools.ietf.org/html/rfc7230#section-5.3.1).
@@ -82696,6 +84309,16 @@ func UnmarshalLoadBalancerPoolHealthMonitor(m map[string]json.RawMessage, result
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "request", &obj.Request, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequest)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "request-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "response", &obj.Response, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponse)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "response-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "url_path", &obj.URLPath)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "url_path-error", common.GetComponentInfo())
@@ -82719,6 +84342,12 @@ type LoadBalancerPoolHealthMonitorPatch struct {
 	//
 	// Specify `null` to remove an existing health check port.
 	Port *int64 `json:"port,omitempty"`
+
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Request *LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch `json:"request,omitempty"`
+
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Response *LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch `json:"response,omitempty"`
 
 	// The seconds to wait for a response to a health check.  Must be less than `delay`.
 	Timeout *int64 `json:"timeout" validate:"required"`
@@ -82775,6 +84404,16 @@ func UnmarshalLoadBalancerPoolHealthMonitorPatch(m map[string]json.RawMessage, r
 		err = core.SDKErrorf(err, "", "port-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "request", &obj.Request, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "request-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "response", &obj.Response, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "response-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "timeout", &obj.Timeout)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "timeout-error", common.GetComponentInfo())
@@ -82805,6 +84444,12 @@ func (loadBalancerPoolHealthMonitorPatch *LoadBalancerPoolHealthMonitorPatch) as
 	}
 	if !core.IsNil(loadBalancerPoolHealthMonitorPatch.Port) {
 		_patch["port"] = loadBalancerPoolHealthMonitorPatch.Port
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorPatch.Request) {
+		_patch["request"] = loadBalancerPoolHealthMonitorPatch.Request.asPatch()
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorPatch.Response) {
+		_patch["response"] = loadBalancerPoolHealthMonitorPatch.Response.asPatch()
 	}
 	if !core.IsNil(loadBalancerPoolHealthMonitorPatch.Timeout) {
 		_patch["timeout"] = loadBalancerPoolHealthMonitorPatch.Timeout
@@ -82840,6 +84485,18 @@ type LoadBalancerPoolHealthMonitorPrototype struct {
 
 	// The protocol type to use for health checks.
 	Type *string `json:"type" validate:"required"`
+
+	// The HTTP request to use for health checks. If unspecified, a `request.method` value of
+	// `get` will be used with no `request.headers`.
+	//
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Request LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeIntf `json:"request,omitempty"`
+
+	// The HTTP response to use for health checks. If unspecified, a `response.codes` value of
+	// `["200"]` will be used with no `response.body_regex`.
+	//
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Response *LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype `json:"response,omitempty"`
 
 	// The health check URL path to use.
 	//
@@ -82891,9 +84548,385 @@ func UnmarshalLoadBalancerPoolHealthMonitorPrototype(m map[string]json.RawMessag
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "request", &obj.Request, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "request-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "response", &obj.Response, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "response-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "url_path", &obj.URLPath)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "url_path-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequest : LoadBalancerPoolHealthMonitorTypeHttphttpsRequest struct
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequest struct {
+	// The HTTP request body used for health checks.
+	//
+	// If absent, the health checks will ignore the request body.
+	Body *string `json:"body,omitempty"`
+
+	// The HTTP request headers used for health checks.
+	//
+	// If empty, the health checks will ignore the request headers.
+	HeadersVar []LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader `json:"headers,omitempty"`
+
+	// The HTTP request method used for health checks.
+	Method *string `json:"method" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerPoolHealthMonitorTypeHttphttpsRequest.Method property.
+// The HTTP request method used for health checks.
+const (
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestMethodGetConst  = "get"
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestMethodPostConst = "post"
+)
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequest unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequest from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequest(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequest)
+	err = core.UnmarshalPrimitive(m, "body", &obj.Body)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "headers", &obj.HeadersVar, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "headers-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "method", &obj.Method)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "method-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader : An HTTP request header used for health checks.
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader struct {
+	// The field of an HTTP request header used for health checks.
+	Field *string `json:"field" validate:"required"`
+
+	// The value of an HTTP request header used for health checks.
+	Value *string `json:"value" validate:"required"`
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeader)
+	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "field-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype : An HTTP request header to use for health checks.
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype struct {
+	// The field of an HTTP request header to use for health checks.
+	Field *string `json:"field" validate:"required"`
+
+	// The value of an HTTP request header to use for health checks.
+	Value *string `json:"value" validate:"required"`
+}
+
+// NewLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype : Instantiate LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype(field string, value string) (_model *LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype, err error) {
+	_model = &LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype{
+		Field: core.StringPtr(field),
+		Value: core.StringPtr(value),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype)
+	err = core.UnmarshalPrimitive(m, "field", &obj.Field)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "field-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype
+func (loadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype *LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype.Field) {
+		_patch["field"] = loadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype.Field
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype.Value) {
+		_patch["value"] = loadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype.Value
+	}
+
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch : Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch struct {
+	// The HTTP request body to use for health checks. If set, a corresponding `Content-Type` field must be included in the
+	// `request.headers` array.
+	//
+	// Specify `null` to remove the request body used for health checks.
+	//
+	// The body must be formatted in a way that will be understood by the backend server member.
+	Body *string `json:"body,omitempty"`
+
+	// The HTTP request headers to use for health checks.
+	//
+	// Specify an empty array to remove the request headers for health checks.
+	//
+	// Include a `Host` field and its value to enable the `HTTP/1.1` protocol for health checks. If a `Host` header is not
+	// included, `HTTP/1.0` will be used by default. More than one
+	// `Host` header is not allowed.
+	//
+	// Include a `Content-Type` field and its value to indicate the media type of the
+	// `request.body` (if set).
+	//
+	// A header must not exceed 1000 characters, and all headers combined must not exceed 4000 characters.
+	HeadersVar []LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype `json:"headers,omitempty"`
+
+	// The HTTP request method to use for health checks. If updating to `get`, the
+	// `health_monitor.request.body` property (if set) must be removed.
+	Method *string `json:"method,omitempty"`
+}
+
+// Constants associated with the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.Method property.
+// The HTTP request method to use for health checks. If updating to `get`, the
+// `health_monitor.request.body` property (if set) must be removed.
+const (
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatchMethodGetConst  = "get"
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatchMethodPostConst = "post"
+)
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch)
+	err = core.UnmarshalPrimitive(m, "body", &obj.Body)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "headers", &obj.HeadersVar, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "headers-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "method", &obj.Method)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "method-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch
+func (loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch *LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.Body) {
+		_patch["body"] = loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.Body
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.HeadersVar) {
+		var headersPatches []map[string]interface{}
+		for _, headers := range loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.HeadersVar {
+			headersPatches = append(headersPatches, headers.asPatch())
+		}
+		_patch["headers"] = headersPatches
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.Method) {
+		_patch["method"] = loadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch.Method
+	}
+
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype : The HTTP request to use for health checks. If unspecified, a `request.method` value of
+// `get` will be used with no `request.headers`.
+//
+// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+// Models which "extend" this model:
+// - LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype
+// - LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype struct {
+	// The HTTP request headers to use for health checks. If empty, health check HTTP requests will not have headers.
+	//
+	// Include a `Host` field and its value to enable the `HTTP/1.1` protocol for health checks. If a `Host` header is not
+	// included, `HTTP/1.0` will be used by default. More than one
+	// `Host` header is not allowed.
+	//
+	// A header must not exceed 1000 characters, and all headers combined must not exceed 4000 characters.
+	HeadersVar []LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype `json:"headers,omitempty"`
+
+	// The HTTP request method to use for health checks.
+	Method *string `json:"method,omitempty"`
+
+	// The HTTP request body to use for health checks. If unspecified, health check requests will not have a request body.
+	//
+	// The body must be formatted in a way that is understood by the backend member. If specified, the `request.headers`
+	// array must include a corresponding `Content-Type` header.
+	Body *string `json:"body,omitempty"`
+}
+
+// Constants associated with the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype.Method property.
+// The HTTP request method to use for health checks.
+const (
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeMethodGetConst = "get"
+)
+
+func (*LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype) isaLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype() bool {
+	return true
+}
+
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeIntf interface {
+	isaLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype() bool
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype)
+	err = core.UnmarshalModel(m, "headers", &obj.HeadersVar, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "headers-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "method", &obj.Method)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "method-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "body", &obj.Body)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsResponse : LoadBalancerPoolHealthMonitorTypeHttphttpsResponse struct
+type LoadBalancerPoolHealthMonitorTypeHttphttpsResponse struct {
+	// The PCRE-flavor regular expression that HTTP response bodies must match for successful health checks.
+	//
+	// If absent, health checks will ignore any response body.
+	BodyRegex *string `json:"body_regex,omitempty"`
+
+	// The HTTP response codes expected for successful health checks.
+	Codes []string `json:"codes" validate:"required"`
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponse unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsResponse from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponse(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsResponse)
+	err = core.UnmarshalPrimitive(m, "body_regex", &obj.BodyRegex)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body_regex-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "codes", &obj.Codes)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "codes-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch : Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+type LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch struct {
+	// The PCRE-flavor regular expression that HTTP response bodies will be expected to match for successful health checks.
+	//
+	// Specify `null` to remove the response body for successful health checks. If removed, health checks will ignore any
+	// response body.
+	BodyRegex *string `json:"body_regex,omitempty"`
+
+	// The HTTP response codes to expect for successful health checks.
+	Codes []string `json:"codes,omitempty"`
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch)
+	err = core.UnmarshalPrimitive(m, "body_regex", &obj.BodyRegex)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body_regex-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "codes", &obj.Codes)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "codes-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch
+func (loadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch *LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch.BodyRegex) {
+		_patch["body_regex"] = loadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch.BodyRegex
+	}
+	if !core.IsNil(loadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch.Codes) {
+		_patch["codes"] = loadBalancerPoolHealthMonitorTypeHttphttpsResponsePatch.Codes
+	}
+
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype : The HTTP response to use for health checks. If unspecified, a `response.codes` value of
+// `["200"]` will be used with no `response.body_regex`.
+//
+// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+type LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype struct {
+	// The PCRE-flavor regular expression that HTTP response bodies will be expected to match for successful health checks.
+	//
+	// If unspecified, health checks will ignore any response body.
+	BodyRegex *string `json:"body_regex,omitempty"`
+
+	// The HTTP response codes to expect for successful health checks.
+	Codes []string `json:"codes,omitempty"`
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype)
+	err = core.UnmarshalPrimitive(m, "body_regex", &obj.BodyRegex)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body_regex-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "codes", &obj.Codes)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "codes-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -83287,6 +85320,7 @@ func UnmarshalLoadBalancerPoolMemberReference(m map[string]json.RawMessage, resu
 // - LoadBalancerPoolMemberTargetByReservedIP
 // - LoadBalancerPoolMemberTargetIPNotReservedIP
 // - LoadBalancerPoolMemberTargetLoadBalancerReference
+// - LoadBalancerPoolMemberTargetFqdn
 type LoadBalancerPoolMemberTarget struct {
 	// The CRN for this virtual server instance.
 	CRN *string `json:"crn,omitempty"`
@@ -83314,6 +85348,9 @@ type LoadBalancerPoolMemberTarget struct {
 
 	// The resource type.
 	ResourceType *string `json:"resource_type,omitempty"`
+
+	// A fully qualified domain name for this resource.
+	Fqdn *string `json:"fqdn,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolMemberTarget.ResourceType property.
@@ -83368,6 +85405,11 @@ func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result 
 		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -83383,14 +85425,16 @@ func UnmarshalLoadBalancerPoolMemberTarget(m map[string]json.RawMessage, result 
 // - LoadBalancerPoolMemberTargetPrototypeReservedIPIdentity
 // - LoadBalancerPoolMemberTargetPrototypeIP
 // - LoadBalancerPoolMemberTargetPrototypeLoadBalancerIdentity
+// - LoadBalancerPoolMemberTargetPrototypeFqdn
 type LoadBalancerPoolMemberTargetPrototype struct {
-	// The unique identifier for this virtual server instance.
+	// The unique identifier for this virtual server instance or the unique identifier for this reserved IP or the unique
+	// identifier for this load balancer.
 	ID *string `json:"id,omitempty"`
 
-	// The CRN for this virtual server instance.
+	// The CRN for this virtual server instance or the CRN for this load balancer.
 	CRN *string `json:"crn,omitempty"`
 
-	// The URL for this virtual server instance.
+	// The URL for this virtual server instance or the URL for this reserved IP or the URL for this load balancer.
 	Href *string `json:"href,omitempty"`
 
 	// The IP address.
@@ -83398,6 +85442,9 @@ type LoadBalancerPoolMemberTargetPrototype struct {
 	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
 	// the future.
 	Address *string `json:"address,omitempty"`
+
+	// A fully qualified domain name for this resource.
+	Fqdn *string `json:"fqdn,omitempty"`
 }
 
 func (*LoadBalancerPoolMemberTargetPrototype) isaLoadBalancerPoolMemberTargetPrototype() bool {
@@ -83432,6 +85479,11 @@ func UnmarshalLoadBalancerPoolMemberTargetPrototype(m map[string]json.RawMessage
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
+		return
+	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
 	return
 }
@@ -83450,6 +85502,9 @@ func (loadBalancerPoolMemberTargetPrototype *LoadBalancerPoolMemberTargetPrototy
 	}
 	if !core.IsNil(loadBalancerPoolMemberTargetPrototype.Address) {
 		_patch["address"] = loadBalancerPoolMemberTargetPrototype.Address
+	}
+	if !core.IsNil(loadBalancerPoolMemberTargetPrototype.Fqdn) {
+		_patch["fqdn"] = loadBalancerPoolMemberTargetPrototype.Fqdn
 	}
 
 	return
@@ -83648,6 +85703,10 @@ type LoadBalancerPoolPrototypeLoadBalancerContext struct {
 	// The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp` and `udp` (if
 	// `udp_supported` is `true`). Load balancers in the
 	// `application` family support `tcp`, `http`, and `https`.
+	//
+	// **NOTE**: HTTP sends data in plain text, making it vulnerable to eavesdropping and tampering. Additionally, HTTP has
+	// no built-in mechanism to verify the identity of the server you are connecting to. It is recommended to choose
+	// `https` instead of `http`. For more details, see: https://www.cloudflare.com/learning/ssl/why-is-http-not-secure.
 	Protocol *string `json:"protocol" validate:"required"`
 
 	// The PROXY protocol setting for this pool:
@@ -83679,6 +85738,10 @@ const (
 // The protocol used for this load balancer pool. Load balancers in the `network` family support `tcp` and `udp` (if
 // `udp_supported` is `true`). Load balancers in the
 // `application` family support `tcp`, `http`, and `https`.
+//
+// **NOTE**: HTTP sends data in plain text, making it vulnerable to eavesdropping and tampering. Additionally, HTTP has
+// no built-in mechanism to verify the identity of the server you are connecting to. It is recommended to choose `https`
+// instead of `http`. For more details, see: https://www.cloudflare.com/learning/ssl/why-is-http-not-secure.
 const (
 	LoadBalancerPoolPrototypeLoadBalancerContextProtocolHTTPConst  = "http"
 	LoadBalancerPoolPrototypeLoadBalancerContextProtocolHTTPSConst = "https"
@@ -83951,6 +86014,8 @@ func UnmarshalLoadBalancerPoolSessionPersistencePrototype(m map[string]json.RawM
 type LoadBalancerProfile struct {
 	AccessModes *LoadBalancerProfileAccessModes `json:"access_modes" validate:"required"`
 
+	AdvancedHealthChecksSupported LoadBalancerProfileAdvancedHealthCheckSupportedIntf `json:"advanced_health_checks_supported" validate:"required"`
+
 	Availability LoadBalancerProfileAvailabilityIntf `json:"availability" validate:"required"`
 
 	FailsafePolicyActions LoadBalancerProfileFailsafePolicyActionsIntf `json:"failsafe_policy_actions" validate:"required"`
@@ -83960,6 +86025,8 @@ type LoadBalancerProfile struct {
 	// The enumerated values for this property may
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Family *string `json:"family" validate:"required"`
+
+	FqdnPoolMembersSupported LoadBalancerProfileFqdnSupportedIntf `json:"fqdn_pool_members_supported" validate:"required"`
 
 	// The URL for this load balancer profile.
 	Href *string `json:"href" validate:"required"`
@@ -84004,6 +86071,11 @@ func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface
 		err = core.SDKErrorf(err, "", "access_modes-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "advanced_health_checks_supported", &obj.AdvancedHealthChecksSupported, UnmarshalLoadBalancerProfileAdvancedHealthCheckSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "advanced_health_checks_supported-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "availability", &obj.Availability, UnmarshalLoadBalancerProfileAvailability)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "availability-error", common.GetComponentInfo())
@@ -84017,6 +86089,11 @@ func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface
 	err = core.UnmarshalPrimitive(m, "family", &obj.Family)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "family-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "fqdn_pool_members_supported", &obj.FqdnPoolMembersSupported, UnmarshalLoadBalancerProfileFqdnSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn_pool_members_supported-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
@@ -84113,6 +86190,49 @@ func UnmarshalLoadBalancerProfileAccessModes(m map[string]json.RawMessage, resul
 	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "values-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileAdvancedHealthCheckSupported : LoadBalancerProfileAdvancedHealthCheckSupported struct
+// Models which "extend" this model:
+// - LoadBalancerProfileAdvancedHealthCheckSupportedFixed
+// - LoadBalancerProfileAdvancedHealthCheckSupportedDependent
+type LoadBalancerProfileAdvancedHealthCheckSupported struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *bool `json:"value,omitempty"`
+}
+
+// Constants associated with the LoadBalancerProfileAdvancedHealthCheckSupported.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAdvancedHealthCheckSupportedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileAdvancedHealthCheckSupported) isaLoadBalancerProfileAdvancedHealthCheckSupported() bool {
+	return true
+}
+
+type LoadBalancerProfileAdvancedHealthCheckSupportedIntf interface {
+	isaLoadBalancerProfileAdvancedHealthCheckSupported() bool
+}
+
+// UnmarshalLoadBalancerProfileAdvancedHealthCheckSupported unmarshals an instance of LoadBalancerProfileAdvancedHealthCheckSupported from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAdvancedHealthCheckSupported(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAdvancedHealthCheckSupported)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -84245,6 +86365,49 @@ func (resp *LoadBalancerProfileCollection) GetNextStart() (*string, error) {
 		return nil, nil
 	}
 	return start, nil
+}
+
+// LoadBalancerProfileFqdnSupported : LoadBalancerProfileFqdnSupported struct
+// Models which "extend" this model:
+// - LoadBalancerProfileFqdnSupportedFixed
+// - LoadBalancerProfileFqdnSupportedDependent
+type LoadBalancerProfileFqdnSupported struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *bool `json:"value,omitempty"`
+}
+
+// Constants associated with the LoadBalancerProfileFqdnSupported.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileFqdnSupportedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileFqdnSupported) isaLoadBalancerProfileFqdnSupported() bool {
+	return true
+}
+
+type LoadBalancerProfileFqdnSupportedIntf interface {
+	isaLoadBalancerProfileFqdnSupported() bool
+}
+
+// UnmarshalLoadBalancerProfileFqdnSupported unmarshals an instance of LoadBalancerProfileFqdnSupported from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileFqdnSupported(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileFqdnSupported)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
 }
 
 // LoadBalancerProfileFailsafePolicyActions : LoadBalancerProfileFailsafePolicyActions struct
@@ -85180,6 +87343,9 @@ type NetworkACLRule struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -85192,6 +87358,9 @@ type NetworkACLRule struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
@@ -85204,6 +87373,9 @@ type NetworkACLRule struct {
 	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -85245,6 +87417,9 @@ const (
 
 // Constants associated with the NetworkACLRule.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleIPVersionIpv4Const = "ipv4"
 )
@@ -87016,6 +89191,9 @@ type NetworkACLRuleItem struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -87028,6 +89206,9 @@ type NetworkACLRuleItem struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
@@ -87040,6 +89221,9 @@ type NetworkACLRuleItem struct {
 	Protocol *string `json:"protocol" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -87081,6 +89265,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItem.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemIPVersionIpv4Const = "ipv4"
 )
@@ -88834,7 +91021,7 @@ type NetworkACLRulePatch struct {
 	// Specify `null` to remove an existing ICMP traffic code.
 	Code *int64 `json:"code,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination,omitempty"`
 
 	// The inclusive upper bound of the TCP or UDP destination port range.
@@ -88853,7 +91040,7 @@ type NetworkACLRulePatch struct {
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source,omitempty"`
 
 	// The inclusive upper bound of the TCP or UDP source port range.
@@ -89016,13 +91203,13 @@ type NetworkACLRulePrototype struct {
 	// If unspecified, this rule will be inserted after all existing rules.
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
@@ -89032,7 +91219,7 @@ type NetworkACLRulePrototype struct {
 	// The network protocol.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -89087,7 +91274,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -89453,13 +91640,13 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
@@ -89469,7 +91656,7 @@ type NetworkACLRulePrototypeNetworkACLContext struct {
 	// The network protocol.
 	Protocol *string `json:"protocol" validate:"required"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -89524,7 +91711,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContext.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextIPVersionIpv4Const = "ipv4"
 )
@@ -91760,7 +93947,10 @@ func UnmarshalPrivatePathServiceGatewayRemote(m map[string]json.RawMessage, resu
 
 // PublicAddressRange : PublicAddressRange struct
 type PublicAddressRange struct {
-	// The public IPv4 range, expressed in CIDR format.
+	// The public IP address block for this public address range, expressed in CIDR format.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
+	// blocks in the future.
 	CIDR *string `json:"cidr" validate:"required"`
 
 	// The date and time that the public address range was created.
@@ -93154,9 +95344,9 @@ type ReplaceBareMetalServerInitializationOptions struct {
 	// cloud-init vendor data. For cloud-init enabled images, these keys will also be added as SSH authorized keys for the
 	// [default user](https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
 	//
-	// For Windows images, at least one key must be specified, and one will be selected to encrypt the administrator
-	// password. Keys are optional for other images, but if no keys are specified, the bare metal server will be
-	// inaccessible unless the specified image provides another means of access.
+	// For Windows images, at least one SSH key of type `rsa` must be specified. One of the provided keys is selected to
+	// encrypt the administrator password. SSH keys are optional for other images; however, if no keys are specified, the
+	// bare metal server will be inaccessible unless the selected image provides an alternative access mechanism.
 	Keys []KeyIdentityIntf `json:"keys" validate:"required"`
 
 	// The default trusted profile to be used when initializing the bare metal server.
@@ -93164,7 +95354,8 @@ type ReplaceBareMetalServerInitializationOptions struct {
 	// If unspecified, no default trusted profile will be made available.
 	DefaultTrustedProfile *BareMetalServerInitializationDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
-	// The user data to be made available when initializing the bare metal server.
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the bare metal
+	// server.
 	UserData *string `json:"user_data,omitempty"`
 
 	// Allows users to set headers on API requests.
@@ -94981,13 +97172,13 @@ func UnmarshalReservedIPTarget(m map[string]json.RawMessage, result interface{})
 // - ReservedIPTargetPrototypeEndpointGatewayIdentity
 // - ReservedIPTargetPrototypeVirtualNetworkInterfaceIdentity
 type ReservedIPTargetPrototype struct {
-	// The unique identifier for this endpoint gateway.
+	// The unique identifier for this endpoint gateway or the unique identifier for this virtual network interface.
 	ID *string `json:"id,omitempty"`
 
-	// The CRN for this endpoint gateway.
+	// The CRN for this endpoint gateway or the CRN for this virtual network interface.
 	CRN *string `json:"crn,omitempty"`
 
-	// The URL for this endpoint gateway.
+	// The URL for this endpoint gateway or the URL for this virtual network interface.
 	Href *string `json:"href,omitempty"`
 }
 
@@ -96283,15 +98474,15 @@ func (resp *RoutingTableCollection) GetNextStart() (*string, error) {
 
 // RoutingTableIdentity : Identifies a routing table by a unique property.
 // Models which "extend" this model:
-// - RoutingTableIdentityByCRN
 // - RoutingTableIdentityByID
+// - RoutingTableIdentityByCRN
 // - RoutingTableIdentityByHref
 type RoutingTableIdentity struct {
-	// The CRN for this VPC routing table.
-	CRN *string `json:"crn,omitempty"`
-
 	// The unique identifier for this routing table.
 	ID *string `json:"id,omitempty"`
+
+	// The CRN for this VPC routing table.
+	CRN *string `json:"crn,omitempty"`
 
 	// The URL for this routing table.
 	Href *string `json:"href,omitempty"`
@@ -96309,14 +98500,14 @@ type RoutingTableIdentityIntf interface {
 // UnmarshalRoutingTableIdentity unmarshals an instance of RoutingTableIdentity from the specified map of raw messages.
 func UnmarshalRoutingTableIdentity(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(RoutingTableIdentity)
-	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "crn-error", common.GetComponentInfo())
-		return
-	}
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "crn-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
@@ -96331,11 +98522,11 @@ func UnmarshalRoutingTableIdentity(m map[string]json.RawMessage, result interfac
 // asPatch returns a generic map representation of the RoutingTableIdentity
 func (routingTableIdentity *RoutingTableIdentity) asPatch() (_patch map[string]interface{}) {
 	_patch = map[string]interface{}{}
-	if !core.IsNil(routingTableIdentity.CRN) {
-		_patch["crn"] = routingTableIdentity.CRN
-	}
 	if !core.IsNil(routingTableIdentity.ID) {
 		_patch["id"] = routingTableIdentity.ID
+	}
+	if !core.IsNil(routingTableIdentity.CRN) {
+		_patch["crn"] = routingTableIdentity.CRN
 	}
 	if !core.IsNil(routingTableIdentity.Href) {
 		_patch["href"] = routingTableIdentity.Href
@@ -96854,11 +99045,13 @@ type SecurityGroupRule struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The local IP address or range of local IP addresses to which this rule will allow inbound
@@ -96904,11 +99097,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRule.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleIPVersionIpv4Const = "ipv4"
 )
@@ -98590,8 +100785,8 @@ func UnmarshalSecurityGroupRuleCollection(m map[string]json.RawMessage, result i
 // outbound traffic). A CIDR block of `0.0.0.0/0` allows traffic to all local IP addresses (or from all local IP
 // addresses, for outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleLocalIP
-// - SecurityGroupRuleLocalCIDR
+// - SecurityGroupRuleLocalSecurityGroupRuleIP
+// - SecurityGroupRuleLocalSecurityGroupRuleCIDR
 type SecurityGroupRuleLocal struct {
 	// The IP address.
 	//
@@ -98601,8 +100796,8 @@ type SecurityGroupRuleLocal struct {
 
 	// The CIDR block.
 	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 }
 
@@ -98637,19 +100832,13 @@ func UnmarshalSecurityGroupRuleLocal(m map[string]json.RawMessage, result interf
 // Specify a CIDR block of `0.0.0.0/0` to allow traffic to all local IP addresses (or from all local IP addresses, for
 // outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleLocalPatchIP
-// - SecurityGroupRuleLocalPatchCIDR
+// - SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype
+// - SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype
 type SecurityGroupRuleLocalPatch struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address,omitempty"`
 
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 }
 
@@ -98698,19 +100887,13 @@ func (securityGroupRuleLocalPatch *SecurityGroupRuleLocalPatch) asPatch() (_patc
 // If unspecified, a CIDR block of `0.0.0.0/0` will be used to allow traffic to all local IP addresses (or from all
 // local IP addresses, for outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleLocalPrototypeIP
-// - SecurityGroupRuleLocalPrototypeCIDR
+// - SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype
+// - SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype
 type SecurityGroupRuleLocalPrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address,omitempty"`
 
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 }
 
@@ -98752,8 +100935,8 @@ type SecurityGroupRulePatch struct {
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The local IP address or range of local IP addresses to which this rule will allow inbound
@@ -98781,8 +100964,10 @@ type SecurityGroupRulePatch struct {
 
 	// The remote IP addresses or security groups from which this rule will allow traffic (or to
 	// which, for outbound rules). Can be specified as an IP address, a CIDR block, or a
-	// security group. A CIDR block of `0.0.0.0/0` will allow traffic from any source (or to
-	// any destination, for outbound rules).
+	// security group.
+	//
+	// Specify a CIDR block of `0.0.0.0/0` to allow traffic from any source (or to any
+	// destination, for outbound rules).
 	Remote SecurityGroupRuleRemotePatchIntf `json:"remote,omitempty"`
 
 	// The ICMP traffic type to allow.
@@ -98802,8 +100987,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePatchIPVersionIpv4Const = "ipv4"
 )
@@ -98908,8 +101093,8 @@ type SecurityGroupRulePrototype struct {
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The local IP address or range of local IP addresses to which this rule will allow inbound
@@ -98968,8 +101153,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -99306,8 +101491,8 @@ func UnmarshalSecurityGroupRulePrototype(m map[string]json.RawMessage, result in
 // CIDR block of `0.0.0.0/0` allows traffic from any source
 // (or to any destination, for outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleRemoteIP
-// - SecurityGroupRuleRemoteCIDR
+// - SecurityGroupRuleRemoteSecurityGroupRuleIP
+// - SecurityGroupRuleRemoteSecurityGroupRuleCIDR
 // - SecurityGroupRuleRemoteSecurityGroupReference
 type SecurityGroupRuleRemote struct {
 	// The IP address.
@@ -99318,8 +101503,8 @@ type SecurityGroupRuleRemote struct {
 
 	// The CIDR block.
 	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 
 	// The CRN for this security group.
@@ -99390,23 +101575,18 @@ func UnmarshalSecurityGroupRuleRemote(m map[string]json.RawMessage, result inter
 }
 
 // SecurityGroupRuleRemotePatch : The remote IP addresses or security groups from which this rule will allow traffic (or to which, for outbound rules).
-// Can be specified as an IP address, a CIDR block, or a security group. A CIDR block of `0.0.0.0/0` will allow traffic
-// from any source (or to any destination, for outbound rules).
+// Can be specified as an IP address, a CIDR block, or a security group.
+//
+// Specify a CIDR block of `0.0.0.0/0` to allow traffic from any source (or to any destination, for outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleRemotePatchIP
-// - SecurityGroupRuleRemotePatchCIDR
+// - SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype
+// - SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype
 // - SecurityGroupRuleRemotePatchSecurityGroupIdentity
 type SecurityGroupRuleRemotePatch struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address,omitempty"`
 
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 
 	// The unique identifier for this security group.
@@ -99488,20 +101668,14 @@ func (securityGroupRuleRemotePatch *SecurityGroupRuleRemotePatch) asPatch() (_pa
 // If unspecified, a CIDR block of `0.0.0.0/0` will be used to allow traffic from any source
 // (or to any destination, for outbound rules).
 // Models which "extend" this model:
-// - SecurityGroupRuleRemotePrototypeIP
-// - SecurityGroupRuleRemotePrototypeCIDR
+// - SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype
+// - SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype
 // - SecurityGroupRuleRemotePrototypeSecurityGroupIdentity
 type SecurityGroupRuleRemotePrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address,omitempty"`
 
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block,omitempty"`
 
 	// The unique identifier for this security group.
@@ -101569,6 +103743,8 @@ type SharePatch struct {
 	//   mount target control access to the mount target.
 	// - `vpc`: All clients in the VPC for a mount target have access to the mount target.
 	//
+	// The `vpc` access control mode has been deprecated. Use `security_group` instead.
+	//
 	// For this property to be changed, the share must have no mount targets,
 	// `replication_role` must be `none` and `accessor_binding_role` must not be `accessor`.
 	AccessControlMode *string `json:"access_control_mode,omitempty"`
@@ -101637,6 +103813,8 @@ type SharePatch struct {
 //   - `security_group`: The security groups on the virtual network interface for a
 //     mount target control access to the mount target.
 //   - `vpc`: All clients in the VPC for a mount target have access to the mount target.
+//
+// The `vpc` access control mode has been deprecated. Use `security_group` instead.
 //
 // For this property to be changed, the share must have no mount targets,
 // `replication_role` must be `none` and `accessor_binding_role` must not be `accessor`.
@@ -102583,6 +104761,8 @@ type SharePrototype struct {
 	//   require a virtual network interface.
 	// - `vpc`: All clients in the VPC for a mount target have access to the mount target.
 	//   Mount targets for this share require a VPC.
+	//
+	// The `vpc` access control mode has been deprecated. Use `security_group` instead.
 	AccessControlMode *string `json:"access_control_mode,omitempty"`
 
 	// The access protocols to allow for this share. If unspecified:
@@ -102687,6 +104867,8 @@ const (
 //     require a virtual network interface.
 //   - `vpc`: All clients in the VPC for a mount target have access to the mount target.
 //     Mount targets for this share require a VPC.
+//
+// The `vpc` access control mode has been deprecated. Use `security_group` instead.
 const (
 	SharePrototypeAccessControlModeSecurityGroupConst = "security_group"
 	SharePrototypeAccessControlModeVPCConst           = "vpc"
@@ -104279,6 +106461,11 @@ func (resp *SnapshotCollection) GetNextStart() (*string, error) {
 
 // SnapshotConsistencyGroup : SnapshotConsistencyGroup struct
 type SnapshotConsistencyGroup struct {
+	// If present, the backup policy job that created this snapshot consistency group.
+	// Snapshot consistency groups with the same backup policy job identifier represent
+	// snapshots of the same instance across different storage generations.
+	BackupPolicyJob *BackupPolicyJobReference `json:"backup_policy_job,omitempty"`
+
 	// If present, the backup policy plan which created this snapshot consistency group.
 	BackupPolicyPlan *BackupPolicyPlanReference `json:"backup_policy_plan,omitempty"`
 
@@ -104341,6 +106528,11 @@ const (
 // UnmarshalSnapshotConsistencyGroup unmarshals an instance of SnapshotConsistencyGroup from the specified map of raw messages.
 func UnmarshalSnapshotConsistencyGroup(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(SnapshotConsistencyGroup)
+	err = core.UnmarshalModel(m, "backup_policy_job", &obj.BackupPolicyJob, UnmarshalBackupPolicyJobReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "backup_policy_job-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "backup_policy_plan", &obj.BackupPolicyPlan, UnmarshalBackupPolicyPlanReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "backup_policy_plan-error", common.GetComponentInfo())
@@ -104528,9 +106720,9 @@ type SnapshotConsistencyGroupPrototype struct {
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The data-consistent member snapshots to create.  Each snapshot must specify a
-	// `source_volume` attached to the same virtual server instance, and all source volumes must have a
-	// `storage_generation` value of `1`.
+	// The data-consistent member snapshots to create. Each snapshot must specify a
+	// `source_volume` attached to the same virtual server instance, and all source volumes must have the same
+	// `storage_generation` value.
 	Snapshots []SnapshotPrototypeSnapshotConsistencyGroupContext `json:"snapshots,omitempty"`
 }
 
@@ -107933,6 +110125,10 @@ type UpdateLoadBalancerPoolOptions struct {
 	// The load balancer pool patch.
 	LoadBalancerPoolPatch map[string]interface{} `json:"LoadBalancerPool_patch" validate:"required"`
 
+	// If present, the request will fail if the specified ETag value does not match the resource's current ETag value.
+	// Required if the request body includes an array.
+	IfMatch *string `json:"If-Match,omitempty"`
+
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -107961,6 +110157,12 @@ func (_options *UpdateLoadBalancerPoolOptions) SetID(id string) *UpdateLoadBalan
 // SetLoadBalancerPoolPatch : Allow user to set LoadBalancerPoolPatch
 func (_options *UpdateLoadBalancerPoolOptions) SetLoadBalancerPoolPatch(loadBalancerPoolPatch map[string]interface{}) *UpdateLoadBalancerPoolOptions {
 	_options.LoadBalancerPoolPatch = loadBalancerPoolPatch
+	return _options
+}
+
+// SetIfMatch : Allow user to set IfMatch
+func (_options *UpdateLoadBalancerPoolOptions) SetIfMatch(ifMatch string) *UpdateLoadBalancerPoolOptions {
+	_options.IfMatch = core.StringPtr(ifMatch)
 	return _options
 }
 
@@ -108760,6 +110962,54 @@ func (_options *UpdateVirtualNetworkInterfaceOptions) SetIfMatch(ifMatch string)
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateVirtualNetworkInterfaceOptions) SetHeaders(param map[string]string) *UpdateVirtualNetworkInterfaceOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateVolumeJobOptions : The UpdateVolumeJob options.
+type UpdateVolumeJobOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume job identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The volume job patch.
+	VolumeJobPatch map[string]interface{} `json:"VolumeJob_patch" validate:"required"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewUpdateVolumeJobOptions : Instantiate UpdateVolumeJobOptions
+func (*VpcV1) NewUpdateVolumeJobOptions(volumeID string, id string, volumeJobPatch map[string]interface{}) *UpdateVolumeJobOptions {
+	return &UpdateVolumeJobOptions{
+		VolumeID:       core.StringPtr(volumeID),
+		ID:             core.StringPtr(id),
+		VolumeJobPatch: volumeJobPatch,
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *UpdateVolumeJobOptions) SetVolumeID(volumeID string) *UpdateVolumeJobOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateVolumeJobOptions) SetID(id string) *UpdateVolumeJobOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetVolumeJobPatch : Allow user to set VolumeJobPatch
+func (_options *UpdateVolumeJobOptions) SetVolumeJobPatch(volumeJobPatch map[string]interface{}) *UpdateVolumeJobOptions {
+	_options.VolumeJobPatch = volumeJobPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateVolumeJobOptions) SetHeaders(param map[string]string) *UpdateVolumeJobOptions {
 	options.Headers = param
 	return options
 }
@@ -112225,13 +114475,13 @@ func (vpnGatewayConnectionPatch *VPNGatewayConnectionPatch) AsPatch() (_patch ma
 // VPNGatewayConnectionPeerPatch : VPNGatewayConnectionPeerPatch struct
 // Models which "extend" this model:
 // - VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch
-// - VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch
 // - VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatch
 type VPNGatewayConnectionPeerPatch struct {
-	// The IP address of the peer VPN gateway for this connection.
+	// The IP address of the peer VPN gateway for this connection or the IP address of the peer VPN gateway for this
+	// connection.
 	Address *string `json:"address,omitempty"`
 
-	// The FQDN of the peer VPN gateway for this connection.
+	// The FQDN of the peer VPN gateway for this connection or the FQDN of the peer VPN gateway for this connection.
 	Fqdn *string `json:"fqdn,omitempty"`
 
 	// The peer autonomous system number (ASN) for this VPN gateway connection. The ASN values in the
@@ -116609,7 +118859,9 @@ func UnmarshalVolumeAttachmentCollection(m map[string]json.RawMessage, result in
 	return
 }
 
-// VolumeAttachmentDevice : VolumeAttachmentDevice struct
+// VolumeAttachmentDevice : The configuration for the volume as a device in the instance operating system.
+//
+// This property may be absent if the volume attachment's `status` is not `attached`.
 type VolumeAttachmentDevice struct {
 	// A unique identifier for the device which is exposed to the instance operating system.
 	ID *string `json:"id" validate:"required"`
@@ -116904,10 +119156,16 @@ type VolumeAttachmentPrototypeVolume struct {
 	UserTags []string `json:"user_tags,omitempty"`
 
 	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// volume's profile or the capacity to use for the volume (in gigabytes). The specified value must be at least the
+	// snapshot's `minimum_capacity`, and must be within the `capacity` range of the volume's profile.
+	//
+	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
+	//
+	// If unspecified, the `encryption` type for the volume will be `provider_managed` or the root key to use to wrap the
+	// data encryption key for the volume.
 	//
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
@@ -117408,6 +119666,446 @@ func (resp *VolumeInstanceProfileCollection) GetNextStart() (*string, error) {
 		return nil, nil
 	}
 	return start, nil
+}
+
+// VolumeJob : VolumeJob struct
+// Models which "extend" this model:
+// - VolumeJobTypeMigrate
+type VolumeJob struct {
+	// Indicates whether this volume job will be automatically deleted after it completes. At present, this is always
+	// `false`, but may be modifiable in the future.
+	AutoDelete *bool `json:"auto_delete" validate:"required"`
+
+	// The date and time that the volume job was completed.
+	//
+	// If absent, the volume job has not yet completed.
+	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
+
+	// The date and time that the volume job was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The date and time that the volume job is estimated to complete.
+	//
+	// If absent, the volume job is still queued and has not yet started.
+	EstimatedCompletionAt *strfmt.DateTime `json:"estimated_completion_at,omitempty"`
+
+	// The URL for this volume job.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume job.
+	ID *string `json:"id" validate:"required"`
+
+	// The type of volume job.
+	//
+	// - `migrate`: Migrates a volume to a new `storage_generation` profile.
+	//              During the migration process, the volume will be `busy`.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	JobType *string `json:"job_type" validate:"required"`
+
+	// The name for this volume job. The name must not be used by another job for this volume.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The date and time that the volume job was started.
+	//
+	// If absent, the volume job has not yet started.
+	StartedAt *strfmt.DateTime `json:"started_at,omitempty"`
+
+	// The status of this volume job:
+	// - `canceled`:  the job is canceled
+	// - `canceling`: the job is being canceled
+	// - `deleting`:  the job is being deleted
+	// - `failed`:    the job could not be completed successfully
+	// - `queued`:    the job is queued
+	// - `running`:   the job is in progress
+	// - `succeeded`: the job completed successfully
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current status (if any).
+	StatusReasons []VolumeJobStatusReason `json:"status_reasons" validate:"required"`
+
+	// The parameters to use after the volume is migrated.
+	Parameters *VolumeJobTypeMigrateParameters `json:"parameters,omitempty"`
+}
+
+// Constants associated with the VolumeJob.JobType property.
+// The type of volume job.
+//
+//   - `migrate`: Migrates a volume to a new `storage_generation` profile.
+//     During the migration process, the volume will be `busy`.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+const (
+	VolumeJobJobTypeMigrateConst = "migrate"
+)
+
+// Constants associated with the VolumeJob.ResourceType property.
+// The resource type.
+const (
+	VolumeJobResourceTypeVolumeJobConst = "volume_job"
+)
+
+// Constants associated with the VolumeJob.Status property.
+// The status of this volume job:
+// - `canceled`:  the job is canceled
+// - `canceling`: the job is being canceled
+// - `deleting`:  the job is being deleted
+// - `failed`:    the job could not be completed successfully
+// - `queued`:    the job is queued
+// - `running`:   the job is in progress
+// - `succeeded`: the job completed successfully
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+const (
+	VolumeJobStatusCanceledConst  = "canceled"
+	VolumeJobStatusCancelingConst = "canceling"
+	VolumeJobStatusDeletingConst  = "deleting"
+	VolumeJobStatusFailedConst    = "failed"
+	VolumeJobStatusQueuedConst    = "queued"
+	VolumeJobStatusRunningConst   = "running"
+	VolumeJobStatusSucceededConst = "succeeded"
+)
+
+func (*VolumeJob) isaVolumeJob() bool {
+	return true
+}
+
+type VolumeJobIntf interface {
+	isaVolumeJob() bool
+}
+
+// UnmarshalVolumeJob unmarshals an instance of VolumeJob from the specified map of raw messages.
+func UnmarshalVolumeJob(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJob)
+	err = core.UnmarshalPrimitive(m, "auto_delete", &obj.AutoDelete)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "auto_delete-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "completed_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "created_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "estimated_completion_at", &obj.EstimatedCompletionAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "estimated_completion_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "job_type", &obj.JobType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "job_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "started_at", &obj.StartedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "started_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "status-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVolumeJobStatusReason)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "status_reasons-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "parameters", &obj.Parameters, UnmarshalVolumeJobTypeMigrateParameters)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "parameters-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeJobCollection : VolumeJobCollection struct
+type VolumeJobCollection struct {
+	// A link to the first page of resources.
+	First *PageLink `json:"first" validate:"required"`
+
+	// The jobs for this volume.
+	Jobs []VolumeJobIntf `json:"jobs" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PageLink `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalVolumeJobCollection unmarshals an instance of VolumeJobCollection from the specified map of raw messages.
+func UnmarshalVolumeJobCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobCollection)
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "first-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "jobs", &obj.Jobs, UnmarshalVolumeJob)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "jobs-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "limit-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "next-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "total_count-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *VolumeJobCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "read-query-param-error", common.GetComponentInfo())
+		return nil, err
+	} else if start == nil {
+		return nil, nil
+	}
+	return start, nil
+}
+
+// VolumeJobPatch : VolumeJobPatch struct
+type VolumeJobPatch struct {
+	// The name for this volume job. The name must not be used by another job for this volume.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalVolumeJobPatch unmarshals an instance of VolumeJobPatch from the specified map of raw messages.
+func UnmarshalVolumeJobPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the VolumeJobPatch
+func (volumeJobPatch *VolumeJobPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(volumeJobPatch.Name) {
+		_patch["name"] = volumeJobPatch.Name
+	}
+
+	return
+}
+
+// VolumeJobPrototype : VolumeJobPrototype struct
+// Models which "extend" this model:
+// - VolumeJobPrototypeVolumeJobTypeMigratePrototype
+type VolumeJobPrototype struct {
+	// The type of job this volume job will perform.
+	//
+	// - `migrate`: Migrates a volume to a new `storage_generation` profile.
+	//              During the migration process, the volume will be `busy`.
+	JobType *string `json:"job_type" validate:"required"`
+
+	// The name for this volume job. The name must not be used by another job for this volume. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The parameters to use after the volume is migrated.
+	Parameters *VolumeJobTypeMigrateParameters `json:"parameters" validate:"required"`
+}
+
+// Constants associated with the VolumeJobPrototype.JobType property.
+// The type of job this volume job will perform.
+//
+//   - `migrate`: Migrates a volume to a new `storage_generation` profile.
+//     During the migration process, the volume will be `busy`.
+const (
+	VolumeJobPrototypeJobTypeMigrateConst = "migrate"
+)
+
+func (*VolumeJobPrototype) isaVolumeJobPrototype() bool {
+	return true
+}
+
+type VolumeJobPrototypeIntf interface {
+	isaVolumeJobPrototype() bool
+}
+
+// UnmarshalVolumeJobPrototype unmarshals an instance of VolumeJobPrototype from the specified map of raw messages.
+func UnmarshalVolumeJobPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobPrototype)
+	err = core.UnmarshalPrimitive(m, "job_type", &obj.JobType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "job_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "parameters", &obj.Parameters, UnmarshalVolumeJobTypeMigrateParameters)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "parameters-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeJobStatusReason : VolumeJobStatusReason struct
+type VolumeJobStatusReason struct {
+	// A reason code for the status:
+	// - `instance_powered_off`: The instance the volume is attached to has been powered off
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `volume_detached_from_instance`: The volume is not attached to a running instance.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the status reason.
+	Message *string `json:"message" validate:"required"`
+
+	// A link to documentation about this status reason.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the VolumeJobStatusReason.Code property.
+// A reason code for the status:
+// - `instance_powered_off`: The instance the volume is attached to has been powered off
+// - `internal_error`: Internal error (contact IBM support)
+// - `volume_detached_from_instance`: The volume is not attached to a running instance.
+const (
+	VolumeJobStatusReasonCodeInstancePoweredOffConst         = "instance_powered_off"
+	VolumeJobStatusReasonCodeInternalErrorConst              = "internal_error"
+	VolumeJobStatusReasonCodeVolumeDetachedFromInstanceConst = "volume_detached_from_instance"
+)
+
+// UnmarshalVolumeJobStatusReason unmarshals an instance of VolumeJobStatusReason from the specified map of raw messages.
+func UnmarshalVolumeJobStatusReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobStatusReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "code-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "message-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "more_info-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeJobTypeMigrateParameters : The parameters to use after the volume is migrated.
+type VolumeJobTypeMigrateParameters struct {
+	// The value to use for the volume's `bandwidth` after migration.
+	//
+	// If specified, the volume profile after migration must not have a `bandwidth.type` of
+	// `dependent`.
+	Bandwidth *int64 `json:"bandwidth,omitempty"`
+
+	// The value to use for the volume's `iops` after migration.
+	//
+	// If specified, the volume profile after migration must not have an `iops.type` of
+	// `dependent`.
+	Iops *int64 `json:"iops,omitempty"`
+
+	// The profile with a `storage_generation` value of `2` to migrate the volume to.
+	//
+	// The volume's current profile must have a `storage_generation` value of `1`.
+	Profile VolumeProfileIdentityIntf `json:"profile" validate:"required"`
+}
+
+// NewVolumeJobTypeMigrateParameters : Instantiate VolumeJobTypeMigrateParameters (Generic Model Constructor)
+func (*VpcV1) NewVolumeJobTypeMigrateParameters(profile VolumeProfileIdentityIntf) (_model *VolumeJobTypeMigrateParameters, err error) {
+	_model = &VolumeJobTypeMigrateParameters{
+		Profile: profile,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+// UnmarshalVolumeJobTypeMigrateParameters unmarshals an instance of VolumeJobTypeMigrateParameters from the specified map of raw messages.
+func UnmarshalVolumeJobTypeMigrateParameters(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobTypeMigrateParameters)
+	err = core.UnmarshalPrimitive(m, "bandwidth", &obj.Bandwidth)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "bandwidth-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "iops", &obj.Iops)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "iops-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalVolumeProfileIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "profile-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
 }
 
 // VolumePatch : VolumePatch struct
@@ -118269,10 +120967,16 @@ type VolumePrototype struct {
 	Zone ZoneIdentityIntf `json:"zone" validate:"required"`
 
 	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// volume's profile or the capacity to use for the volume (in gigabytes). The specified value must be at least the
+	// snapshot's `minimum_capacity`, and must be within the `capacity` range of the volume's profile.
+	//
+	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
+	//
+	// If unspecified, the `encryption` type for the volume will be `provider_managed` or the root key to use to wrap the
+	// data encryption key for the volume.
 	//
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
@@ -118383,10 +121087,14 @@ type VolumePrototypeInstanceByImageContext struct {
 	Bandwidth *int64 `json:"bandwidth,omitempty"`
 
 	// The capacity to use for the volume (in gigabytes). The specified value must be at least the image's
-	// `minimum_provisioned_size`, at most 250 gigabytes, and within the
-	// `boot_capacity` range of the volume's profile.
+	// `minimum_provisioned_size`, at most 250 gigabytes for
+	// `storage_generation: 1` or at most 32,000 gigabytes for `storage_generation: 2`, and within the `boot_capacity`
+	// range of the volume's profile.
 	//
-	// If unspecified, the capacity will be the image's `minimum_provisioned_size`.
+	// If unspecified, the capacity will depend on the image:
+	// - When using a system-provided image, 100 gigabytes or the `minimum_provisioned_size`
+	//   of the image, whichever is larger.
+	// - When using a custom image, the `minimum_provisioned_size` of the image.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -118502,7 +121210,9 @@ type VolumePrototypeInstanceBySourceSnapshotContext struct {
 	Bandwidth *int64 `json:"bandwidth,omitempty"`
 
 	// The capacity to use for the volume (in gigabytes). The specified value must be at least the snapshot's
-	// `minimum_capacity`, at most 250 gigabytes, and within the `boot_capacity` range of the volume's profile.
+	// `minimum_capacity`, at most 250 gigabytes for
+	// `storage_generation: 1` or at most 32,000 gigabytes for `storage_generation: 2`, and within the `boot_capacity`
+	// range of the volume's profile.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
@@ -119865,8 +122575,8 @@ type BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototype struct 
 	// The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
 	// will be subject to the backup policy.
 	//
-	// A backup policy of type `instance` will create a backup of all volumes with a
-	// `storage_generation` value of `1` attached to the instance.
+	// If the targeted instance contains volumes with different `storage_generation` values, a backup policy of type
+	// `instance` will create separate backups for each `storage_generation` present.
 	MatchResourceType *string `json:"match_resource_type" validate:"required"`
 }
 
@@ -119881,8 +122591,8 @@ const (
 // The resource type this backup policy will apply to. Resources that have both a matching type and a matching user tag
 // will be subject to the backup policy.
 //
-// A backup policy of type `instance` will create a backup of all volumes with a
-// `storage_generation` value of `1` attached to the instance.
+// If the targeted instance contains volumes with different `storage_generation` values, a backup policy of type
+// `instance` will create separate backups for each `storage_generation` present.
 const (
 	BackupPolicyPrototypeBackupPolicyMatchResourceTypeInstancePrototypeMatchResourceTypeInstanceConst = "instance"
 )
@@ -125564,8 +128274,9 @@ func UnmarshalDedicatedHostPrototypeDedicatedHostByZone(m map[string]json.RawMes
 // This model "extends" EncryptionKeyIdentity
 type EncryptionKeyIdentityByCRN struct {
 	// The CRN of the [Key Protect Root
-	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto
-	// Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+	// Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) for this resource.
+	//
+	// The use of Hyper Protect Crypto Services for encryption keys has been deprecated.
 	CRN *string `json:"crn" validate:"required"`
 }
 
@@ -127691,10 +130402,11 @@ type ImagePrototypeImageByFile struct {
 	// A base64-encoded, encrypted representation of the key that was used to encrypt the data for this image.
 	//
 	// That representation is created by wrapping the key's value with the `encryption_key` root key (which must also be
-	// specified), using either [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-wrap-keys) or the
-	// [Hyper Protect Crypto Services](https://cloud.ibm.com/docs/services/hs-crypto?topic=hs-crypto-wrap-keys).
+	// specified), using [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-wrap-keys).
 	//
 	// If unspecified, the imported image is treated as unencrypted.
+	//
+	// The use of Hyper Protect Crypto Services for image encryption keys has been deprecated.
 	EncryptedDataKey *string `json:"encrypted_data_key,omitempty"`
 
 	// The root key that was used to wrap the data key (which is ultimately represented as
@@ -137071,6 +139783,18 @@ type LoadBalancerPoolHealthMonitorPrototypeLoadBalancerPoolHealthMonitorTypeHttp
 	// The seconds to wait for a response to a health check.  Must be less than `delay`.
 	Timeout *int64 `json:"timeout" validate:"required"`
 
+	// The HTTP request to use for health checks. If unspecified, a `request.method` value of
+	// `get` will be used with no `request.headers`.
+	//
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Request LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeIntf `json:"request,omitempty"`
+
+	// The HTTP response to use for health checks. If unspecified, a `response.codes` value of
+	// `["200"]` will be used with no `response.body_regex`.
+	//
+	// Supported by load balancers with `advanced_health_checks_supported` set to `true`.
+	Response *LoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype `json:"response,omitempty"`
+
 	// The protocol type to use for health checks.
 	//
 	// Load balancers in the `network` family do not support the `https` protocol.
@@ -137131,6 +139855,16 @@ func UnmarshalLoadBalancerPoolHealthMonitorPrototypeLoadBalancerPoolHealthMonito
 	err = core.UnmarshalPrimitive(m, "timeout", &obj.Timeout)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "timeout-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "request", &obj.Request, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "request-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "response", &obj.Response, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "response-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
@@ -137242,6 +139976,10 @@ type LoadBalancerPoolHealthMonitorTypeHttphttps struct {
 	// The seconds to wait for a response to a health check.
 	Timeout *int64 `json:"timeout" validate:"required"`
 
+	Request *LoadBalancerPoolHealthMonitorTypeHttphttpsRequest `json:"request" validate:"required"`
+
+	Response *LoadBalancerPoolHealthMonitorTypeHttphttpsResponse `json:"response" validate:"required"`
+
 	// The protocol type used for health checks.
 	Type *string `json:"type" validate:"required"`
 
@@ -137284,6 +140022,16 @@ func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttps(m map[string]json.RawMe
 		err = core.SDKErrorf(err, "", "timeout-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "request", &obj.Request, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequest)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "request-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "response", &obj.Response, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsResponse)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "response-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
@@ -137292,6 +140040,106 @@ func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttps(m map[string]json.RawMe
 	err = core.UnmarshalPrimitive(m, "url_path", &obj.URLPath)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "url_path-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype : LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype struct
+// This model "extends" LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype struct {
+	// The HTTP request headers to use for health checks. If empty, health check HTTP requests will not have headers.
+	//
+	// Include a `Host` field and its value to enable the `HTTP/1.1` protocol for health checks. If a `Host` header is not
+	// included, `HTTP/1.0` will be used by default. More than one
+	// `Host` header is not allowed.
+	//
+	// A header must not exceed 1000 characters, and all headers combined must not exceed 4000 characters.
+	HeadersVar []LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype `json:"headers,omitempty"`
+
+	// The HTTP request method to use for health checks.
+	Method *string `json:"method,omitempty"`
+}
+
+// Constants associated with the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype.Method property.
+// The HTTP request method to use for health checks.
+const (
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototypeMethodGetConst = "get"
+)
+
+func (*LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype) isaLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestGetPrototype)
+	err = core.UnmarshalModel(m, "headers", &obj.HeadersVar, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "headers-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "method", &obj.Method)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "method-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype : LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype struct
+// This model "extends" LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype
+type LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype struct {
+	// The HTTP request body to use for health checks. If unspecified, health check requests will not have a request body.
+	//
+	// The body must be formatted in a way that is understood by the backend member. If specified, the `request.headers`
+	// array must include a corresponding `Content-Type` header.
+	Body *string `json:"body,omitempty"`
+
+	// The HTTP request headers to use for health checks. If empty, health check requests will not have headers.
+	//
+	// Include a `Host` field and its value to enable the `HTTP/1.1` protocol for health checks. If a `Host` header is not
+	// included, `HTTP/1.0` will be used by default. More than one
+	// `Host` header is not allowed.
+	//
+	// Include a `Content-Type` field and its value to indicate the media type of the
+	// `request.body` (if set).
+	//
+	// A header must not exceed 1000 characters, and all headers combined must not exceed 4000 characters.
+	HeadersVar []LoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype `json:"headers,omitempty"`
+
+	// The HTTP request method to use for health checks.
+	Method *string `json:"method,omitempty"`
+}
+
+// Constants associated with the LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype.Method property.
+// The HTTP request method to use for health checks.
+const (
+	LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototypeMethodPostConst = "post"
+)
+
+func (*LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype) isaLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype unmarshals an instance of LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolHealthMonitorTypeHttphttpsRequestPrototypeLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPostPrototype)
+	err = core.UnmarshalPrimitive(m, "body", &obj.Body)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "body-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "headers", &obj.HeadersVar, UnmarshalLoadBalancerPoolHealthMonitorTypeHttphttpsRequestHeaderPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "headers-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "method", &obj.Method)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "method-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -137523,6 +140371,51 @@ func UnmarshalLoadBalancerPoolMemberTargetByReservedIP(m map[string]json.RawMess
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolMemberTargetPrototypeFqdn : LoadBalancerPoolMemberTargetPrototypeFqdn struct
+// This model "extends" LoadBalancerPoolMemberTargetPrototype
+type LoadBalancerPoolMemberTargetPrototypeFqdn struct {
+	// A fully qualified domain name for this resource.
+	Fqdn *string `json:"fqdn" validate:"required"`
+}
+
+// NewLoadBalancerPoolMemberTargetPrototypeFqdn : Instantiate LoadBalancerPoolMemberTargetPrototypeFqdn (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolMemberTargetPrototypeFqdn(fqdn string) (_model *LoadBalancerPoolMemberTargetPrototypeFqdn, err error) {
+	_model = &LoadBalancerPoolMemberTargetPrototypeFqdn{
+		Fqdn: core.StringPtr(fqdn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*LoadBalancerPoolMemberTargetPrototypeFqdn) isaLoadBalancerPoolMemberTargetPrototype() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetPrototypeFqdn unmarshals an instance of LoadBalancerPoolMemberTargetPrototypeFqdn from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetPrototypeFqdn(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetPrototypeFqdn)
+	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolMemberTargetPrototypeFqdn
+func (loadBalancerPoolMemberTargetPrototypeFqdn *LoadBalancerPoolMemberTargetPrototypeFqdn) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolMemberTargetPrototypeFqdn.Fqdn) {
+		_patch["fqdn"] = loadBalancerPoolMemberTargetPrototypeFqdn.Fqdn
+	}
+
 	return
 }
 
@@ -137766,6 +140659,29 @@ func (loadBalancerPoolMemberTargetPrototypeReservedIPIdentity *LoadBalancerPoolM
 	return
 }
 
+// LoadBalancerPoolMemberTargetFqdn : LoadBalancerPoolMemberTargetFqdn struct
+// This model "extends" LoadBalancerPoolMemberTarget
+type LoadBalancerPoolMemberTargetFqdn struct {
+	// A fully qualified domain name for this resource.
+	Fqdn *string `json:"fqdn" validate:"required"`
+}
+
+func (*LoadBalancerPoolMemberTargetFqdn) isaLoadBalancerPoolMemberTarget() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerPoolMemberTargetFqdn unmarshals an instance of LoadBalancerPoolMemberTargetFqdn from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolMemberTargetFqdn(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolMemberTargetFqdn)
+	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerPoolMemberTargetIPNotReservedIP : LoadBalancerPoolMemberTargetIPNotReservedIP struct
 // This model "extends" LoadBalancerPoolMemberTarget
 type LoadBalancerPoolMemberTargetIPNotReservedIP struct {
@@ -137918,6 +140834,72 @@ func UnmarshalLoadBalancerPoolMemberTargetLoadBalancerReference(m map[string]jso
 	return
 }
 
+// LoadBalancerProfileAdvancedHealthCheckSupportedDependent : The advanced health check support for a load balancer with this profile depends on its configuration.
+// This model "extends" LoadBalancerProfileAdvancedHealthCheckSupported
+type LoadBalancerProfileAdvancedHealthCheckSupportedDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileAdvancedHealthCheckSupportedDependent.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAdvancedHealthCheckSupportedDependentTypeDependentConst = "dependent"
+)
+
+func (*LoadBalancerProfileAdvancedHealthCheckSupportedDependent) isaLoadBalancerProfileAdvancedHealthCheckSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileAdvancedHealthCheckSupportedDependent unmarshals an instance of LoadBalancerProfileAdvancedHealthCheckSupportedDependent from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAdvancedHealthCheckSupportedDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAdvancedHealthCheckSupportedDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileAdvancedHealthCheckSupportedFixed : The advanced health check support for a load balancer with this profile.
+// This model "extends" LoadBalancerProfileAdvancedHealthCheckSupported
+type LoadBalancerProfileAdvancedHealthCheckSupportedFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *bool `json:"value" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileAdvancedHealthCheckSupportedFixed.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAdvancedHealthCheckSupportedFixedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileAdvancedHealthCheckSupportedFixed) isaLoadBalancerProfileAdvancedHealthCheckSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileAdvancedHealthCheckSupportedFixed unmarshals an instance of LoadBalancerProfileAdvancedHealthCheckSupportedFixed from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAdvancedHealthCheckSupportedFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAdvancedHealthCheckSupportedFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerProfileAvailabilityDependent : The availability mode for a load balancer with this profile depends on its configuration.
 // This model "extends" LoadBalancerProfileAvailability
 type LoadBalancerProfileAvailabilityDependent struct {
@@ -137989,6 +140971,72 @@ func (*LoadBalancerProfileAvailabilityFixed) isaLoadBalancerProfileAvailability(
 // UnmarshalLoadBalancerProfileAvailabilityFixed unmarshals an instance of LoadBalancerProfileAvailabilityFixed from the specified map of raw messages.
 func UnmarshalLoadBalancerProfileAvailabilityFixed(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerProfileAvailabilityFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileFqdnSupportedDependent : The FQDN support for a load balancer with this profile depends on its configuration.
+// This model "extends" LoadBalancerProfileFqdnSupported
+type LoadBalancerProfileFqdnSupportedDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileFqdnSupportedDependent.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileFqdnSupportedDependentTypeDependentConst = "dependent"
+)
+
+func (*LoadBalancerProfileFqdnSupportedDependent) isaLoadBalancerProfileFqdnSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileFqdnSupportedDependent unmarshals an instance of LoadBalancerProfileFqdnSupportedDependent from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileFqdnSupportedDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileFqdnSupportedDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileFqdnSupportedFixed : The FQDN support for a load balancer with this profile.
+// This model "extends" LoadBalancerProfileFqdnSupported
+type LoadBalancerProfileFqdnSupportedFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *bool `json:"value" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileFqdnSupportedFixed.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileFqdnSupportedFixedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileFqdnSupportedFixed) isaLoadBalancerProfileFqdnSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileFqdnSupportedFixed unmarshals an instance of LoadBalancerProfileFqdnSupportedFixed from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileFqdnSupportedFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileFqdnSupportedFixed)
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
@@ -138933,6 +141981,9 @@ type NetworkACLRuleItemNetworkACLRuleProtocolAny struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -138945,12 +141996,18 @@ type NetworkACLRuleItemNetworkACLRuleProtocolAny struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -138973,6 +142030,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolAny.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolAnyIPVersionIpv4Const = "ipv4"
 )
@@ -139063,6 +142123,9 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -139075,12 +142138,18 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -139113,6 +142182,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 )
@@ -139213,6 +142285,9 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -139225,12 +142300,18 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -139253,6 +142334,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -139343,6 +142427,9 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIndividual struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -139355,18 +142442,24 @@ type NetworkACLRuleItemNetworkACLRuleProtocolIndividual struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -139396,6 +142489,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIndividual.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolIndividualIPVersionIpv4Const = "ipv4"
 )
@@ -139403,8 +142499,8 @@ const (
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolIndividual.Protocol property.
 // The network protocol.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -139751,6 +142847,9 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -139763,12 +142862,18 @@ type NetworkACLRuleItemNetworkACLRuleProtocolTcpudp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of the TCP or UDP destination port range.
@@ -139803,6 +142908,9 @@ const (
 
 // Constants associated with the NetworkACLRuleItemNetworkACLRuleProtocolTcpudp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleItemNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -139908,20 +143016,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAnyPrototype 
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -139945,7 +143053,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAnyPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolAnyPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140026,20 +143134,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototype
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -140073,7 +143181,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140164,20 +143272,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmptcpudpPro
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -140201,7 +143309,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmptcpudpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIcmptcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140282,26 +143390,26 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIndividualPro
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -140332,7 +143440,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIndividualPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIndividualPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140340,8 +143448,8 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolIndividualPrototype.Protocol property.
 // The network protocol.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -140678,20 +143786,20 @@ type NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototy
 	// Must not be `deny` if `protocol` is `icmp_tcp_udp`.
 	Action *string `json:"action" validate:"required"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of the TCP or UDP destination port range.
@@ -140739,7 +143847,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLContextNetworkACLRuleProtocolTcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140843,20 +143951,20 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolAnyPrototype struct {
 
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -140880,7 +143988,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolAnyPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolAnyPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -140968,20 +144076,20 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype struct {
 
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -141015,7 +144123,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -141113,20 +144221,20 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIcmptcpudpPrototype struct {
 
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -141150,7 +144258,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIcmptcpudpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIcmptcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -141238,26 +144346,26 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolIndividualPrototype struct {
 
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -141288,7 +144396,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIndividualPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolIndividualPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -141296,8 +144404,8 @@ const (
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolIndividualPrototype.Protocol property.
 // The network protocol.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -141641,20 +144749,20 @@ type NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype struct {
 
 	Before NetworkACLRuleBeforePrototypeIntf `json:"before,omitempty"`
 
-	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all destination addresses.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
 	Direction *string `json:"direction" validate:"required"`
 
-	// The IP version for this rule.
+	// The IP version to match. The format of `source` and `destination` must match this property.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	// The name for this network ACL rule. The name must not be used by another rule for the network ACL. If unspecified,
 	// the name will be a hyphenated list of randomly-selected words.
 	Name *string `json:"name,omitempty"`
 
-	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` will match all source addresses.
 	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of the TCP or UDP destination port range.
@@ -141702,7 +144810,7 @@ const (
 )
 
 // Constants associated with the NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototype.IPVersion property.
-// The IP version for this rule.
+// The IP version to match. The format of `source` and `destination` must match this property.
 const (
 	NetworkACLRulePrototypeNetworkACLRuleProtocolTcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -141814,6 +144922,9 @@ type NetworkACLRuleNetworkACLRuleProtocolAny struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -141826,12 +144937,18 @@ type NetworkACLRuleNetworkACLRuleProtocolAny struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -141854,6 +144971,9 @@ const (
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolAny.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolAnyIPVersionIpv4Const = "ipv4"
 )
@@ -141943,6 +145063,9 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -141955,12 +145078,18 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The ICMP traffic code to match.
@@ -141993,6 +145122,9 @@ const (
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 )
@@ -142092,6 +145224,9 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -142104,12 +145239,18 @@ type NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
@@ -142132,6 +145273,9 @@ const (
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolIcmptcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -142221,6 +145365,9 @@ type NetworkACLRuleNetworkACLRuleProtocolIndividual struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -142233,18 +145380,24 @@ type NetworkACLRuleNetworkACLRuleProtocolIndividual struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The network protocol.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -142274,6 +145427,9 @@ const (
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIndividual.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolIndividualIPVersionIpv4Const = "ipv4"
 )
@@ -142281,8 +145437,8 @@ const (
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolIndividual.Protocol property.
 // The network protocol.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -142628,6 +145784,9 @@ type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
 	// The destination IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all destination addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses or
+	// CIDR blocks in the future.
 	Destination *string `json:"destination" validate:"required"`
 
 	// The direction of traffic to match.
@@ -142640,12 +145799,18 @@ type NetworkACLRuleNetworkACLRuleProtocolTcpudp struct {
 	ID *string `json:"id" validate:"required"`
 
 	// The IP version for this rule.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	// The name for this network ACL rule. The name is unique across all rules for the network ACL.
 	Name *string `json:"name" validate:"required"`
 
 	// The source IP address or CIDR block to match. The CIDR block `0.0.0.0/0` matches all source addresses.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	Source *string `json:"source" validate:"required"`
 
 	// The inclusive upper bound of the TCP or UDP destination port range.
@@ -142680,6 +145845,9 @@ const (
 
 // Constants associated with the NetworkACLRuleNetworkACLRuleProtocolTcpudp.IPVersion property.
 // The IP version for this rule.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	NetworkACLRuleNetworkACLRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -144769,19 +147937,16 @@ func UnmarshalSecurityGroupIdentityByID(m map[string]json.RawMessage, result int
 	return
 }
 
-// SecurityGroupRuleLocalPatchCIDR : SecurityGroupRuleLocalPatchCIDR struct
+// SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype : SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype struct
 // This model "extends" SecurityGroupRuleLocalPatch
-type SecurityGroupRuleLocalPatchCIDR struct {
+type SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype struct {
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block" validate:"required"`
 }
 
-// NewSecurityGroupRuleLocalPatchCIDR : Instantiate SecurityGroupRuleLocalPatchCIDR (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleLocalPatchCIDR(cidrBlock string) (_model *SecurityGroupRuleLocalPatchCIDR, err error) {
-	_model = &SecurityGroupRuleLocalPatchCIDR{
+// NewSecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype : Instantiate SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype(cidrBlock string) (_model *SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype, err error) {
+	_model = &SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype{
 		CIDRBlock: core.StringPtr(cidrBlock),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -144791,13 +147956,13 @@ func (*VpcV1) NewSecurityGroupRuleLocalPatchCIDR(cidrBlock string) (_model *Secu
 	return
 }
 
-func (*SecurityGroupRuleLocalPatchCIDR) isaSecurityGroupRuleLocalPatch() bool {
+func (*SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype) isaSecurityGroupRuleLocalPatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalPatchCIDR unmarshals an instance of SecurityGroupRuleLocalPatchCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalPatchCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalPatchCIDR)
+// UnmarshalSecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype unmarshals an instance of SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype)
 	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
@@ -144807,29 +147972,26 @@ func UnmarshalSecurityGroupRuleLocalPatchCIDR(m map[string]json.RawMessage, resu
 	return
 }
 
-// asPatch returns a generic map representation of the SecurityGroupRuleLocalPatchCIDR
-func (securityGroupRuleLocalPatchCIDR *SecurityGroupRuleLocalPatchCIDR) asPatch() (_patch map[string]interface{}) {
+// asPatch returns a generic map representation of the SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype
+func (securityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype *SecurityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype) asPatch() (_patch map[string]interface{}) {
 	_patch = map[string]interface{}{}
-	if !core.IsNil(securityGroupRuleLocalPatchCIDR.CIDRBlock) {
-		_patch["cidr_block"] = securityGroupRuleLocalPatchCIDR.CIDRBlock
+	if !core.IsNil(securityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype.CIDRBlock) {
+		_patch["cidr_block"] = securityGroupRuleLocalPatchSecurityGroupRuleCIDRPrototype.CIDRBlock
 	}
 
 	return
 }
 
-// SecurityGroupRuleLocalPatchIP : SecurityGroupRuleLocalPatchIP struct
+// SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype : SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype struct
 // This model "extends" SecurityGroupRuleLocalPatch
-type SecurityGroupRuleLocalPatchIP struct {
+type SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address" validate:"required"`
 }
 
-// NewSecurityGroupRuleLocalPatchIP : Instantiate SecurityGroupRuleLocalPatchIP (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleLocalPatchIP(address string) (_model *SecurityGroupRuleLocalPatchIP, err error) {
-	_model = &SecurityGroupRuleLocalPatchIP{
+// NewSecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype : Instantiate SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype(address string) (_model *SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype, err error) {
+	_model = &SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype{
 		Address: core.StringPtr(address),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -144839,13 +148001,13 @@ func (*VpcV1) NewSecurityGroupRuleLocalPatchIP(address string) (_model *Security
 	return
 }
 
-func (*SecurityGroupRuleLocalPatchIP) isaSecurityGroupRuleLocalPatch() bool {
+func (*SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype) isaSecurityGroupRuleLocalPatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalPatchIP unmarshals an instance of SecurityGroupRuleLocalPatchIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalPatchIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalPatchIP)
+// UnmarshalSecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype unmarshals an instance of SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
@@ -144855,29 +148017,26 @@ func UnmarshalSecurityGroupRuleLocalPatchIP(m map[string]json.RawMessage, result
 	return
 }
 
-// asPatch returns a generic map representation of the SecurityGroupRuleLocalPatchIP
-func (securityGroupRuleLocalPatchIP *SecurityGroupRuleLocalPatchIP) asPatch() (_patch map[string]interface{}) {
+// asPatch returns a generic map representation of the SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype
+func (securityGroupRuleLocalPatchSecurityGroupRuleIPPrototype *SecurityGroupRuleLocalPatchSecurityGroupRuleIPPrototype) asPatch() (_patch map[string]interface{}) {
 	_patch = map[string]interface{}{}
-	if !core.IsNil(securityGroupRuleLocalPatchIP.Address) {
-		_patch["address"] = securityGroupRuleLocalPatchIP.Address
+	if !core.IsNil(securityGroupRuleLocalPatchSecurityGroupRuleIPPrototype.Address) {
+		_patch["address"] = securityGroupRuleLocalPatchSecurityGroupRuleIPPrototype.Address
 	}
 
 	return
 }
 
-// SecurityGroupRuleLocalPrototypeCIDR : SecurityGroupRuleLocalPrototypeCIDR struct
+// SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype : SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype struct
 // This model "extends" SecurityGroupRuleLocalPrototype
-type SecurityGroupRuleLocalPrototypeCIDR struct {
+type SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype struct {
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block" validate:"required"`
 }
 
-// NewSecurityGroupRuleLocalPrototypeCIDR : Instantiate SecurityGroupRuleLocalPrototypeCIDR (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleLocalPrototypeCIDR(cidrBlock string) (_model *SecurityGroupRuleLocalPrototypeCIDR, err error) {
-	_model = &SecurityGroupRuleLocalPrototypeCIDR{
+// NewSecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype : Instantiate SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype(cidrBlock string) (_model *SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype, err error) {
+	_model = &SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype{
 		CIDRBlock: core.StringPtr(cidrBlock),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -144887,13 +148046,13 @@ func (*VpcV1) NewSecurityGroupRuleLocalPrototypeCIDR(cidrBlock string) (_model *
 	return
 }
 
-func (*SecurityGroupRuleLocalPrototypeCIDR) isaSecurityGroupRuleLocalPrototype() bool {
+func (*SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype) isaSecurityGroupRuleLocalPrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalPrototypeCIDR unmarshals an instance of SecurityGroupRuleLocalPrototypeCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalPrototypeCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalPrototypeCIDR)
+// UnmarshalSecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype unmarshals an instance of SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalPrototypeSecurityGroupRuleCIDRPrototype)
 	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
@@ -144903,19 +148062,16 @@ func UnmarshalSecurityGroupRuleLocalPrototypeCIDR(m map[string]json.RawMessage, 
 	return
 }
 
-// SecurityGroupRuleLocalPrototypeIP : SecurityGroupRuleLocalPrototypeIP struct
+// SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype : SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype struct
 // This model "extends" SecurityGroupRuleLocalPrototype
-type SecurityGroupRuleLocalPrototypeIP struct {
+type SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address" validate:"required"`
 }
 
-// NewSecurityGroupRuleLocalPrototypeIP : Instantiate SecurityGroupRuleLocalPrototypeIP (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleLocalPrototypeIP(address string) (_model *SecurityGroupRuleLocalPrototypeIP, err error) {
-	_model = &SecurityGroupRuleLocalPrototypeIP{
+// NewSecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype : Instantiate SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype(address string) (_model *SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype, err error) {
+	_model = &SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype{
 		Address: core.StringPtr(address),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -144925,13 +148081,13 @@ func (*VpcV1) NewSecurityGroupRuleLocalPrototypeIP(address string) (_model *Secu
 	return
 }
 
-func (*SecurityGroupRuleLocalPrototypeIP) isaSecurityGroupRuleLocalPrototype() bool {
+func (*SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype) isaSecurityGroupRuleLocalPrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalPrototypeIP unmarshals an instance of SecurityGroupRuleLocalPrototypeIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalPrototypeIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalPrototypeIP)
+// UnmarshalSecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype unmarshals an instance of SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalPrototypeSecurityGroupRuleIPPrototype)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
@@ -144941,23 +148097,23 @@ func UnmarshalSecurityGroupRuleLocalPrototypeIP(m map[string]json.RawMessage, re
 	return
 }
 
-// SecurityGroupRuleLocalCIDR : SecurityGroupRuleLocalCIDR struct
+// SecurityGroupRuleLocalSecurityGroupRuleCIDR : SecurityGroupRuleLocalSecurityGroupRuleCIDR struct
 // This model "extends" SecurityGroupRuleLocal
-type SecurityGroupRuleLocalCIDR struct {
+type SecurityGroupRuleLocalSecurityGroupRuleCIDR struct {
 	// The CIDR block.
 	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
 	CIDRBlock *string `json:"cidr_block" validate:"required"`
 }
 
-func (*SecurityGroupRuleLocalCIDR) isaSecurityGroupRuleLocal() bool {
+func (*SecurityGroupRuleLocalSecurityGroupRuleCIDR) isaSecurityGroupRuleLocal() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalCIDR unmarshals an instance of SecurityGroupRuleLocalCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalCIDR)
+// UnmarshalSecurityGroupRuleLocalSecurityGroupRuleCIDR unmarshals an instance of SecurityGroupRuleLocalSecurityGroupRuleCIDR from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalSecurityGroupRuleCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalSecurityGroupRuleCIDR)
 	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
@@ -144967,9 +148123,9 @@ func UnmarshalSecurityGroupRuleLocalCIDR(m map[string]json.RawMessage, result in
 	return
 }
 
-// SecurityGroupRuleLocalIP : SecurityGroupRuleLocalIP struct
+// SecurityGroupRuleLocalSecurityGroupRuleIP : SecurityGroupRuleLocalSecurityGroupRuleIP struct
 // This model "extends" SecurityGroupRuleLocal
-type SecurityGroupRuleLocalIP struct {
+type SecurityGroupRuleLocalSecurityGroupRuleIP struct {
 	// The IP address.
 	//
 	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
@@ -144977,13 +148133,13 @@ type SecurityGroupRuleLocalIP struct {
 	Address *string `json:"address" validate:"required"`
 }
 
-func (*SecurityGroupRuleLocalIP) isaSecurityGroupRuleLocal() bool {
+func (*SecurityGroupRuleLocalSecurityGroupRuleIP) isaSecurityGroupRuleLocal() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleLocalIP unmarshals an instance of SecurityGroupRuleLocalIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleLocalIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleLocalIP)
+// UnmarshalSecurityGroupRuleLocalSecurityGroupRuleIP unmarshals an instance of SecurityGroupRuleLocalSecurityGroupRuleIP from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleLocalSecurityGroupRuleIP(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleLocalSecurityGroupRuleIP)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
@@ -145005,11 +148161,13 @@ type SecurityGroupRuleProtocolAny struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	Local SecurityGroupRuleLocalIntf `json:"local" validate:"required"`
@@ -145034,11 +148192,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRuleProtocolAny.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleProtocolAnyIPVersionIpv4Const = "ipv4"
 )
@@ -145123,11 +148283,13 @@ type SecurityGroupRuleProtocolIcmptcpudp struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	Local SecurityGroupRuleLocalIntf `json:"local" validate:"required"`
@@ -145152,11 +148314,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRuleProtocolIcmptcpudp.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleProtocolIcmptcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -145241,11 +148405,13 @@ type SecurityGroupRuleProtocolIndividual struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	Local SecurityGroupRuleLocalIntf `json:"local" validate:"required"`
@@ -145260,8 +148426,8 @@ type SecurityGroupRuleProtocolIndividual struct {
 
 	// The network protocol to allow.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -145283,11 +148449,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRuleProtocolIndividual.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleProtocolIndividualIPVersionIpv4Const = "ipv4"
 )
@@ -145301,8 +148469,8 @@ const (
 // Constants associated with the SecurityGroupRuleProtocolIndividual.Protocol property.
 // The network protocol to allow.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -145634,8 +148802,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmp struct {
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	Local SecurityGroupRuleLocalPrototypeIntf `json:"local,omitempty"`
@@ -145671,8 +148839,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 )
@@ -145756,8 +148924,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp struct {
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	Local SecurityGroupRuleLocalPrototypeIntf `json:"local,omitempty"`
@@ -145795,8 +148963,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -145881,8 +149049,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolAnyPrototype struct {
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	Local SecurityGroupRuleLocalPrototypeIntf `json:"local,omitempty"`
@@ -145908,8 +149076,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolAnyPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -145983,8 +149151,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmptcpudpPrototype stru
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	Local SecurityGroupRuleLocalPrototypeIntf `json:"local,omitempty"`
@@ -146010,8 +149178,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIcmptcpudpPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -146085,8 +149253,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIndividualPrototype stru
 	// The IP version to allow. The format of `local.address`, `remote.address`,
 	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 	//
-	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-	// version.
+	// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+	// IP version.
 	IPVersion *string `json:"ip_version,omitempty"`
 
 	Local SecurityGroupRuleLocalPrototypeIntf `json:"local,omitempty"`
@@ -146099,8 +149267,8 @@ type SecurityGroupRulePrototypeSecurityGroupRuleProtocolIndividualPrototype stru
 
 	// The network protocol to allow.
 	//
-	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-	// protocols are:
+	// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+	// `udp`. Names for well known protocols are:
 	// - `ah`: AH (authentication header, protocol number `51`)
 	// - `esp`: ESP (encapsulating security payload, protocol number `50`)
 	// - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -146125,8 +149293,8 @@ const (
 // The IP version to allow. The format of `local.address`, `remote.address`,
 // `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
 //
-// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
-// version.
+// If `remote` references a security group, then this rule will only apply to IP addresses in that group matching this
+// IP version.
 const (
 	SecurityGroupRulePrototypeSecurityGroupRuleProtocolIndividualPrototypeIPVersionIpv4Const = "ipv4"
 )
@@ -146134,8 +149302,8 @@ const (
 // Constants associated with the SecurityGroupRulePrototypeSecurityGroupRuleProtocolIndividualPrototype.Protocol property.
 // The network protocol to allow.
 //
-// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and `udp`. Names for well known
-// protocols are:
+// The value must be the name of an individual protocol, excluding `icmp`, `tcp` and
+// `udp`. Names for well known protocols are:
 // - `ah`: AH (authentication header, protocol number `51`)
 // - `esp`: ESP (encapsulating security payload, protocol number `50`)
 // - `gre`: GRE (generic routing encapsulation, protocol number `47`)
@@ -146456,102 +149624,6 @@ func UnmarshalSecurityGroupRulePrototypeSecurityGroupRuleProtocolIndividualProto
 	return
 }
 
-// SecurityGroupRuleRemotePatchCIDR : SecurityGroupRuleRemotePatchCIDR struct
-// This model "extends" SecurityGroupRuleRemotePatch
-type SecurityGroupRuleRemotePatchCIDR struct {
-	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
-	CIDRBlock *string `json:"cidr_block" validate:"required"`
-}
-
-// NewSecurityGroupRuleRemotePatchCIDR : Instantiate SecurityGroupRuleRemotePatchCIDR (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleRemotePatchCIDR(cidrBlock string) (_model *SecurityGroupRuleRemotePatchCIDR, err error) {
-	_model = &SecurityGroupRuleRemotePatchCIDR{
-		CIDRBlock: core.StringPtr(cidrBlock),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	if err != nil {
-		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
-	}
-	return
-}
-
-func (*SecurityGroupRuleRemotePatchCIDR) isaSecurityGroupRuleRemotePatch() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRuleRemotePatchCIDR unmarshals an instance of SecurityGroupRuleRemotePatchCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemotePatchCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemotePatchCIDR)
-	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// asPatch returns a generic map representation of the SecurityGroupRuleRemotePatchCIDR
-func (securityGroupRuleRemotePatchCIDR *SecurityGroupRuleRemotePatchCIDR) asPatch() (_patch map[string]interface{}) {
-	_patch = map[string]interface{}{}
-	if !core.IsNil(securityGroupRuleRemotePatchCIDR.CIDRBlock) {
-		_patch["cidr_block"] = securityGroupRuleRemotePatchCIDR.CIDRBlock
-	}
-
-	return
-}
-
-// SecurityGroupRuleRemotePatchIP : SecurityGroupRuleRemotePatchIP struct
-// This model "extends" SecurityGroupRuleRemotePatch
-type SecurityGroupRuleRemotePatchIP struct {
-	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
-	Address *string `json:"address" validate:"required"`
-}
-
-// NewSecurityGroupRuleRemotePatchIP : Instantiate SecurityGroupRuleRemotePatchIP (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleRemotePatchIP(address string) (_model *SecurityGroupRuleRemotePatchIP, err error) {
-	_model = &SecurityGroupRuleRemotePatchIP{
-		Address: core.StringPtr(address),
-	}
-	err = core.ValidateStruct(_model, "required parameters")
-	if err != nil {
-		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
-	}
-	return
-}
-
-func (*SecurityGroupRuleRemotePatchIP) isaSecurityGroupRuleRemotePatch() bool {
-	return true
-}
-
-// UnmarshalSecurityGroupRuleRemotePatchIP unmarshals an instance of SecurityGroupRuleRemotePatchIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemotePatchIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemotePatchIP)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// asPatch returns a generic map representation of the SecurityGroupRuleRemotePatchIP
-func (securityGroupRuleRemotePatchIP *SecurityGroupRuleRemotePatchIP) asPatch() (_patch map[string]interface{}) {
-	_patch = map[string]interface{}{}
-	if !core.IsNil(securityGroupRuleRemotePatchIP.Address) {
-		_patch["address"] = securityGroupRuleRemotePatchIP.Address
-	}
-
-	return
-}
-
 // SecurityGroupRuleRemotePatchSecurityGroupIdentity : Identifies a security group by a unique property.
 // Models which "extend" this model:
 // - SecurityGroupRuleRemotePatchSecurityGroupIdentitySecurityGroupIdentityByID
@@ -146620,19 +149692,16 @@ func (securityGroupRuleRemotePatchSecurityGroupIdentity *SecurityGroupRuleRemote
 	return
 }
 
-// SecurityGroupRuleRemotePrototypeCIDR : SecurityGroupRuleRemotePrototypeCIDR struct
-// This model "extends" SecurityGroupRuleRemotePrototype
-type SecurityGroupRuleRemotePrototypeCIDR struct {
+// SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype : SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype struct
+// This model "extends" SecurityGroupRuleRemotePatch
+type SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype struct {
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block" validate:"required"`
 }
 
-// NewSecurityGroupRuleRemotePrototypeCIDR : Instantiate SecurityGroupRuleRemotePrototypeCIDR (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleRemotePrototypeCIDR(cidrBlock string) (_model *SecurityGroupRuleRemotePrototypeCIDR, err error) {
-	_model = &SecurityGroupRuleRemotePrototypeCIDR{
+// NewSecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype : Instantiate SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype(cidrBlock string) (_model *SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype, err error) {
+	_model = &SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype{
 		CIDRBlock: core.StringPtr(cidrBlock),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -146642,13 +149711,13 @@ func (*VpcV1) NewSecurityGroupRuleRemotePrototypeCIDR(cidrBlock string) (_model 
 	return
 }
 
-func (*SecurityGroupRuleRemotePrototypeCIDR) isaSecurityGroupRuleRemotePrototype() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype) isaSecurityGroupRuleRemotePatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleRemotePrototypeCIDR unmarshals an instance of SecurityGroupRuleRemotePrototypeCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemotePrototypeCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemotePrototypeCIDR)
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype)
 	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
@@ -146658,19 +149727,26 @@ func UnmarshalSecurityGroupRuleRemotePrototypeCIDR(m map[string]json.RawMessage,
 	return
 }
 
-// SecurityGroupRuleRemotePrototypeIP : SecurityGroupRuleRemotePrototypeIP struct
-// This model "extends" SecurityGroupRuleRemotePrototype
-type SecurityGroupRuleRemotePrototypeIP struct {
+// asPatch returns a generic map representation of the SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype
+func (securityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype *SecurityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(securityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype.CIDRBlock) {
+		_patch["cidr_block"] = securityGroupRuleRemotePatchSecurityGroupRuleCIDRPrototype.CIDRBlock
+	}
+
+	return
+}
+
+// SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype : SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype struct
+// This model "extends" SecurityGroupRuleRemotePatch
+type SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address" validate:"required"`
 }
 
-// NewSecurityGroupRuleRemotePrototypeIP : Instantiate SecurityGroupRuleRemotePrototypeIP (Generic Model Constructor)
-func (*VpcV1) NewSecurityGroupRuleRemotePrototypeIP(address string) (_model *SecurityGroupRuleRemotePrototypeIP, err error) {
-	_model = &SecurityGroupRuleRemotePrototypeIP{
+// NewSecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype : Instantiate SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype(address string) (_model *SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype, err error) {
+	_model = &SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype{
 		Address: core.StringPtr(address),
 	}
 	err = core.ValidateStruct(_model, "required parameters")
@@ -146680,19 +149756,29 @@ func (*VpcV1) NewSecurityGroupRuleRemotePrototypeIP(address string) (_model *Sec
 	return
 }
 
-func (*SecurityGroupRuleRemotePrototypeIP) isaSecurityGroupRuleRemotePrototype() bool {
+func (*SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype) isaSecurityGroupRuleRemotePatch() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleRemotePrototypeIP unmarshals an instance of SecurityGroupRuleRemotePrototypeIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemotePrototypeIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemotePrototypeIP)
+// UnmarshalSecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype unmarshals an instance of SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype
+func (securityGroupRuleRemotePatchSecurityGroupRuleIPPrototype *SecurityGroupRuleRemotePatchSecurityGroupRuleIPPrototype) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(securityGroupRuleRemotePatchSecurityGroupRuleIPPrototype.Address) {
+		_patch["address"] = securityGroupRuleRemotePatchSecurityGroupRuleIPPrototype.Address
+	}
+
 	return
 }
 
@@ -146748,23 +149834,32 @@ func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupIdentity(m map[string
 	return
 }
 
-// SecurityGroupRuleRemoteCIDR : SecurityGroupRuleRemoteCIDR struct
-// This model "extends" SecurityGroupRuleRemote
-type SecurityGroupRuleRemoteCIDR struct {
+// SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype : SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype struct
+// This model "extends" SecurityGroupRuleRemotePrototype
+type SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype struct {
 	// The CIDR block.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 address
-	// blocks in the future.
 	CIDRBlock *string `json:"cidr_block" validate:"required"`
 }
 
-func (*SecurityGroupRuleRemoteCIDR) isaSecurityGroupRuleRemote() bool {
+// NewSecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype : Instantiate SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype(cidrBlock string) (_model *SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype, err error) {
+	_model = &SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype{
+		CIDRBlock: core.StringPtr(cidrBlock),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype) isaSecurityGroupRuleRemotePrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleRemoteCIDR unmarshals an instance of SecurityGroupRuleRemoteCIDR from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemoteCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemoteCIDR)
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupRuleCIDRPrototype)
 	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
@@ -146774,23 +149869,32 @@ func UnmarshalSecurityGroupRuleRemoteCIDR(m map[string]json.RawMessage, result i
 	return
 }
 
-// SecurityGroupRuleRemoteIP : SecurityGroupRuleRemoteIP struct
-// This model "extends" SecurityGroupRuleRemote
-type SecurityGroupRuleRemoteIP struct {
+// SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype : SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype struct
+// This model "extends" SecurityGroupRuleRemotePrototype
+type SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype struct {
 	// The IP address.
-	//
-	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
-	// the future.
 	Address *string `json:"address" validate:"required"`
 }
 
-func (*SecurityGroupRuleRemoteIP) isaSecurityGroupRuleRemote() bool {
+// NewSecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype : Instantiate SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype (Generic Model Constructor)
+func (*VpcV1) NewSecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype(address string) (_model *SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype, err error) {
+	_model = &SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype) isaSecurityGroupRuleRemotePrototype() bool {
 	return true
 }
 
-// UnmarshalSecurityGroupRuleRemoteIP unmarshals an instance of SecurityGroupRuleRemoteIP from the specified map of raw messages.
-func UnmarshalSecurityGroupRuleRemoteIP(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(SecurityGroupRuleRemoteIP)
+// UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype unmarshals an instance of SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemotePrototypeSecurityGroupRuleIPPrototype)
 	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
@@ -146856,6 +149960,58 @@ func UnmarshalSecurityGroupRuleRemoteSecurityGroupReference(m map[string]json.Ra
 	return
 }
 
+// SecurityGroupRuleRemoteSecurityGroupRuleCIDR : SecurityGroupRuleRemoteSecurityGroupRuleCIDR struct
+// This model "extends" SecurityGroupRuleRemote
+type SecurityGroupRuleRemoteSecurityGroupRuleCIDR struct {
+	// The CIDR block.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 CIDR blocks
+	// in the future.
+	CIDRBlock *string `json:"cidr_block" validate:"required"`
+}
+
+func (*SecurityGroupRuleRemoteSecurityGroupRuleCIDR) isaSecurityGroupRuleRemote() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemoteSecurityGroupRuleCIDR unmarshals an instance of SecurityGroupRuleRemoteSecurityGroupRuleCIDR from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemoteSecurityGroupRuleCIDR(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemoteSecurityGroupRuleCIDR)
+	err = core.UnmarshalPrimitive(m, "cidr_block", &obj.CIDRBlock)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "cidr_block-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SecurityGroupRuleRemoteSecurityGroupRuleIP : SecurityGroupRuleRemoteSecurityGroupRuleIP struct
+// This model "extends" SecurityGroupRuleRemote
+type SecurityGroupRuleRemoteSecurityGroupRuleIP struct {
+	// The IP address.
+	//
+	// This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in
+	// the future.
+	Address *string `json:"address" validate:"required"`
+}
+
+func (*SecurityGroupRuleRemoteSecurityGroupRuleIP) isaSecurityGroupRuleRemote() bool {
+	return true
+}
+
+// UnmarshalSecurityGroupRuleRemoteSecurityGroupRuleIP unmarshals an instance of SecurityGroupRuleRemoteSecurityGroupRuleIP from the specified map of raw messages.
+func UnmarshalSecurityGroupRuleRemoteSecurityGroupRuleIP(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SecurityGroupRuleRemoteSecurityGroupRuleIP)
+	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // SecurityGroupRuleSecurityGroupRuleProtocolIcmp : A rule specifying the ICMP traffic to allow.
 // This model "extends" SecurityGroupRule
 type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
@@ -146868,11 +150024,13 @@ type SecurityGroupRuleSecurityGroupRuleProtocolIcmp struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	Local SecurityGroupRuleLocalIntf `json:"local" validate:"required"`
@@ -146903,11 +150061,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolIcmp.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleSecurityGroupRuleProtocolIcmpIPVersionIpv4Const = "ipv4"
 )
@@ -147005,11 +150165,13 @@ type SecurityGroupRuleSecurityGroupRuleProtocolTcpudp struct {
 	// The unique identifier for this security group rule.
 	ID *string `json:"id" validate:"required"`
 
-	// The IP version to allow. The format of `local.address`, `remote.address`,
-	// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+	// The IP version to allow.
 	//
 	// If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 	// version.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 	IPVersion *string `json:"ip_version" validate:"required"`
 
 	Local SecurityGroupRuleLocalIntf `json:"local" validate:"required"`
@@ -147040,11 +150202,13 @@ const (
 )
 
 // Constants associated with the SecurityGroupRuleSecurityGroupRuleProtocolTcpudp.IPVersion property.
-// The IP version to allow. The format of `local.address`, `remote.address`,
-// `local.cidr_block` or `remote.cidr_block` must match this property, if they are used.
+// The IP version to allow.
 //
 // If `remote` references a security group, then this rule only applies to IP addresses in that group matching this IP
 // version.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support `ipv6` in the future.
 const (
 	SecurityGroupRuleSecurityGroupRuleProtocolTcpudpIPVersionIpv4Const = "ipv4"
 )
@@ -147787,8 +150951,9 @@ func UnmarshalShareIdentityByID(m map[string]json.RawMessage, result interface{}
 	return
 }
 
-// ShareMountTargetPrototypeShareMountTargetByAccessControlModeSecurityGroup : The virtual network interface for this share mount target. The virtual network interface must:
+// ShareMountTargetPrototypeShareMountTargetByAccessControlModeSecurityGroup : The virtual network interface for this share mount target.
 //
+// The virtual network interface must:
 // - have `allow_ip_spoofing` set to `false`
 // - have `enable_infrastructure_nat` set to `true`
 // - have `protocol_state_filtering_mode` set to `auto` or `enabled`
@@ -149342,6 +152507,8 @@ type SharePrototypeShareBySize struct {
 	//   require a virtual network interface.
 	// - `vpc`: All clients in the VPC for a mount target have access to the mount target.
 	//   Mount targets for this share require a VPC.
+	//
+	// The `vpc` access control mode has been deprecated. Use `security_group` instead.
 	AccessControlMode *string `json:"access_control_mode,omitempty"`
 
 	// The access protocols to allow for this share. If unspecified:
@@ -149415,6 +152582,8 @@ const (
 //     require a virtual network interface.
 //   - `vpc`: All clients in the VPC for a mount target have access to the mount target.
 //     Mount targets for this share require a VPC.
+//
+// The `vpc` access control mode has been deprecated. Use `security_group` instead.
 const (
 	SharePrototypeShareBySizeAccessControlModeSecurityGroupConst = "security_group"
 	SharePrototypeShareBySizeAccessControlModeVPCConst           = "vpc"
@@ -150021,9 +153190,9 @@ type SnapshotConsistencyGroupPrototypeSnapshotConsistencyGroupBySnapshots struct
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
 
-	// The data-consistent member snapshots to create.  Each snapshot must specify a
-	// `source_volume` attached to the same virtual server instance, and all source volumes must have a
-	// `storage_generation` value of `1`.
+	// The data-consistent member snapshots to create. Each snapshot must specify a
+	// `source_volume` attached to the same virtual server instance, and all source volumes must have the same
+	// `storage_generation` value.
 	Snapshots []SnapshotPrototypeSnapshotConsistencyGroupContext `json:"snapshots" validate:"required"`
 }
 
@@ -152556,63 +155725,6 @@ func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch *VPNG
 	return
 }
 
-// VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch : The peer VPN gateway for this connection. If `peer.type` is `ipv4_address`, only `peer.address` may be specified. If
-// `peer.type` is fqdn, only `peer.fqdn` may be specified.
-// Models which "extend" this model:
-// - VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch
-// - VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch
-// This model "extends" VPNGatewayConnectionPeerPatch
-type VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch struct {
-	// The IP address of the peer VPN gateway for this connection.
-	Address *string `json:"address,omitempty"`
-
-	// The FQDN of the peer VPN gateway for this connection.
-	Fqdn *string `json:"fqdn,omitempty"`
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch() bool {
-	return true
-}
-
-type VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchIntf interface {
-	VPNGatewayConnectionPeerPatchIntf
-	isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch() bool
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch) isaVPNGatewayConnectionPeerPatch() bool {
-	return true
-}
-
-// UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch unmarshals an instance of VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
-		return
-	}
-	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// asPatch returns a generic map representation of the VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch
-func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch *VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch) asPatch() (_patch map[string]interface{}) {
-	_patch = map[string]interface{}{}
-	if !core.IsNil(vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch.Address) {
-		_patch["address"] = vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch.Address
-	}
-	if !core.IsNil(vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch.Fqdn) {
-		_patch["fqdn"] = vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch.Fqdn
-	}
-
-	return
-}
-
 // VPNGatewayConnectionPolicyMode : VPNGatewayConnectionPolicyMode struct
 // This model "extends" VPNGatewayConnection
 type VPNGatewayConnectionPolicyMode struct {
@@ -155126,10 +158238,16 @@ type VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext struct {
 	UserTags []string `json:"user_tags,omitempty"`
 
 	// The capacity to use for the volume (in gigabytes). The specified value must be within the `capacity` range of the
-	// volume's profile.
+	// volume's profile or the capacity to use for the volume (in gigabytes). The specified value must be at least the
+	// snapshot's `minimum_capacity`, and must be within the `capacity` range of the volume's profile.
+	//
+	// If unspecified, the capacity will be the source snapshot's `minimum_capacity`.
 	Capacity *int64 `json:"capacity,omitempty"`
 
 	// The root key to use to wrap the data encryption key for the volume.
+	//
+	// If unspecified, the `encryption` type for the volume will be `provider_managed` or the root key to use to wrap the
+	// data encryption key for the volume.
 	//
 	// If unspecified, the `encryption` type for the volume will be `provider_managed`.
 	EncryptionKey EncryptionKeyIdentityIntf `json:"encryption_key,omitempty"`
@@ -155319,6 +158437,247 @@ func UnmarshalVolumeIdentityByID(m map[string]json.RawMessage, result interface{
 	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeJobPrototypeVolumeJobTypeMigratePrototype : VolumeJobPrototypeVolumeJobTypeMigratePrototype struct
+// This model "extends" VolumeJobPrototype
+type VolumeJobPrototypeVolumeJobTypeMigratePrototype struct {
+	// The name for this volume job. The name must not be used by another job for this volume. If unspecified, the name
+	// will be a hyphenated list of randomly-selected words.
+	Name *string `json:"name,omitempty"`
+
+	// The type of job this volume job will perform.
+	//
+	// The volume must:
+	// - Have a `status` of `available`
+	// - Not currently have another `migrate` job with a `status` of `queued` or `running`.
+	//
+	// If the volume is attached to an instance, the instance must be in `running` state.
+	JobType *string `json:"job_type" validate:"required"`
+
+	// The parameters to use after the volume is migrated.
+	Parameters *VolumeJobTypeMigrateParameters `json:"parameters" validate:"required"`
+}
+
+// Constants associated with the VolumeJobPrototypeVolumeJobTypeMigratePrototype.JobType property.
+// The type of job this volume job will perform.
+//
+// The volume must:
+// - Have a `status` of `available`
+// - Not currently have another `migrate` job with a `status` of `queued` or `running`.
+//
+// If the volume is attached to an instance, the instance must be in `running` state.
+const (
+	VolumeJobPrototypeVolumeJobTypeMigratePrototypeJobTypeMigrateConst = "migrate"
+)
+
+// NewVolumeJobPrototypeVolumeJobTypeMigratePrototype : Instantiate VolumeJobPrototypeVolumeJobTypeMigratePrototype (Generic Model Constructor)
+func (*VpcV1) NewVolumeJobPrototypeVolumeJobTypeMigratePrototype(jobType string, parameters *VolumeJobTypeMigrateParameters) (_model *VolumeJobPrototypeVolumeJobTypeMigratePrototype, err error) {
+	_model = &VolumeJobPrototypeVolumeJobTypeMigratePrototype{
+		JobType:    core.StringPtr(jobType),
+		Parameters: parameters,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*VolumeJobPrototypeVolumeJobTypeMigratePrototype) isaVolumeJobPrototype() bool {
+	return true
+}
+
+// UnmarshalVolumeJobPrototypeVolumeJobTypeMigratePrototype unmarshals an instance of VolumeJobPrototypeVolumeJobTypeMigratePrototype from the specified map of raw messages.
+func UnmarshalVolumeJobPrototypeVolumeJobTypeMigratePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobPrototypeVolumeJobTypeMigratePrototype)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "job_type", &obj.JobType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "job_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "parameters", &obj.Parameters, UnmarshalVolumeJobTypeMigrateParameters)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "parameters-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeJobTypeMigrate : VolumeJobTypeMigrate struct
+// This model "extends" VolumeJob
+type VolumeJobTypeMigrate struct {
+	// Indicates whether this volume job will be automatically deleted after it completes. At present, this is always
+	// `false`, but may be modifiable in the future.
+	AutoDelete *bool `json:"auto_delete" validate:"required"`
+
+	// The date and time that the volume job was completed.
+	//
+	// If absent, the volume job has not yet completed.
+	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
+
+	// The date and time that the volume job was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The date and time that the volume job is estimated to complete.
+	//
+	// If absent, the volume job is still queued and has not yet started.
+	EstimatedCompletionAt *strfmt.DateTime `json:"estimated_completion_at,omitempty"`
+
+	// The URL for this volume job.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume job.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this volume job. The name must not be used by another job for this volume.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+
+	// The date and time that the volume job was started.
+	//
+	// If absent, the volume job has not yet started.
+	StartedAt *strfmt.DateTime `json:"started_at,omitempty"`
+
+	// The status of this volume job:
+	// - `canceled`:  the job is canceled
+	// - `canceling`: the job is being canceled
+	// - `deleting`:  the job is being deleted
+	// - `failed`:    the job could not be completed successfully
+	// - `queued`:    the job is queued
+	// - `running`:   the job is in progress
+	// - `succeeded`: the job completed successfully
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	Status *string `json:"status" validate:"required"`
+
+	// The reasons for the current status (if any).
+	StatusReasons []VolumeJobStatusReason `json:"status_reasons" validate:"required"`
+
+	// The type of volume job.
+	JobType *string `json:"job_type" validate:"required"`
+
+	// The parameters to use after the volume is migrated.
+	Parameters *VolumeJobTypeMigrateParameters `json:"parameters" validate:"required"`
+}
+
+// Constants associated with the VolumeJobTypeMigrate.ResourceType property.
+// The resource type.
+const (
+	VolumeJobTypeMigrateResourceTypeVolumeJobConst = "volume_job"
+)
+
+// Constants associated with the VolumeJobTypeMigrate.Status property.
+// The status of this volume job:
+// - `canceled`:  the job is canceled
+// - `canceling`: the job is being canceled
+// - `deleting`:  the job is being deleted
+// - `failed`:    the job could not be completed successfully
+// - `queued`:    the job is queued
+// - `running`:   the job is in progress
+// - `succeeded`: the job completed successfully
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+const (
+	VolumeJobTypeMigrateStatusCanceledConst  = "canceled"
+	VolumeJobTypeMigrateStatusCancelingConst = "canceling"
+	VolumeJobTypeMigrateStatusDeletingConst  = "deleting"
+	VolumeJobTypeMigrateStatusFailedConst    = "failed"
+	VolumeJobTypeMigrateStatusQueuedConst    = "queued"
+	VolumeJobTypeMigrateStatusRunningConst   = "running"
+	VolumeJobTypeMigrateStatusSucceededConst = "succeeded"
+)
+
+// Constants associated with the VolumeJobTypeMigrate.JobType property.
+// The type of volume job.
+const (
+	VolumeJobTypeMigrateJobTypeMigrateConst = "migrate"
+)
+
+func (*VolumeJobTypeMigrate) isaVolumeJob() bool {
+	return true
+}
+
+// UnmarshalVolumeJobTypeMigrate unmarshals an instance of VolumeJobTypeMigrate from the specified map of raw messages.
+func UnmarshalVolumeJobTypeMigrate(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeJobTypeMigrate)
+	err = core.UnmarshalPrimitive(m, "auto_delete", &obj.AutoDelete)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "auto_delete-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "completed_at", &obj.CompletedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "completed_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "created_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "estimated_completion_at", &obj.EstimatedCompletionAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "estimated_completion_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "started_at", &obj.StartedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "started_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "status", &obj.Status)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "status-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalVolumeJobStatusReason)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "status_reasons-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "job_type", &obj.JobType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "job_type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "parameters", &obj.Parameters, UnmarshalVolumeJobTypeMigrateParameters)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "parameters-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -167306,7 +170665,19 @@ type VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchV
 	Asn *int64 `json:"asn,omitempty"`
 
 	// The IP address of the peer VPN gateway for this connection.
-	Address *string `json:"address,omitempty"`
+	Address *string `json:"address" validate:"required"`
+}
+
+// NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch : Instantiate VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch (Generic Model Constructor)
+func (*VpcV1) NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch(address string) (_model *VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch, err error) {
+	_model = &VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
 }
 
 func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatch() bool {
@@ -167357,7 +170728,19 @@ type VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchV
 	Asn *int64 `json:"asn,omitempty"`
 
 	// The FQDN of the peer VPN gateway for this connection.
-	Fqdn *string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn" validate:"required"`
+}
+
+// NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch : Instantiate VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch (Generic Model Constructor)
+func (*VpcV1) NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch(fqdn string) (_model *VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch, err error) {
+	_model = &VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch{
+		Fqdn: core.StringPtr(fqdn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
 }
 
 func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionDynamicRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatch() bool {
@@ -167402,7 +170785,19 @@ func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionDynamicRouteModePeerPatch
 // This model "extends" VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch
 type VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch struct {
 	// The IP address of the peer VPN gateway for this connection.
-	Address *string `json:"address,omitempty"`
+	Address *string `json:"address" validate:"required"`
+}
+
+// NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch : Instantiate VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch (Generic Model Constructor)
+func (*VpcV1) NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch(address string) (_model *VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch, err error) {
+	_model = &VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch{
+		Address: core.StringPtr(address),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
 }
 
 func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerAddressPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch() bool {
@@ -167439,7 +170834,19 @@ func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGat
 // This model "extends" VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch
 type VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch struct {
 	// The FQDN of the peer VPN gateway for this connection.
-	Fqdn *string `json:"fqdn,omitempty"`
+	Fqdn *string `json:"fqdn" validate:"required"`
+}
+
+// NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch : Instantiate VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch (Generic Model Constructor)
+func (*VpcV1) NewVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch(fqdn string) (_model *VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch, err error) {
+	_model = &VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch{
+		Fqdn: core.StringPtr(fqdn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
 }
 
 func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatch() bool {
@@ -167467,80 +170874,6 @@ func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGat
 	_patch = map[string]interface{}{}
 	if !core.IsNil(vpnGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch.Fqdn) {
 		_patch["fqdn"] = vpnGatewayConnectionPeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPolicyModePeerPatchVPNGatewayConnectionPeerFqdnPatch.Fqdn
-	}
-
-	return
-}
-
-// VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch : VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch struct
-// This model "extends" VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch
-type VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch struct {
-	// The IP address of the peer VPN gateway for this connection.
-	Address *string `json:"address,omitempty"`
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch() bool {
-	return true
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch) isaVPNGatewayConnectionPeerPatch() bool {
-	return true
-}
-
-// UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch unmarshals an instance of VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch)
-	err = core.UnmarshalPrimitive(m, "address", &obj.Address)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "address-error", common.GetComponentInfo())
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// asPatch returns a generic map representation of the VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch
-func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch *VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch) asPatch() (_patch map[string]interface{}) {
-	_patch = map[string]interface{}{}
-	if !core.IsNil(vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch.Address) {
-		_patch["address"] = vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerAddressPatch.Address
-	}
-
-	return
-}
-
-// VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch : VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch struct
-// This model "extends" VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch
-type VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch struct {
-	// The FQDN of the peer VPN gateway for this connection.
-	Fqdn *string `json:"fqdn,omitempty"`
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch) isaVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatch() bool {
-	return true
-}
-
-func (*VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch) isaVPNGatewayConnectionPeerPatch() bool {
-	return true
-}
-
-// UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch unmarshals an instance of VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch from the specified map of raw messages.
-func UnmarshalVPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch(m map[string]json.RawMessage, result interface{}) (err error) {
-	obj := new(VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch)
-	err = core.UnmarshalPrimitive(m, "fqdn", &obj.Fqdn)
-	if err != nil {
-		err = core.SDKErrorf(err, "", "fqdn-error", common.GetComponentInfo())
-		return
-	}
-	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
-	return
-}
-
-// asPatch returns a generic map representation of the VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch
-func (vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch *VPNGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch) asPatch() (_patch map[string]interface{}) {
-	_patch = map[string]interface{}{}
-	if !core.IsNil(vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch.Fqdn) {
-		_patch["fqdn"] = vpnGatewayConnectionPeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionStaticRouteModePeerPatchVPNGatewayConnectionPeerFqdnPatch.Fqdn
 	}
 
 	return
@@ -171132,6 +174465,98 @@ func (pager *InstanceGroupMembershipsPager) GetAll() (allItems []InstanceGroupMe
 	return
 }
 
+// InstanceProfilesPager can be used to simplify the use of the "ListInstanceProfiles" method.
+type InstanceProfilesPager struct {
+	hasNext     bool
+	options     *ListInstanceProfilesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewInstanceProfilesPager returns a new InstanceProfilesPager instance.
+func (vpc *VpcV1) NewInstanceProfilesPager(options *ListInstanceProfilesOptions) (pager *InstanceProfilesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = core.SDKErrorf(nil, "the 'options.Start' field should not be set", "no-query-setting", common.GetComponentInfo())
+		return
+	}
+
+	var optionsCopy ListInstanceProfilesOptions = *options
+	pager = &InstanceProfilesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *InstanceProfilesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *InstanceProfilesPager) GetNextWithContext(ctx context.Context) (page []InstanceProfile, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListInstanceProfilesWithContext(ctx, pager.options)
+	if err != nil {
+		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			errMsg := fmt.Sprintf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			err = core.SDKErrorf(err, errMsg, "get-query-error", common.GetComponentInfo())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Profiles
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *InstanceProfilesPager) GetAllWithContext(ctx context.Context) (allItems []InstanceProfile, err error) {
+	for pager.HasNext() {
+		var nextPage []InstanceProfile
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceProfilesPager) GetNext() (page []InstanceProfile, err error) {
+	page, err = pager.GetNextWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *InstanceProfilesPager) GetAll() (allItems []InstanceProfile, err error) {
+	allItems, err = pager.GetAllWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
 // InstancesPager can be used to simplify the use of the "ListInstances" method.
 type InstancesPager struct {
 	hasNext     bool
@@ -174163,6 +177588,98 @@ func (pager *VolumeInstanceProfilesPager) GetNext() (page []InstanceProfileRefer
 
 // GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
 func (pager *VolumeInstanceProfilesPager) GetAll() (allItems []InstanceProfileReference, err error) {
+	allItems, err = pager.GetAllWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// VolumeJobsPager can be used to simplify the use of the "ListVolumeJobs" method.
+type VolumeJobsPager struct {
+	hasNext     bool
+	options     *ListVolumeJobsOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewVolumeJobsPager returns a new VolumeJobsPager instance.
+func (vpc *VpcV1) NewVolumeJobsPager(options *ListVolumeJobsOptions) (pager *VolumeJobsPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = core.SDKErrorf(nil, "the 'options.Start' field should not be set", "no-query-setting", common.GetComponentInfo())
+		return
+	}
+
+	var optionsCopy ListVolumeJobsOptions = *options
+	pager = &VolumeJobsPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *VolumeJobsPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *VolumeJobsPager) GetNextWithContext(ctx context.Context) (page []VolumeJobIntf, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	result, _, err := pager.client.ListVolumeJobsWithContext(ctx, pager.options)
+	if err != nil {
+		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			errMsg := fmt.Sprintf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			err = core.SDKErrorf(err, errMsg, "get-query-error", common.GetComponentInfo())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Jobs
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *VolumeJobsPager) GetAllWithContext(ctx context.Context) (allItems []VolumeJobIntf, err error) {
+	for pager.HasNext() {
+		var nextPage []VolumeJobIntf
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *VolumeJobsPager) GetNext() (page []VolumeJobIntf, err error) {
+	page, err = pager.GetNextWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *VolumeJobsPager) GetAll() (allItems []VolumeJobIntf, err error) {
 	allItems, err = pager.GetAllWithContext(context.Background())
 	err = core.RepurposeSDKProblem(err, "")
 	return
