@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -44,13 +45,13 @@ const (
 )
 
 // IsNil checks if the specified object is nil or not.
-func IsNil(object interface{}) bool {
+func IsNil(object any) bool {
 	if object == nil {
 		return true
 	}
 
 	switch reflect.TypeOf(object).Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
 		return reflect.ValueOf(object).IsNil()
 	}
 
@@ -58,18 +59,20 @@ func IsNil(object interface{}) bool {
 }
 
 // ValidateNotNil returns the specified error if 'object' is nil, nil otherwise.
-func ValidateNotNil(object interface{}, errorMsg string) error {
+func ValidateNotNil(object any, errorMsg string) error {
 	if IsNil(object) {
-		return errors.New(errorMsg)
+		err := errors.New(errorMsg)
+		return SDKErrorf(err, "", "obj-is-nil", getComponentInfo())
 	}
 	return nil
 }
 
 // ValidateStruct validates 'param' (assumed to be a ptr to a struct) according to the
 // annotations attached to its fields.
-func ValidateStruct(param interface{}, paramName string) error {
+func ValidateStruct(param any, paramName string) error {
 	err := ValidateNotNil(param, paramName+" cannot be nil")
 	if err != nil {
+		err = RepurposeSDKProblem(err, "struct-is-nil")
 		return err
 	}
 
@@ -77,9 +80,10 @@ func ValidateStruct(param interface{}, paramName string) error {
 	if err != nil {
 		// If there were validation errors then return an error containing the field errors
 		if fieldErrors, ok := err.(validator.ValidationErrors); ok {
-			return fmt.Errorf("%s failed validation:\n%s", paramName, fieldErrors.Error())
+			err = fmt.Errorf("%s failed validation:\n%w", paramName, fieldErrors)
+			return SDKErrorf(err, "", "struct-validation-errors", getComponentInfo())
 		}
-		return err
+		return SDKErrorf(err, "", "struct-validate-unknown-error", getComponentInfo())
 	}
 
 	return nil
@@ -180,7 +184,7 @@ func SystemInfo() string {
 }
 
 // PrettyPrint print pretty.
-func PrettyPrint(result interface{}, resultName string) {
+func PrettyPrint(result any, resultName string) {
 	output, err := json.MarshalIndent(result, "", "    ")
 
 	if err == nil {
@@ -201,11 +205,12 @@ var reJsonSlice = regexp.MustCompile(`(?s)\[(\S*)\]`)
 // string manipulation on the resulting string, and converts
 // the string to a '[]string'. If 'slice' is nil, not a 'slice' type,
 // or an error occurred during conversion, an error will be returned
-func ConvertSlice(slice interface{}) (s []string, err error) {
+func ConvertSlice(slice any) (s []string, err error) {
 	inputIsSlice := false
 
 	if IsNil(slice) {
-		err = fmt.Errorf(ERRORMSG_NIL_SLICE)
+		err = errors.New(ERRORMSG_NIL_SLICE)
+		err = SDKErrorf(err, "", "nil-slice", getComponentInfo())
 		return
 	}
 
@@ -220,7 +225,8 @@ func ConvertSlice(slice interface{}) (s []string, err error) {
 
 	// If it's not a slice, just return an error
 	if !inputIsSlice {
-		err = fmt.Errorf(ERRORMSG_PARAM_NOT_SLICE)
+		err = errors.New(ERRORMSG_PARAM_NOT_SLICE)
+		err = SDKErrorf(err, "", "param-not-slice", getComponentInfo())
 		return
 	} else if reflect.ValueOf(slice).Len() == 0 {
 		s = []string{}
@@ -230,6 +236,7 @@ func ConvertSlice(slice interface{}) (s []string, err error) {
 	jsonBuffer, err := json.Marshal(slice)
 	if err != nil {
 		err = fmt.Errorf(ERRORMSG_MARSHAL_SLICE, err.Error())
+		err = SDKErrorf(err, "", "slice-marshal-error", getComponentInfo())
 		return
 	}
 
@@ -258,17 +265,13 @@ func ConvertSlice(slice interface{}) (s []string, err error) {
 		return
 	}
 
-	return nil, fmt.Errorf(ERRORMSG_CONVERT_SLICE)
+	err = errors.New(ERRORMSG_CONVERT_SLICE)
+	return nil, SDKErrorf(err, "", "cant-convert-slice", getComponentInfo())
 }
 
 // SliceContains returns true iff "contains" is an element of "slice"
 func SliceContains(slice []string, contains string) bool {
-	for _, elem := range slice {
-		if elem == contains {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, contains)
 }
 
 // GetQueryParam returns a pointer to the value of query parameter `param` from urlStr,
@@ -280,11 +283,13 @@ func GetQueryParam(urlStr *string, param string) (value *string, err error) {
 
 	urlObj, err := url.Parse(*urlStr)
 	if err != nil {
+		err = SDKErrorf(err, "", "url-parse-error", getComponentInfo())
 		return
 	}
 
 	query, err := url.ParseQuery(urlObj.RawQuery)
 	if err != nil {
+		err = SDKErrorf(err, "", "url-parse-query-error", getComponentInfo())
 		return
 	}
 
@@ -302,12 +307,18 @@ func GetQueryParam(urlStr *string, param string) (value *string, err error) {
 // converted to an int64 value, or nil if not found.
 func GetQueryParamAsInt(urlStr *string, param string) (value *int64, err error) {
 	strValue, err := GetQueryParam(urlStr, param)
-	if err != nil || strValue == nil {
+	if err != nil {
+		err = RepurposeSDKProblem(err, "get-query-error")
+		return
+	}
+
+	if strValue == nil {
 		return
 	}
 
 	intValue, err := strconv.ParseInt(*strValue, 10, 64)
 	if err != nil {
+		err = SDKErrorf(err, "", "parse-int-query-error", getComponentInfo())
 		return nil, err
 	}
 
@@ -389,13 +400,15 @@ var redactedKeywords = []string{
 var redactedTokens = strings.Join(redactedKeywords, "|")
 
 // Pre-compiled regular expressions used by RedactSecrets().
-var reAuthHeader = regexp.MustCompile(`(?m)^(Authorization|X-Auth\S*): .*`)
-var rePropertySetting = regexp.MustCompile(`(?i)(` + redactedTokens + `)=[^&]*(&|$)`)
-var reJsonField = regexp.MustCompile(`(?i)"([^"]*(` + redactedTokens + `)[^"_]*)":\s*"[^\,]*"`)
+var (
+	reAuthHeader      = regexp.MustCompile(`(?m)^(Authorization|X-Auth\S*): .*`)
+	rePropertySetting = regexp.MustCompile(`(?i)(` + redactedTokens + `)=[^&]*(&|$)`)
+	reJsonField       = regexp.MustCompile(`(?i)"([^"]*(` + redactedTokens + `)[^"_]*)":\s*"[^\,]*"`)
+)
 
 // RedactSecrets() returns the input string with secrets redacted.
 func RedactSecrets(input string) string {
-	var redacted = "[redacted]"
+	redacted := "[redacted]"
 
 	redactedString := input
 	redactedString = reAuthHeader.ReplaceAllString(redactedString, "$1: "+redacted)
