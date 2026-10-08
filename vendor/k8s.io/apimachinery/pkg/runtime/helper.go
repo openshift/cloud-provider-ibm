@@ -236,10 +236,14 @@ func (e WithVersionEncoder) Encode(obj Object, stream io.Writer) error {
 			gvk = preferredGVK
 		}
 	}
-	kind.SetGroupVersionKind(gvk)
-	err = e.Encoder.Encode(obj, stream)
-	kind.SetGroupVersionKind(oldGVK)
-	return err
+
+	// The gvk only needs to be set if not already as desired.
+	if gvk != oldGVK {
+		kind.SetGroupVersionKind(gvk)
+		defer kind.SetGroupVersionKind(oldGVK)
+	}
+
+	return e.Encoder.Encode(obj, stream)
 }
 
 // WithoutVersionDecoder clears the group version kind of a deserialized object.
@@ -279,4 +283,28 @@ func (e *encoderWithAllocator) Encode(obj Object, w io.Writer) error {
 // Identifier returns identifier of this encoder.
 func (e *encoderWithAllocator) Identifier() Identifier {
 	return e.encoder.Identifier()
+}
+
+// The legacy discovery endpoint requires that its response Encoder implement Serializer.
+// https://github.com/kubernetes/kubernetes/blob/4a1340bfd58fdb3846d4342c101e0bcb574fbfb1/staging/src/k8s.io/apiserver/pkg/endpoints/discovery/util.go#L101-L107
+var _ Serializer = nondeterministicEncoderToEncoderAdapter{}
+
+type nondeterministicEncoderToEncoderAdapter struct {
+	NondeterministicEncoder
+
+	Decoder
+}
+
+func (e nondeterministicEncoderToEncoderAdapter) Encode(obj Object, w io.Writer) error {
+	return e.EncodeNondeterministic(obj, w)
+}
+
+// UseNondeterministicEncoding returns an Encoder that encodes objects using the provided
+// Serializer's EncodeNondeterministic method if it implements NondeterministicEncoder, otherwise it
+// returns the provided Serializer as-is.
+func UseNondeterministicEncoding(serializer Serializer) Encoder {
+	if nondeterministic, ok := serializer.(NondeterministicEncoder); ok {
+		return nondeterministicEncoderToEncoderAdapter{NondeterministicEncoder: nondeterministic, Decoder: serializer}
+	}
+	return serializer
 }

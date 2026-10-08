@@ -17,14 +17,36 @@ package core
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
 
+// audClaim holds the JWT "aud" claim, which RFC 7519 §4.1.3 allows as either
+// a single string or an array of strings.
+type audClaim []string
+
+func (a *audClaim) UnmarshalJSON(data []byte) error {
+	// Try array first.
+	var list []string
+	if err := json.Unmarshal(data, &list); err == nil {
+		*a = list
+		return nil
+	}
+	// Fall back to plain string.
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*a = []string{s}
+	return nil
+}
+
 // coreJWTClaims are the fields within a JWT's "claims" segment that we're interested in.
 type coreJWTClaims struct {
-	ExpiresAt int64 `json:"exp,omitempty"`
-	IssuedAt  int64 `json:"iat,omitempty"`
+	ExpiresAt int64    `json:"exp,omitempty"`
+	IssuedAt  int64    `json:"iat,omitempty"`
+	Audience  audClaim `json:"aud,omitempty"`
 }
 
 // parseJWT parses the specified JWT token string and returns an instance of the coreJWTClaims struct.
@@ -32,7 +54,8 @@ func parseJWT(tokenString string) (claims *coreJWTClaims, err error) {
 	// A JWT consists of three .-separated segments
 	segments := strings.Split(tokenString, ".")
 	if len(segments) != 3 {
-		err = fmt.Errorf("token contains an invalid number of segments")
+		err = errors.New("token contains an invalid number of segments")
+		err = SDKErrorf(err, "", "need-3-segs", getComponentInfo())
 		return
 	}
 
@@ -40,7 +63,6 @@ func parseJWT(tokenString string) (claims *coreJWTClaims, err error) {
 	var claimBytes []byte
 	claimBytes, err = decodeSegment(segments[1])
 	if err != nil {
-		err = fmt.Errorf("error decoding claims segment: %s", err.Error())
 		return
 	}
 
@@ -49,6 +71,7 @@ func parseJWT(tokenString string) (claims *coreJWTClaims, err error) {
 	err = json.Unmarshal(claimBytes, claims)
 	if err != nil {
 		err = fmt.Errorf("error unmarshalling token: %s", err.Error())
+		err = SDKErrorf(err, "", "bad-token", getComponentInfo())
 		return
 	}
 
@@ -62,5 +85,9 @@ func decodeSegment(seg string) ([]byte, error) {
 		seg += strings.Repeat("=", 4-l)
 	}
 
-	return base64.URLEncoding.DecodeString(seg)
+	res, err := base64.URLEncoding.DecodeString(seg)
+	if err != nil {
+		err = SDKErrorf(err, fmt.Sprintf("error decoding claims segment: %s", err.Error()), "bad-claim-seg", getComponentInfo())
+	}
+	return res, err
 }
