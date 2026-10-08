@@ -13,6 +13,18 @@ updates:
     directory: "/" # location of your .github/workflows directory
     schedule:
       interval: "cron"
+      cronjob: "37 11 * * *" # Run at 11:37 UTC daily
+    open-pull-requests-limit: 99
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "release-1.37"
+    target-branch: "release-1.37"
+
+  - package-ecosystem: "github-actions"
+    directory: "/" # location of your .github/workflows directory
+    schedule:
+      interval: "cron"
       cronjob: "36 11 * * *" # Run at 11:36 UTC daily
     open-pull-requests-limit: 99
     labels:
@@ -93,18 +105,6 @@ updates:
       - "release-1.30"
     target-branch: "release-1.30"
 
-  - package-ecosystem: "github-actions"
-    directory: "/" # location of your .github/workflows directory
-    schedule:
-      interval: "cron"
-      cronjob: "29 11 * * *" # Run at 11:29 UTC daily
-    open-pull-requests-limit: 99
-    labels:
-      - "dependencies"
-      - "github-actions"
-      - "release-1.29"
-    target-branch: "release-1.29"
-
   # ------------------------------------------------------------------------------------------------------------
   # Update the go modules for each of the branches
   # ------------------------------------------------------------------------------------------------------------
@@ -113,7 +113,48 @@ updates:
     directory: "/" # Location of your go.mod file
     schedule:
       interval: "cron"
+      cronjob: "37 10 * * *" # Run at 10:37 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
+    ignore:
+      - dependency-name: "k8s.io/api"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "k8s.io/apimachinery"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "k8s.io/client-go"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "k8s.io/cloud-provider"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "k8s.io/component-base"
+        update-types: ["version-update:semver-minor"]
+      - dependency-name: "k8s.io/component-helpers"
+        update-types: ["version-update:semver-minor"]
+    open-pull-requests-limit: 99
+    groups:
+      kubernetes-1.37:
+        patterns:
+          - "k8s.io/*"
+    labels:
+      - "dependencies"
+      - "go"
+      - "release-1.37"
+    target-branch: "release-1.37"
+
+  - package-ecosystem: "gomod" # Specifies the Go modules package ecosystem
+    directory: "/" # Location of your go.mod file
+    schedule:
+      interval: "cron"
       cronjob: "36 10 * * *" # Run at 10:36 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -143,6 +184,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "35 10 * * *" # Run at 10:35 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -172,6 +219,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "34 10 * * *" # Run at 10:34 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -201,6 +254,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "33 10 * * *" # Run at 10:33 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -230,6 +289,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "32 10 * * *" # Run at 10:32 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -259,6 +324,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "31 10 * * *" # Run at 10:31 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -288,6 +359,12 @@ updates:
     schedule:
       interval: "cron"
       cronjob: "30 10 * * *" # Run at 10:30 UTC daily
+    allow:
+      - dependency-type: "direct"
+      - dependency-name: "google.golang.org/grpc"
+        dependency-type: "indirect"
+      - dependency-name: "golang.org/x/crypto"
+        dependency-type: "indirect"
     ignore:
       - dependency-name: "k8s.io/api"
         update-types: ["version-update:semver-minor"]
@@ -311,32 +388,3 @@ updates:
       - "go"
       - "release-1.30"
     target-branch: "release-1.30"
-
-  - package-ecosystem: "gomod" # Specifies the Go modules package ecosystem
-    directory: "/" # Location of your go.mod file
-    schedule:
-      interval: "cron"
-      cronjob: "29 10 * * *" # Run at 10:29 UTC daily
-    ignore:
-      - dependency-name: "k8s.io/api"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "k8s.io/apimachinery"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "k8s.io/client-go"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "k8s.io/cloud-provider"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "k8s.io/component-base"
-        update-types: ["version-update:semver-minor"]
-      - dependency-name: "k8s.io/component-helpers"
-        update-types: ["version-update:semver-minor"]
-    open-pull-requests-limit: 99
-    groups:
-      kubernetes-1.29:
-        patterns:
-          - "k8s.io/*"
-    labels:
-      - "dependencies"
-      - "go"
-      - "release-1.29"
-    target-branch: "release-1.29"

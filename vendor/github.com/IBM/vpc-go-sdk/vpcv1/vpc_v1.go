@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.114.0-a902401e-20260427-192904
+ * IBM OpenAPI SDK Code Generator Version: 3.117.1-c28a0a4f-20260924-094841
  */
 
 // Package vpcv1 : Operations and models for the VpcV1 service
@@ -38,7 +38,7 @@ import (
 // VpcV1 : The IBM Cloud Virtual Private Cloud (VPC) API can be used to programmatically provision and manage virtual
 // server instances, along with subnets, volumes, load balancers, and more.
 //
-// API Version: 2026-06-16
+// API Version: 2026-09-01
 type VpcV1 struct {
 	Service *core.BaseService
 
@@ -46,8 +46,8 @@ type VpcV1 struct {
 	// `2`.
 	Generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-04-07`
-	// and `2026-06-17`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-09-01`
+	// and `2026-09-28`.
 	Version *string
 }
 
@@ -67,8 +67,8 @@ type VpcV1Options struct {
 	// `2`.
 	Generation *int64
 
-	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-04-07`
-	// and `2026-06-17`.
+	// The API version, in format `YYYY-MM-DD`. For the API behavior documented here, specify any date between `2026-09-01`
+	// and `2026-09-28`.
 	Version *string
 }
 
@@ -133,7 +133,7 @@ func NewVpcV1(options *VpcV1Options) (service *VpcV1, err error) {
 	}
 
 	if options.Version == nil {
-		options.Version = core.StringPtr("2026-06-16")
+		options.Version = core.StringPtr("2026-09-24")
 	}
 
 	service = &VpcV1{
@@ -160,6 +160,7 @@ func GetServiceURLForRegion(region string) (string, error) {
 		"eu-es":    "https://eu-es.iaas.cloud.ibm.com/v1",    // Spain (Madrid)
 		"eu-gb":    "https://eu-gb.iaas.cloud.ibm.com/v1",    // United Kingdom (London)
 		"in-che":   "https://in-che.iaas.cloud.ibm.com/v1",   // India (Chennai)
+		"in-mum":   "https://in-mum.iaas.cloud.ibm.com/v1",   // India (Mumbai)
 		"jp-osa":   "https://jp-osa.iaas.cloud.ibm.com/v1",   // Japan (Osaka)
 		"jp-tok":   "https://jp-tok.iaas.cloud.ibm.com/v1",   // Japan (Tokyo)
 		"us-east":  "https://us-east.iaas.cloud.ibm.com/v1",  // US East (Washington DC)
@@ -1194,6 +1195,81 @@ func (vpc *VpcV1) UpdateBackupPolicyWithContext(ctx context.Context, updateBacku
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalBackupPolicy)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListBareMetalServerCapacities : List capacities for bare metal servers
+// This request lists bare metal server capacities in the region.
+func (vpc *VpcV1) ListBareMetalServerCapacities(listBareMetalServerCapacitiesOptions *ListBareMetalServerCapacitiesOptions) (result *BareMetalServerCapacityCollection, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.ListBareMetalServerCapacitiesWithContext(context.Background(), listBareMetalServerCapacitiesOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// ListBareMetalServerCapacitiesWithContext is an alternate form of the ListBareMetalServerCapacities method which supports a Context parameter
+func (vpc *VpcV1) ListBareMetalServerCapacitiesWithContext(ctx context.Context, listBareMetalServerCapacitiesOptions *ListBareMetalServerCapacitiesOptions) (result *BareMetalServerCapacityCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateStruct(listBareMetalServerCapacitiesOptions, "listBareMetalServerCapacitiesOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/bare_metal_server/capacities`, nil)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListBareMetalServerCapacities")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range listBareMetalServerCapacitiesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+	if listBareMetalServerCapacitiesOptions.Start != nil {
+		builder.AddQuery("start", fmt.Sprint(*listBareMetalServerCapacitiesOptions.Start))
+	}
+	if listBareMetalServerCapacitiesOptions.Limit != nil {
+		builder.AddQuery("limit", fmt.Sprint(*listBareMetalServerCapacitiesOptions.Limit))
+	}
+	if listBareMetalServerCapacitiesOptions.ProfileName != nil {
+		builder.AddQuery("profile.name", fmt.Sprint(*listBareMetalServerCapacitiesOptions.ProfileName))
+	}
+	if listBareMetalServerCapacitiesOptions.ZoneName != nil {
+		builder.AddQuery("zone.name", fmt.Sprint(*listBareMetalServerCapacitiesOptions.ZoneName))
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "list_bare_metal_server_capacities", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalBareMetalServerCapacityCollection)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
 			return
@@ -12985,6 +13061,82 @@ func (vpc *VpcV1) GetInstanceInitializationWithContext(ctx context.Context, getI
 	return
 }
 
+// CreateInstanceReinitialization : Reinitialize an instance
+// This request reinitializes an instance with the information in a provided instance reinitialize prototype object. The
+// instance must be stopped. Upon successful reinitiatilization, the instance will be started automatically. Capacity
+// may not be available for the instance to become `running`.
+//
+// Instances provisioned from a `catalog_offering` cannot be reinitialized.
+//
+// This operation cannot be reversed. The previous initialization data will be fully replaced, the current boot volume
+// will be destroyed and replaced, any local disks will be wiped, and the boot volume attachment identifier will change.
+func (vpc *VpcV1) CreateInstanceReinitialization(createInstanceReinitializationOptions *CreateInstanceReinitializationOptions) (response *core.DetailedResponse, err error) {
+	response, err = vpc.CreateInstanceReinitializationWithContext(context.Background(), createInstanceReinitializationOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// CreateInstanceReinitializationWithContext is an alternate form of the CreateInstanceReinitialization method which supports a Context parameter
+func (vpc *VpcV1) CreateInstanceReinitializationWithContext(ctx context.Context, createInstanceReinitializationOptions *CreateInstanceReinitializationOptions) (response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(createInstanceReinitializationOptions, "createInstanceReinitializationOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(createInstanceReinitializationOptions, "createInstanceReinitializationOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"id": *createInstanceReinitializationOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.POST)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{id}/reinitialize`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "CreateInstanceReinitialization")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range createInstanceReinitializationOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Content-Type", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	_, err = builder.SetBodyContentJSON(createInstanceReinitializationOptions.InstanceReinitializePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	response, err = vpc.Service.Request(request, nil)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "create_instance_reinitialization", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+
+	return
+}
+
 // CreateInstanceAction : Create an instance action
 // This request creates a new action which will be queued up to run as soon as any pending or running actions have
 // completed.
@@ -15043,6 +15195,237 @@ func (vpc *VpcV1) GetInstanceNetworkInterfaceIPWithContext(ctx context.Context, 
 	return
 }
 
+// ListInstanceSoftwareAttachments : List instance software attachments associated with an instance
+// This request lists software attachments associated with an instance.
+//
+// The instance software attachments will be sorted by their `created_at` property values, with newest instance software
+// attachments first. Software attachments with identical
+// `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListInstanceSoftwareAttachments(listInstanceSoftwareAttachmentsOptions *ListInstanceSoftwareAttachmentsOptions) (result *InstanceSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.ListInstanceSoftwareAttachmentsWithContext(context.Background(), listInstanceSoftwareAttachmentsOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// ListInstanceSoftwareAttachmentsWithContext is an alternate form of the ListInstanceSoftwareAttachments method which supports a Context parameter
+func (vpc *VpcV1) ListInstanceSoftwareAttachmentsWithContext(ctx context.Context, listInstanceSoftwareAttachmentsOptions *ListInstanceSoftwareAttachmentsOptions) (result *InstanceSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listInstanceSoftwareAttachmentsOptions, "listInstanceSoftwareAttachmentsOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(listInstanceSoftwareAttachmentsOptions, "listInstanceSoftwareAttachmentsOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"instance_id": *listInstanceSoftwareAttachmentsOptions.InstanceID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{instance_id}/software_attachments`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListInstanceSoftwareAttachments")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range listInstanceSoftwareAttachmentsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "list_instance_software_attachments", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceSoftwareAttachmentCollection)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetInstanceSoftwareAttachment : Retrieve an instance software attachment
+// This request retrieves a single instance software attachment specified by identifier in the URL.
+func (vpc *VpcV1) GetInstanceSoftwareAttachment(getInstanceSoftwareAttachmentOptions *GetInstanceSoftwareAttachmentOptions) (result *InstanceSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.GetInstanceSoftwareAttachmentWithContext(context.Background(), getInstanceSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetInstanceSoftwareAttachmentWithContext is an alternate form of the GetInstanceSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) GetInstanceSoftwareAttachmentWithContext(ctx context.Context, getInstanceSoftwareAttachmentOptions *GetInstanceSoftwareAttachmentOptions) (result *InstanceSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getInstanceSoftwareAttachmentOptions, "getInstanceSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(getInstanceSoftwareAttachmentOptions, "getInstanceSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"instance_id": *getInstanceSoftwareAttachmentOptions.InstanceID,
+		"id":          *getInstanceSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{instance_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetInstanceSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range getInstanceSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "get_instance_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceSoftwareAttachment)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateInstanceSoftwareAttachment : Update an instance software attachment
+// This request updates an instance software attachment with the information provided in an instance software attachment
+// patch object. The instance software attachment patch object is structured in the same way as a retrieved instance
+// software attachment and needs to contain only the information to be updated.
+func (vpc *VpcV1) UpdateInstanceSoftwareAttachment(updateInstanceSoftwareAttachmentOptions *UpdateInstanceSoftwareAttachmentOptions) (result *InstanceSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.UpdateInstanceSoftwareAttachmentWithContext(context.Background(), updateInstanceSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// UpdateInstanceSoftwareAttachmentWithContext is an alternate form of the UpdateInstanceSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) UpdateInstanceSoftwareAttachmentWithContext(ctx context.Context, updateInstanceSoftwareAttachmentOptions *UpdateInstanceSoftwareAttachmentOptions) (result *InstanceSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateInstanceSoftwareAttachmentOptions, "updateInstanceSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(updateInstanceSoftwareAttachmentOptions, "updateInstanceSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"instance_id": *updateInstanceSoftwareAttachmentOptions.InstanceID,
+		"id":          *updateInstanceSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/instances/{instance_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateInstanceSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range updateInstanceSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	_, err = builder.SetBodyContentJSON(updateInstanceSoftwareAttachmentOptions.InstanceSoftwareAttachmentPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "update_instance_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalInstanceSoftwareAttachment)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // ListInstanceVolumeAttachments : List volumes attachments on an instance
 // This request lists volume attachments on an instance. A volume attachment connects a volume to an instance. Each
 // instance may have many volume attachments but each volume attachment connects exactly one instance to exactly one
@@ -16551,6 +16934,9 @@ func (vpc *VpcV1) CreateLoadBalancerListenerWithContext(ctx context.Context, cre
 	if createLoadBalancerListenerOptions.CertificateInstance != nil {
 		body["certificate_instance"] = createLoadBalancerListenerOptions.CertificateInstance
 	}
+	if createLoadBalancerListenerOptions.ClientAuthentication != nil {
+		body["client_authentication"] = createLoadBalancerListenerOptions.ClientAuthentication
+	}
 	if createLoadBalancerListenerOptions.ConnectionLimit != nil {
 		body["connection_limit"] = createLoadBalancerListenerOptions.ConnectionLimit
 	}
@@ -17735,6 +18121,9 @@ func (vpc *VpcV1) CreateLoadBalancerPoolWithContext(ctx context.Context, createL
 	if createLoadBalancerPoolOptions.Protocol != nil {
 		body["protocol"] = createLoadBalancerPoolOptions.Protocol
 	}
+	if createLoadBalancerPoolOptions.ClientAuthentication != nil {
+		body["client_authentication"] = createLoadBalancerPoolOptions.ClientAuthentication
+	}
 	if createLoadBalancerPoolOptions.FailsafePolicy != nil {
 		body["failsafe_policy"] = createLoadBalancerPoolOptions.FailsafePolicy
 	}
@@ -17746,6 +18135,9 @@ func (vpc *VpcV1) CreateLoadBalancerPoolWithContext(ctx context.Context, createL
 	}
 	if createLoadBalancerPoolOptions.ProxyProtocol != nil {
 		body["proxy_protocol"] = createLoadBalancerPoolOptions.ProxyProtocol
+	}
+	if createLoadBalancerPoolOptions.ServerAuthentication != nil {
+		body["server_authentication"] = createLoadBalancerPoolOptions.ServerAuthentication
 	}
 	if createLoadBalancerPoolOptions.SessionPersistence != nil {
 		body["session_persistence"] = createLoadBalancerPoolOptions.SessionPersistence
@@ -26257,6 +26649,237 @@ func (vpc *VpcV1) ListSnapshotInstanceProfilesWithContext(ctx context.Context, l
 	return
 }
 
+// ListSnapshotSoftwareAttachments : List snapshot software attachments associated with a snapshot
+// This request lists software attachments associated with a snapshot.
+//
+// The snapshot software attachments will be sorted by their `created_at` property values, with newest snapshot software
+// attachments first. Software attachments with identical
+// `created_at` property values will in turn be sorted by ascending `name` property values.
+func (vpc *VpcV1) ListSnapshotSoftwareAttachments(listSnapshotSoftwareAttachmentsOptions *ListSnapshotSoftwareAttachmentsOptions) (result *SnapshotSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.ListSnapshotSoftwareAttachmentsWithContext(context.Background(), listSnapshotSoftwareAttachmentsOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// ListSnapshotSoftwareAttachmentsWithContext is an alternate form of the ListSnapshotSoftwareAttachments method which supports a Context parameter
+func (vpc *VpcV1) ListSnapshotSoftwareAttachmentsWithContext(ctx context.Context, listSnapshotSoftwareAttachmentsOptions *ListSnapshotSoftwareAttachmentsOptions) (result *SnapshotSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listSnapshotSoftwareAttachmentsOptions, "listSnapshotSoftwareAttachmentsOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(listSnapshotSoftwareAttachmentsOptions, "listSnapshotSoftwareAttachmentsOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"snapshot_id": *listSnapshotSoftwareAttachmentsOptions.SnapshotID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{snapshot_id}/software_attachments`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListSnapshotSoftwareAttachments")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range listSnapshotSoftwareAttachmentsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "list_snapshot_software_attachments", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotSoftwareAttachmentCollection)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetSnapshotSoftwareAttachment : Retrieve a snapshot software attachment
+// This request retrieves a single snapshot software attachment specified by identifier in the URL.
+func (vpc *VpcV1) GetSnapshotSoftwareAttachment(getSnapshotSoftwareAttachmentOptions *GetSnapshotSoftwareAttachmentOptions) (result *SnapshotSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.GetSnapshotSoftwareAttachmentWithContext(context.Background(), getSnapshotSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetSnapshotSoftwareAttachmentWithContext is an alternate form of the GetSnapshotSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) GetSnapshotSoftwareAttachmentWithContext(ctx context.Context, getSnapshotSoftwareAttachmentOptions *GetSnapshotSoftwareAttachmentOptions) (result *SnapshotSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getSnapshotSoftwareAttachmentOptions, "getSnapshotSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(getSnapshotSoftwareAttachmentOptions, "getSnapshotSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"snapshot_id": *getSnapshotSoftwareAttachmentOptions.SnapshotID,
+		"id":          *getSnapshotSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{snapshot_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetSnapshotSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range getSnapshotSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "get_snapshot_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotSoftwareAttachment)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateSnapshotSoftwareAttachment : Update a snapshot software attachment
+// This request updates a snapshot software attachment with the information provided in a snapshot software attachment
+// patch object. The snapshot software attachment patch object is structured in the same way as a retrieved snapshot
+// software attachment and needs to contain only the information to be updated.
+func (vpc *VpcV1) UpdateSnapshotSoftwareAttachment(updateSnapshotSoftwareAttachmentOptions *UpdateSnapshotSoftwareAttachmentOptions) (result *SnapshotSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.UpdateSnapshotSoftwareAttachmentWithContext(context.Background(), updateSnapshotSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// UpdateSnapshotSoftwareAttachmentWithContext is an alternate form of the UpdateSnapshotSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) UpdateSnapshotSoftwareAttachmentWithContext(ctx context.Context, updateSnapshotSoftwareAttachmentOptions *UpdateSnapshotSoftwareAttachmentOptions) (result *SnapshotSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateSnapshotSoftwareAttachmentOptions, "updateSnapshotSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(updateSnapshotSoftwareAttachmentOptions, "updateSnapshotSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"snapshot_id": *updateSnapshotSoftwareAttachmentOptions.SnapshotID,
+		"id":          *updateSnapshotSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/snapshots/{snapshot_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateSnapshotSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range updateSnapshotSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	_, err = builder.SetBodyContentJSON(updateSnapshotSoftwareAttachmentOptions.SnapshotSoftwareAttachmentPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "update_snapshot_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalSnapshotSoftwareAttachment)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
 // ListSubnets : List subnets
 // This request lists subnets in the region. Subnets are contiguous ranges of IP addresses specified in CIDR block
 // notation. Each subnet is within a particular zone and cannot span multiple zones or regions.
@@ -29659,6 +30282,237 @@ func (vpc *VpcV1) CancelVolumeJobWithContext(ctx context.Context, cancelVolumeJo
 	}
 	if rawResponse != nil {
 		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeJob)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// ListVolumeSoftwareAttachments : List volume software attachments associated with a volume
+// This request lists software attachments associated with a volume.
+//
+// The volume software attachments will be sorted by their `created_at` property values, with newest volume software
+// attachments first. Software attachments with identical `created_at` property values will in turn be sorted by
+// ascending `name` property values.
+func (vpc *VpcV1) ListVolumeSoftwareAttachments(listVolumeSoftwareAttachmentsOptions *ListVolumeSoftwareAttachmentsOptions) (result *VolumeSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.ListVolumeSoftwareAttachmentsWithContext(context.Background(), listVolumeSoftwareAttachmentsOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// ListVolumeSoftwareAttachmentsWithContext is an alternate form of the ListVolumeSoftwareAttachments method which supports a Context parameter
+func (vpc *VpcV1) ListVolumeSoftwareAttachmentsWithContext(ctx context.Context, listVolumeSoftwareAttachmentsOptions *ListVolumeSoftwareAttachmentsOptions) (result *VolumeSoftwareAttachmentCollection, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(listVolumeSoftwareAttachmentsOptions, "listVolumeSoftwareAttachmentsOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(listVolumeSoftwareAttachmentsOptions, "listVolumeSoftwareAttachmentsOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *listVolumeSoftwareAttachmentsOptions.VolumeID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/software_attachments`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "ListVolumeSoftwareAttachments")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range listVolumeSoftwareAttachmentsOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "list_volume_software_attachments", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeSoftwareAttachmentCollection)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// GetVolumeSoftwareAttachment : Retrieve a volume software attachment
+// This request retrieves a single volume software attachment specified by identifier in the URL.
+func (vpc *VpcV1) GetVolumeSoftwareAttachment(getVolumeSoftwareAttachmentOptions *GetVolumeSoftwareAttachmentOptions) (result *VolumeSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.GetVolumeSoftwareAttachmentWithContext(context.Background(), getVolumeSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetVolumeSoftwareAttachmentWithContext is an alternate form of the GetVolumeSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) GetVolumeSoftwareAttachmentWithContext(ctx context.Context, getVolumeSoftwareAttachmentOptions *GetVolumeSoftwareAttachmentOptions) (result *VolumeSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(getVolumeSoftwareAttachmentOptions, "getVolumeSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(getVolumeSoftwareAttachmentOptions, "getVolumeSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *getVolumeSoftwareAttachmentOptions.VolumeID,
+		"id":        *getVolumeSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.GET)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "GetVolumeSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range getVolumeSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "get_volume_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeSoftwareAttachment)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
+			return
+		}
+		response.Result = result
+	}
+
+	return
+}
+
+// UpdateVolumeSoftwareAttachment : Update a volume software attachment
+// This request updates a volume software attachment with the information provided in a volume software attachment patch
+// object. The volume software attachment patch object is structured in the same way as a retrieved volume software
+// attachment and needs to contain only the information to be updated.
+func (vpc *VpcV1) UpdateVolumeSoftwareAttachment(updateVolumeSoftwareAttachmentOptions *UpdateVolumeSoftwareAttachmentOptions) (result *VolumeSoftwareAttachment, response *core.DetailedResponse, err error) {
+	result, response, err = vpc.UpdateVolumeSoftwareAttachmentWithContext(context.Background(), updateVolumeSoftwareAttachmentOptions)
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// UpdateVolumeSoftwareAttachmentWithContext is an alternate form of the UpdateVolumeSoftwareAttachment method which supports a Context parameter
+func (vpc *VpcV1) UpdateVolumeSoftwareAttachmentWithContext(ctx context.Context, updateVolumeSoftwareAttachmentOptions *UpdateVolumeSoftwareAttachmentOptions) (result *VolumeSoftwareAttachment, response *core.DetailedResponse, err error) {
+	err = core.ValidateNotNil(updateVolumeSoftwareAttachmentOptions, "updateVolumeSoftwareAttachmentOptions cannot be nil")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "unexpected-nil-param", common.GetComponentInfo())
+		return
+	}
+	err = core.ValidateStruct(updateVolumeSoftwareAttachmentOptions, "updateVolumeSoftwareAttachmentOptions")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "struct-validation-error", common.GetComponentInfo())
+		return
+	}
+
+	pathParamsMap := map[string]string{
+		"volume_id": *updateVolumeSoftwareAttachmentOptions.VolumeID,
+		"id":        *updateVolumeSoftwareAttachmentOptions.ID,
+	}
+
+	builder := core.NewRequestBuilder(core.PATCH)
+	builder = builder.WithContext(ctx)
+	builder.EnableGzipCompression = vpc.GetEnableGzipCompression()
+	_, err = builder.ResolveRequestURL(vpc.Service.Options.URL, `/volumes/{volume_id}/software_attachments/{id}`, pathParamsMap)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "url-resolve-error", common.GetComponentInfo())
+		return
+	}
+
+	sdkHeaders := common.GetSdkHeaders("vpc", "V1", "UpdateVolumeSoftwareAttachment")
+	for headerName, headerValue := range sdkHeaders {
+		builder.AddHeader(headerName, headerValue)
+	}
+
+	for headerName, headerValue := range updateVolumeSoftwareAttachmentOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
+	}
+	builder.AddHeader("Accept", "application/json")
+	builder.AddHeader("Content-Type", "application/merge-patch+json")
+
+	builder.AddQuery("version", fmt.Sprint(*vpc.Version))
+	builder.AddQuery("generation", fmt.Sprint(*vpc.Generation))
+
+	_, err = builder.SetBodyContentJSON(updateVolumeSoftwareAttachmentOptions.VolumeSoftwareAttachmentPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "set-json-body-error", common.GetComponentInfo())
+		return
+	}
+
+	request, err := builder.Build()
+	if err != nil {
+		err = core.SDKErrorf(err, "", "build-error", common.GetComponentInfo())
+		return
+	}
+
+	var rawResponse map[string]json.RawMessage
+	response, err = vpc.Service.Request(request, &rawResponse)
+	if err != nil {
+		core.EnrichHTTPProblem(err, "update_volume_software_attachment", getServiceComponentInfo())
+		err = core.SDKErrorf(err, "", "http-request-err", common.GetComponentInfo())
+		return
+	}
+	if rawResponse != nil {
+		err = core.UnmarshalModel(rawResponse, "", &result, UnmarshalVolumeSoftwareAttachment)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-resp-error", common.GetComponentInfo())
 			return
@@ -36173,7 +37027,7 @@ func (vpc *VpcV1) UpdateVPNServerRouteWithContext(ctx context.Context, updateVPN
 	return
 }
 func getServiceComponentInfo() *core.ProblemComponent {
-	return core.NewProblemComponent(DefaultServiceName, "2026-06-16")
+	return core.NewProblemComponent(DefaultServiceName, "2026-09-24")
 }
 
 // AccountIdentity : Identifies an account by a unique property.
@@ -39141,6 +39995,99 @@ func UnmarshalBareMetalServerCpu(m map[string]json.RawMessage, result interface{
 	return
 }
 
+// BareMetalServerCapacity : A `zone` that has available bare metal servers with a `profile`.
+type BareMetalServerCapacity struct {
+	// The [profile](https://cloud.ibm.com/docs/vpc?topic=vpc-bare-metal-servers-profile)
+	// available in the `zone`.
+	Profile *BareMetalServerProfileReference `json:"profile" validate:"required"`
+
+	// The zone where one or more bare metal servers of the `profile` are available.
+	Zone *ZoneReference `json:"zone" validate:"required"`
+}
+
+// UnmarshalBareMetalServerCapacity unmarshals an instance of BareMetalServerCapacity from the specified map of raw messages.
+func UnmarshalBareMetalServerCapacity(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BareMetalServerCapacity)
+	err = core.UnmarshalModel(m, "profile", &obj.Profile, UnmarshalBareMetalServerProfileReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "profile-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "zone", &obj.Zone, UnmarshalZoneReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "zone-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// BareMetalServerCapacityCollection : Available bare metal server capacities.
+type BareMetalServerCapacityCollection struct {
+	// A page of available bare metal server capacities.
+	Capacities []BareMetalServerCapacity `json:"capacities" validate:"required"`
+
+	// A link to the first page of resources.
+	First *PageLink `json:"first" validate:"required"`
+
+	// The maximum number of resources that can be returned by the request.
+	Limit *int64 `json:"limit" validate:"required"`
+
+	// A link to the next page of resources. This property is present for all pages
+	// except the last page.
+	Next *PageLink `json:"next,omitempty"`
+
+	// The total number of resources across all pages.
+	TotalCount *int64 `json:"total_count" validate:"required"`
+}
+
+// UnmarshalBareMetalServerCapacityCollection unmarshals an instance of BareMetalServerCapacityCollection from the specified map of raw messages.
+func UnmarshalBareMetalServerCapacityCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(BareMetalServerCapacityCollection)
+	err = core.UnmarshalModel(m, "capacities", &obj.Capacities, UnmarshalBareMetalServerCapacity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "capacities-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "first", &obj.First, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "first-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "limit", &obj.Limit)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "limit-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "next", &obj.Next, UnmarshalPageLink)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "next-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "total_count", &obj.TotalCount)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "total_count-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// Retrieve the value to be passed to a request to access the next page of results
+func (resp *BareMetalServerCapacityCollection) GetNextStart() (*string, error) {
+	if core.IsNil(resp.Next) {
+		return nil, nil
+	}
+	start, err := core.GetQueryParam(resp.Next.Href, "start")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "read-query-param-error", common.GetComponentInfo())
+		return nil, err
+	} else if start == nil {
+		return nil, nil
+	}
+	return start, nil
+}
+
 // BareMetalServerCollection : BareMetalServerCollection struct
 type BareMetalServerCollection struct {
 	// A page of bare metal servers.
@@ -40910,22 +41857,23 @@ func UnmarshalBareMetalServerNetworkInterface(m map[string]json.RawMessage, resu
 		err = core.SDKErrorf(err, "required discriminator property 'interface_type' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "hipersocket" {
+	switch discValue {
+	case "hipersocket":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfaceByHiperSocket)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfaceByHiperSocket-error", common.GetComponentInfo())
 		}
-	} else if discValue == "pci" {
+	case "pci":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfaceByPci)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfaceByPci-error", common.GetComponentInfo())
 		}
-	} else if discValue == "vlan" {
+	case "vlan":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfaceByVlan)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfaceByVlan-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		errMsg := fmt.Sprintf("unrecognized value for discriminator property 'interface_type': %s", discValue)
 		err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 	}
@@ -41220,22 +42168,23 @@ func UnmarshalBareMetalServerNetworkInterfacePrototype(m map[string]json.RawMess
 		err = core.SDKErrorf(err, "required discriminator property 'interface_type' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "hipersocket" {
+	switch discValue {
+	case "hipersocket":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByHiperSocketPrototype)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByHiperSocketPrototype-error", common.GetComponentInfo())
 		}
-	} else if discValue == "pci" {
+	case "pci":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype-error", common.GetComponentInfo())
 		}
-	} else if discValue == "vlan" {
+	case "vlan":
 		err = core.UnmarshalModel(m, "", result, UnmarshalBareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		errMsg := fmt.Sprintf("unrecognized value for discriminator property 'interface_type': %s", discValue)
 		err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 	}
@@ -41589,6 +42538,9 @@ type BareMetalServerProfile struct {
 
 	// Indicates whether this profile supports virtual network interfaces.
 	VirtualNetworkInterfacesSupported *BareMetalServerProfileVirtualNetworkInterfacesSupported `json:"virtual_network_interfaces_supported" validate:"required"`
+
+	// The zones in this region that support this bare metal server profile.
+	Zones []ZoneReference `json:"zones" validate:"required"`
 }
 
 // Constants associated with the BareMetalServerProfile.ResourceType property.
@@ -41683,6 +42635,11 @@ func UnmarshalBareMetalServerProfile(m map[string]json.RawMessage, result interf
 	err = core.UnmarshalModel(m, "virtual_network_interfaces_supported", &obj.VirtualNetworkInterfacesSupported, UnmarshalBareMetalServerProfileVirtualNetworkInterfacesSupported)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "virtual_network_interfaces_supported-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "zones", &obj.Zones, UnmarshalZoneReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "zones-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -47641,6 +48598,44 @@ func (options *CreateInstanceOptions) SetHeaders(param map[string]string) *Creat
 	return options
 }
 
+// CreateInstanceReinitializationOptions : The CreateInstanceReinitialization options.
+type CreateInstanceReinitializationOptions struct {
+	// The instance identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The instance reinitialize prototype object.
+	InstanceReinitializePrototype InstanceReinitializePrototypeIntf `json:"InstanceReinitializePrototype" validate:"required"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewCreateInstanceReinitializationOptions : Instantiate CreateInstanceReinitializationOptions
+func (*VpcV1) NewCreateInstanceReinitializationOptions(id string, instanceReinitializePrototype InstanceReinitializePrototypeIntf) *CreateInstanceReinitializationOptions {
+	return &CreateInstanceReinitializationOptions{
+		ID:                            core.StringPtr(id),
+		InstanceReinitializePrototype: instanceReinitializePrototype,
+	}
+}
+
+// SetID : Allow user to set ID
+func (_options *CreateInstanceReinitializationOptions) SetID(id string) *CreateInstanceReinitializationOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetInstanceReinitializePrototype : Allow user to set InstanceReinitializePrototype
+func (_options *CreateInstanceReinitializationOptions) SetInstanceReinitializePrototype(instanceReinitializePrototype InstanceReinitializePrototypeIntf) *CreateInstanceReinitializationOptions {
+	_options.InstanceReinitializePrototype = instanceReinitializePrototype
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *CreateInstanceReinitializationOptions) SetHeaders(param map[string]string) *CreateInstanceReinitializationOptions {
+	options.Headers = param
+	return options
+}
+
 // CreateInstanceTemplateOptions : The CreateInstanceTemplate options.
 type CreateInstanceTemplateOptions struct {
 	// The instance template prototype object.
@@ -48083,6 +49078,12 @@ type CreateLoadBalancerListenerOptions struct {
 	// `protocol` of `https`.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
 
+	// The client authentication to use for this listener.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The listener must
+	// have a `protocol` of `https`.
+	ClientAuthentication *LoadBalancerListenerClientAuthenticationPrototype `json:"client_authentication,omitempty"`
+
 	// The concurrent connection limit for the listener. If reached, incoming connections may be queued or rejected.
 	//
 	// Supported for load balancers in the `application` family.
@@ -48210,6 +49211,12 @@ func (_options *CreateLoadBalancerListenerOptions) SetAcceptProxyProtocol(accept
 // SetCertificateInstance : Allow user to set CertificateInstance
 func (_options *CreateLoadBalancerListenerOptions) SetCertificateInstance(certificateInstance CertificateInstanceIdentityIntf) *CreateLoadBalancerListenerOptions {
 	_options.CertificateInstance = certificateInstance
+	return _options
+}
+
+// SetClientAuthentication : Allow user to set ClientAuthentication
+func (_options *CreateLoadBalancerListenerOptions) SetClientAuthentication(clientAuthentication *LoadBalancerListenerClientAuthenticationPrototype) *CreateLoadBalancerListenerOptions {
+	_options.ClientAuthentication = clientAuthentication
 	return _options
 }
 
@@ -48772,8 +49779,19 @@ type CreateLoadBalancerPoolOptions struct {
 	// The load balancer identifier.
 	LoadBalancerID *string `json:"load_balancer_id" validate:"required,ne="`
 
-	// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-	// `availability` with value `subnet` in the profile.
+	// The load balancing algorithm.
+	//
+	// - `least_connections`: Routes traffic to the pool member with the least active
+	//   connections. Supported by `application` and `network` family load balancers that
+	//   have `availability` with value `subnet` in the profile.
+	// - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+	//   `application` and `network` family load balancers.
+	// - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+	//   configured member weights. Supported by `application` and `network`
+	//   family load balancers.
+	// - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+	//   proportionally to configured member weights. Supported by `network` family
+	//   load balancers with an `asymmetric_routing_supported` value of `true`.
 	Algorithm *string `json:"algorithm" validate:"required"`
 
 	// The health monitor of this pool.
@@ -48801,6 +49819,12 @@ type CreateLoadBalancerPoolOptions struct {
 	// `https` instead of `http`. For more details, see: https://www.cloudflare.com/learning/ssl/why-is-http-not-secure.
 	Protocol *string `json:"protocol" validate:"required"`
 
+	// The client authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	ClientAuthentication *LoadBalancerPoolClientAuthenticationPrototype `json:"client_authentication,omitempty"`
+
 	// The failsafe policy to use for this pool.
 	//
 	// If unspecified, the default failsafe policy action from the profile will be used.
@@ -48822,6 +49846,12 @@ type CreateLoadBalancerPoolOptions struct {
 	// For load balancers in the `network` family, this property must be `disabled`.
 	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
+	// The server authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	ServerAuthentication *LoadBalancerPoolServerAuthenticationPrototype `json:"server_authentication,omitempty"`
+
 	// The session persistence of this pool. If specified, the load balancer must have
 	// `source_ip_session_persistence_supported` set to `true` in its profile.
 	//
@@ -48834,11 +49864,23 @@ type CreateLoadBalancerPoolOptions struct {
 }
 
 // Constants associated with the CreateLoadBalancerPoolOptions.Algorithm property.
-// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-// `availability` with value `subnet` in the profile.
+// The load balancing algorithm.
+//
+//   - `least_connections`: Routes traffic to the pool member with the least active
+//     connections. Supported by `application` and `network` family load balancers that
+//     have `availability` with value `subnet` in the profile.
+//   - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+//     `application` and `network` family load balancers.
+//   - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+//     configured member weights. Supported by `application` and `network`
+//     family load balancers.
+//   - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+//     proportionally to configured member weights. Supported by `network` family
+//     load balancers with an `asymmetric_routing_supported` value of `true`.
 const (
 	CreateLoadBalancerPoolOptionsAlgorithmLeastConnectionsConst   = "least_connections"
 	CreateLoadBalancerPoolOptionsAlgorithmRoundRobinConst         = "round_robin"
+	CreateLoadBalancerPoolOptionsAlgorithmWeightedForwardingConst = "weighted_forwarding"
 	CreateLoadBalancerPoolOptionsAlgorithmWeightedRoundRobinConst = "weighted_round_robin"
 )
 
@@ -48904,6 +49946,12 @@ func (_options *CreateLoadBalancerPoolOptions) SetProtocol(protocol string) *Cre
 	return _options
 }
 
+// SetClientAuthentication : Allow user to set ClientAuthentication
+func (_options *CreateLoadBalancerPoolOptions) SetClientAuthentication(clientAuthentication *LoadBalancerPoolClientAuthenticationPrototype) *CreateLoadBalancerPoolOptions {
+	_options.ClientAuthentication = clientAuthentication
+	return _options
+}
+
 // SetFailsafePolicy : Allow user to set FailsafePolicy
 func (_options *CreateLoadBalancerPoolOptions) SetFailsafePolicy(failsafePolicy *LoadBalancerPoolFailsafePolicyPrototype) *CreateLoadBalancerPoolOptions {
 	_options.FailsafePolicy = failsafePolicy
@@ -48925,6 +49973,12 @@ func (_options *CreateLoadBalancerPoolOptions) SetName(name string) *CreateLoadB
 // SetProxyProtocol : Allow user to set ProxyProtocol
 func (_options *CreateLoadBalancerPoolOptions) SetProxyProtocol(proxyProtocol string) *CreateLoadBalancerPoolOptions {
 	_options.ProxyProtocol = core.StringPtr(proxyProtocol)
+	return _options
+}
+
+// SetServerAuthentication : Allow user to set ServerAuthentication
+func (_options *CreateLoadBalancerPoolOptions) SetServerAuthentication(serverAuthentication *LoadBalancerPoolServerAuthenticationPrototype) *CreateLoadBalancerPoolOptions {
+	_options.ServerAuthentication = serverAuthentication
 	return _options
 }
 
@@ -57897,7 +58951,7 @@ func (floatingIPPatch *FloatingIPPatch) AsPatch() (_patch map[string]interface{}
 	return
 }
 
-// FloatingIPPrototype : FloatingIPPrototype struct
+// FloatingIPPrototype : The prototype object for a floating IP to be created.
 // Models which "extend" this model:
 // - FloatingIPPrototypeFloatingIPByZone
 // - FloatingIPPrototypeFloatingIPByTarget
@@ -60218,6 +61272,44 @@ func (options *GetInstanceProfileOptions) SetHeaders(param map[string]string) *G
 	return options
 }
 
+// GetInstanceSoftwareAttachmentOptions : The GetInstanceSoftwareAttachment options.
+type GetInstanceSoftwareAttachmentOptions struct {
+	// The virtual server instance identifier.
+	InstanceID *string `json:"instance_id" validate:"required,ne="`
+
+	// The instance software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewGetInstanceSoftwareAttachmentOptions : Instantiate GetInstanceSoftwareAttachmentOptions
+func (*VpcV1) NewGetInstanceSoftwareAttachmentOptions(instanceID string, id string) *GetInstanceSoftwareAttachmentOptions {
+	return &GetInstanceSoftwareAttachmentOptions{
+		InstanceID: core.StringPtr(instanceID),
+		ID:         core.StringPtr(id),
+	}
+}
+
+// SetInstanceID : Allow user to set InstanceID
+func (_options *GetInstanceSoftwareAttachmentOptions) SetInstanceID(instanceID string) *GetInstanceSoftwareAttachmentOptions {
+	_options.InstanceID = core.StringPtr(instanceID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetInstanceSoftwareAttachmentOptions) SetID(id string) *GetInstanceSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetInstanceSoftwareAttachmentOptions) SetHeaders(param map[string]string) *GetInstanceSoftwareAttachmentOptions {
+	options.Headers = param
+	return options
+}
+
 // GetInstanceTemplateOptions : The GetInstanceTemplate options.
 type GetInstanceTemplateOptions struct {
 	// The instance template identifier.
@@ -61464,6 +62556,44 @@ func (options *GetSnapshotOptions) SetHeaders(param map[string]string) *GetSnaps
 	return options
 }
 
+// GetSnapshotSoftwareAttachmentOptions : The GetSnapshotSoftwareAttachment options.
+type GetSnapshotSoftwareAttachmentOptions struct {
+	// The snapshot identifier.
+	SnapshotID *string `json:"snapshot_id" validate:"required,ne="`
+
+	// The snapshot software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewGetSnapshotSoftwareAttachmentOptions : Instantiate GetSnapshotSoftwareAttachmentOptions
+func (*VpcV1) NewGetSnapshotSoftwareAttachmentOptions(snapshotID string, id string) *GetSnapshotSoftwareAttachmentOptions {
+	return &GetSnapshotSoftwareAttachmentOptions{
+		SnapshotID: core.StringPtr(snapshotID),
+		ID:         core.StringPtr(id),
+	}
+}
+
+// SetSnapshotID : Allow user to set SnapshotID
+func (_options *GetSnapshotSoftwareAttachmentOptions) SetSnapshotID(snapshotID string) *GetSnapshotSoftwareAttachmentOptions {
+	_options.SnapshotID = core.StringPtr(snapshotID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetSnapshotSoftwareAttachmentOptions) SetID(id string) *GetSnapshotSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetSnapshotSoftwareAttachmentOptions) SetHeaders(param map[string]string) *GetSnapshotSoftwareAttachmentOptions {
+	options.Headers = param
+	return options
+}
+
 // GetSubnetNetworkACLOptions : The GetSubnetNetworkACL options.
 type GetSubnetNetworkACLOptions struct {
 	// The subnet identifier.
@@ -61770,6 +62900,44 @@ func (_options *GetVolumeProfileOptions) SetName(name string) *GetVolumeProfileO
 
 // SetHeaders : Allow user to set Headers
 func (options *GetVolumeProfileOptions) SetHeaders(param map[string]string) *GetVolumeProfileOptions {
+	options.Headers = param
+	return options
+}
+
+// GetVolumeSoftwareAttachmentOptions : The GetVolumeSoftwareAttachment options.
+type GetVolumeSoftwareAttachmentOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewGetVolumeSoftwareAttachmentOptions : Instantiate GetVolumeSoftwareAttachmentOptions
+func (*VpcV1) NewGetVolumeSoftwareAttachmentOptions(volumeID string, id string) *GetVolumeSoftwareAttachmentOptions {
+	return &GetVolumeSoftwareAttachmentOptions{
+		VolumeID: core.StringPtr(volumeID),
+		ID:       core.StringPtr(id),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *GetVolumeSoftwareAttachmentOptions) SetVolumeID(volumeID string) *GetVolumeSoftwareAttachmentOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *GetVolumeSoftwareAttachmentOptions) SetID(id string) *GetVolumeSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *GetVolumeSoftwareAttachmentOptions) SetHeaders(param map[string]string) *GetVolumeSoftwareAttachmentOptions {
 	options.Headers = param
 	return options
 }
@@ -64105,7 +65273,11 @@ type ImageAllowedUse struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance" validate:"required"`
 }
 
@@ -64155,7 +65327,11 @@ type ImageAllowedUsePatch struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -64226,7 +65402,11 @@ type ImageAllowedUsePrototype struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint.
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -65450,6 +66630,9 @@ type Instance struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
+	// The software attachments for this instance.
+	SoftwareAttachments []InstanceSoftwareAttachmentReference `json:"software_attachments" validate:"required"`
+
 	// Indicates whether the state of the virtual server instance permits a start request.
 	Startable *bool `json:"startable" validate:"required"`
 
@@ -65461,6 +66644,9 @@ type Instance struct {
 
 	// The reasons for the current status (if any).
 	StatusReasons []InstanceStatusReason `json:"status_reasons" validate:"required"`
+
+	// The threads per core for this virtual server instance.
+	ThreadsPerCore *int64 `json:"threads_per_core" validate:"required"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance network attachments or instance
 	// network interfaces.
@@ -65734,6 +66920,11 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalInstanceSoftwareAttachmentReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "startable", &obj.Startable)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "startable-error", common.GetComponentInfo())
@@ -65747,6 +66938,11 @@ func UnmarshalInstance(m map[string]json.RawMessage, result interface{}) (err er
 	err = core.UnmarshalModel(m, "status_reasons", &obj.StatusReasons, UnmarshalInstanceStatusReason)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "status_reasons-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_network_bandwidth", &obj.TotalNetworkBandwidth)
@@ -69570,6 +70766,8 @@ func UnmarshalInstanceInitializationPassword(m map[string]json.RawMessage, resul
 // InstanceLifecycleReason : InstanceLifecycleReason struct
 type InstanceLifecycleReason struct {
 	// A reason code for this lifecycle state:
+	// - `failed_licensing`: Allocation of one or more software license(s) has failed. Delete
+	//   the instance and provision it again. If the problem persists, contact IBM Support.
 	// - `failed_registration`: The instance's registration to Resource Controller has
 	//   failed. Delete the instance and provision it again. If the problem persists,
 	//   contact IBM Support.
@@ -69592,6 +70790,8 @@ type InstanceLifecycleReason struct {
 
 // Constants associated with the InstanceLifecycleReason.Code property.
 // A reason code for this lifecycle state:
+//   - `failed_licensing`: Allocation of one or more software license(s) has failed. Delete
+//     the instance and provision it again. If the problem persists, contact IBM Support.
 //   - `failed_registration`: The instance's registration to Resource Controller has
 //     failed. Delete the instance and provision it again. If the problem persists,
 //     contact IBM Support.
@@ -69604,6 +70804,7 @@ type InstanceLifecycleReason struct {
 // The enumerated values for this property may
 // [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 const (
+	InstanceLifecycleReasonCodeFailedLicensingConst             = "failed_licensing"
 	InstanceLifecycleReasonCodeFailedRegistrationConst          = "failed_registration"
 	InstanceLifecycleReasonCodeInternalErrorConst               = "internal_error"
 	InstanceLifecycleReasonCodePendingRegistrationConst         = "pending_registration"
@@ -70328,6 +71529,13 @@ type InstancePatch struct {
 
 	ReservationAffinity *InstanceReservationAffinityPatch `json:"reservation_affinity,omitempty"`
 
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// For this property to be changed, the virtual server instance `status` must be
+	// `stopping` or `stopped`.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
+
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
 	// `total_network_bandwidth`.
@@ -70413,6 +71621,11 @@ func UnmarshalInstancePatch(m map[string]json.RawMessage, result interface{}) (e
 		err = core.SDKErrorf(err, "", "reservation_affinity-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -70461,6 +71674,9 @@ func (instancePatch *InstancePatch) AsPatch() (_patch map[string]interface{}, er
 	}
 	if !core.IsNil(instancePatch.ReservationAffinity) {
 		_patch["reservation_affinity"] = instancePatch.ReservationAffinity.asPatch()
+	}
+	if !core.IsNil(instancePatch.ThreadsPerCore) {
+		_patch["threads_per_core"] = instancePatch.ThreadsPerCore
 	}
 	if !core.IsNil(instancePatch.TotalVolumeBandwidth) {
 		_patch["total_volume_bandwidth"] = instancePatch.TotalVolumeBandwidth
@@ -70799,6 +72015,8 @@ type InstanceProfile struct {
 	// The cluster network profiles that support this instance profile.
 	SupportedClusterNetworkProfiles []ClusterNetworkProfileReference `json:"supported_cluster_network_profiles" validate:"required"`
 
+	ThreadsPerCore *InstanceProfileThreadsPerCoreEnum `json:"threads_per_core" validate:"required"`
+
 	TotalVolumeBandwidth InstanceProfileVolumeBandwidthIntf `json:"total_volume_bandwidth" validate:"required"`
 
 	VcpuArchitecture *InstanceProfileVcpuArchitecture `json:"vcpu_architecture" validate:"required"`
@@ -70962,6 +72180,11 @@ func UnmarshalInstanceProfile(m map[string]json.RawMessage, result interface{}) 
 	err = core.UnmarshalModel(m, "supported_cluster_network_profiles", &obj.SupportedClusterNetworkProfiles, UnmarshalClusterNetworkProfileReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "supported_cluster_network_profiles-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "threads_per_core", &obj.ThreadsPerCore, UnmarshalInstanceProfileThreadsPerCoreEnum)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalModel(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth, UnmarshalInstanceProfileVolumeBandwidth)
@@ -72480,6 +73703,46 @@ func UnmarshalInstanceProfileSupportedSecureBootModes(m map[string]json.RawMessa
 	return
 }
 
+// InstanceProfileThreadsPerCoreEnum : InstanceProfileThreadsPerCoreEnum struct
+type InstanceProfileThreadsPerCoreEnum struct {
+	// The default threads per core value for an instance with this profile.
+	Default *int64 `json:"default" validate:"required"`
+
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The permitted threads per core values for an instance with this profile.
+	Values []int64 `json:"values" validate:"required"`
+}
+
+// Constants associated with the InstanceProfileThreadsPerCoreEnum.Type property.
+// The type for this profile field.
+const (
+	InstanceProfileThreadsPerCoreEnumTypeEnumConst = "enum"
+)
+
+// UnmarshalInstanceProfileThreadsPerCoreEnum unmarshals an instance of InstanceProfileThreadsPerCoreEnum from the specified map of raw messages.
+func UnmarshalInstanceProfileThreadsPerCoreEnum(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceProfileThreadsPerCoreEnum)
+	err = core.UnmarshalPrimitive(m, "default", &obj.Default)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "default-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "values", &obj.Values)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "values-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceProfileVcpu : InstanceProfileVcpu struct
 // Models which "extend" this model:
 // - InstanceProfileVcpuFixed
@@ -72917,8 +74180,9 @@ type InstancePrototype struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not
-	// subsequently managed. Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and
+	// can only be changed by reinitializing the instance. Accordingly, it is reflected as
+	// an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization)
 	// property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
@@ -72937,8 +74201,8 @@ type InstancePrototype struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -72972,6 +74236,12 @@ type InstancePrototype struct {
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -73129,6 +74399,11 @@ func UnmarshalInstancePrototype(m map[string]json.RawMessage, result interface{}
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -73253,6 +74528,87 @@ func UnmarshalInstanceReference(m map[string]json.RawMessage, result interface{}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReinitializePrototype : InstanceReinitializePrototype struct
+// Models which "extend" this model:
+// - InstanceReinitializePrototypeInstanceReinitializeByImage
+// - InstanceReinitializePrototypeInstanceReinitializeByVolume
+// - InstanceReinitializePrototypeInstanceReinitializeBySnapshot
+type InstanceReinitializePrototype struct {
+	// The default trusted profile configuration to use for this virtual server instance.
+	// If not specified, the instance will be reinitialized without a default trusted
+	// profile.
+	//
+	// This property's value is used when reinitializing the virtual server instance, and
+	// can only be changed by reinitializing the instance. Accordingly, it is reflected as
+	// an [instance
+	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization)
+	// property.
+	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
+
+	// The public SSH keys for the reinitialized instance. The keys will be made available to the virtual server instance
+	// as cloud-init vendor data. For cloud-init enabled images, the keys will also be added as SSH authorized keys for the
+	// [default user]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
+	//
+	// For Windows images, only keys with a `type` value of `rsa` must be specified, and one will be selected to encrypt
+	// [the administrator password](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization). Keys are optional for
+	// other images.
+	//
+	// If no keys are specified, the instance will be reinitialized without a key.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the virtual
+	// server instance. If not specified, the instance will be reinitialized without user data.
+	UserData *string `json:"user_data,omitempty"`
+
+	// The boot volume attachment for the virtual server instance. If not specified,
+	// a new boot volume attachment will be created.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The image to use when reinitializing the virtual server instance.
+	Image ImageIdentityIntf `json:"image,omitempty"`
+}
+
+func (*InstanceReinitializePrototype) isaInstanceReinitializePrototype() bool {
+	return true
+}
+
+type InstanceReinitializePrototypeIntf interface {
+	isaInstanceReinitializePrototype() bool
+}
+
+// UnmarshalInstanceReinitializePrototype unmarshals an instance of InstanceReinitializePrototype from the specified map of raw messages.
+func UnmarshalInstanceReinitializePrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReinitializePrototype)
+	err = core.UnmarshalModel(m, "default_trusted_profile", &obj.DefaultTrustedProfile, UnmarshalInstanceDefaultTrustedProfilePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "default_trusted_profile-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "keys-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "user_data-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "boot_volume_attachment-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "image-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -73439,6 +74795,397 @@ func UnmarshalInstanceReservationAffinityPrototype(m map[string]json.RawMessage,
 	return
 }
 
+// InstanceSoftwareAttachment : InstanceSoftwareAttachment struct
+type InstanceSoftwareAttachment struct {
+	// The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user)
+	// offering for this instance software attachment. May be absent if
+	// `software_attachment.lifecycle_state` is not `stable`.
+	CatalogOffering *InstanceSoftwareAttachmentCatalogOffering `json:"catalog_offering,omitempty"`
+
+	// The date and time that the instance software attachment was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The entitlement for the licensed software for this instance software attachment.
+	Entitlement *InstanceSoftwareAttachmentEntitlement `json:"entitlement,omitempty"`
+
+	// The URL for this instance software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this instance software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The lifecycle reasons for this instance software attachment (if any).
+	LifecycleReasons []InstanceSoftwareAttachmentLifecycleReason `json:"lifecycle_reasons" validate:"required"`
+
+	// The lifecycle state of the instance software attachment.
+	LifecycleState *string `json:"lifecycle_state" validate:"required"`
+
+	// The name for this instance software attachment. The name is unique across all instance software attachments for the
+	// instance.
+	Name *string `json:"name" validate:"required"`
+
+	OfferingInstance *InstanceSoftwareAttachmentOfferingInstance `json:"offering_instance,omitempty"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the InstanceSoftwareAttachment.LifecycleState property.
+// The lifecycle state of the instance software attachment.
+const (
+	InstanceSoftwareAttachmentLifecycleStateDeletingConst  = "deleting"
+	InstanceSoftwareAttachmentLifecycleStateFailedConst    = "failed"
+	InstanceSoftwareAttachmentLifecycleStatePendingConst   = "pending"
+	InstanceSoftwareAttachmentLifecycleStateStableConst    = "stable"
+	InstanceSoftwareAttachmentLifecycleStateSuspendedConst = "suspended"
+	InstanceSoftwareAttachmentLifecycleStateUpdatingConst  = "updating"
+	InstanceSoftwareAttachmentLifecycleStateWaitingConst   = "waiting"
+)
+
+// Constants associated with the InstanceSoftwareAttachment.ResourceType property.
+// The resource type.
+const (
+	InstanceSoftwareAttachmentResourceTypeInstanceSoftwareAttachmentConst = "instance_software_attachment"
+)
+
+// UnmarshalInstanceSoftwareAttachment unmarshals an instance of InstanceSoftwareAttachment from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachment(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachment)
+	err = core.UnmarshalModel(m, "catalog_offering", &obj.CatalogOffering, UnmarshalInstanceSoftwareAttachmentCatalogOffering)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "catalog_offering-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "created_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "entitlement", &obj.Entitlement, UnmarshalInstanceSoftwareAttachmentEntitlement)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "entitlement-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "lifecycle_reasons", &obj.LifecycleReasons, UnmarshalInstanceSoftwareAttachmentLifecycleReason)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "lifecycle_reasons-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "lifecycle_state", &obj.LifecycleState)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "lifecycle_state-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "offering_instance", &obj.OfferingInstance, UnmarshalInstanceSoftwareAttachmentOfferingInstance)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "offering_instance-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentCatalogOffering : The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering for this instance software
+// attachment. May be absent if
+// `software_attachment.lifecycle_state` is not `stable`.
+type InstanceSoftwareAttachmentCatalogOffering struct {
+	// The billing plan for the catalog offering version associated with this instance software
+	// attachment.
+	//
+	// If absent, no billing plan is associated with the catalog offering version (free).
+	Plan *CatalogOfferingVersionPlanReference `json:"plan,omitempty"`
+
+	// The catalog offering version associated with this instance software attachment.
+	Version *CatalogOfferingVersionReference `json:"version" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentCatalogOffering unmarshals an instance of InstanceSoftwareAttachmentCatalogOffering from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentCatalogOffering(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentCatalogOffering)
+	err = core.UnmarshalModel(m, "plan", &obj.Plan, UnmarshalCatalogOfferingVersionPlanReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "plan-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "version", &obj.Version, UnmarshalCatalogOfferingVersionReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "version-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentCollection : InstanceSoftwareAttachmentCollection struct
+type InstanceSoftwareAttachmentCollection struct {
+	// The software attachments for the instance.
+	SoftwareAttachments []InstanceSoftwareAttachment `json:"software_attachments" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentCollection unmarshals an instance of InstanceSoftwareAttachmentCollection from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentCollection)
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalInstanceSoftwareAttachment)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentEntitlement : The entitlement for the licensed software for this instance software attachment.
+type InstanceSoftwareAttachmentEntitlement struct {
+	// The licensed software for this instance software attachment entitlement.
+	LicensedSoftware []InstanceSoftwareAttachmentEntitlementLicensedSoftware `json:"licensed_software" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentEntitlement unmarshals an instance of InstanceSoftwareAttachmentEntitlement from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentEntitlement(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentEntitlement)
+	err = core.UnmarshalModel(m, "licensed_software", &obj.LicensedSoftware, UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftware)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "licensed_software-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentEntitlementLicensedSoftware : The licensed software for the instance software attachment's entitlement.
+type InstanceSoftwareAttachmentEntitlementLicensedSoftware struct {
+	// The SKU for this licensed software.
+	Sku *string `json:"sku" validate:"required"`
+
+	Vendor *InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor `json:"vendor" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftware unmarshals an instance of InstanceSoftwareAttachmentEntitlementLicensedSoftware from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftware(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentEntitlementLicensedSoftware)
+	err = core.UnmarshalPrimitive(m, "sku", &obj.Sku)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "sku-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "vendor", &obj.Vendor, UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "vendor-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor : InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor struct
+type InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor struct {
+	// The name of the vendor providing this licensed software.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor unmarshals an instance of InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentEntitlementLicensedSoftwareVendor)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentLifecycleReason : InstanceSoftwareAttachmentLifecycleReason struct
+type InstanceSoftwareAttachmentLifecycleReason struct {
+	// A reason code for this lifecycle state:
+	// - `failed_licensing`: Allocation of one or more software license(s) has failed. Delete
+	//   the instance and provision it again. If the problem persists, contact IBM Support.
+	// - `failed_registration`: The software instance's registration to Resource Controller has
+	//   failed. Delete the instance and provision it again. If the problem persists, contact IBM
+	//   Support.
+	// - `internal_error`: Internal error (contact IBM support)
+	// - `pending_registration`: The software instance's registration to Resource Controller,
+	//   and the creation of any required software license(s), is being processed.
+	//
+	// The enumerated values for this property may
+	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	Code *string `json:"code" validate:"required"`
+
+	// An explanation of the reason for this lifecycle state.
+	Message *string `json:"message" validate:"required"`
+
+	// A link to documentation about the reason for this lifecycle state.
+	MoreInfo *string `json:"more_info,omitempty"`
+}
+
+// Constants associated with the InstanceSoftwareAttachmentLifecycleReason.Code property.
+// A reason code for this lifecycle state:
+//   - `failed_licensing`: Allocation of one or more software license(s) has failed. Delete
+//     the instance and provision it again. If the problem persists, contact IBM Support.
+//   - `failed_registration`: The software instance's registration to Resource Controller has
+//     failed. Delete the instance and provision it again. If the problem persists, contact IBM
+//     Support.
+//   - `internal_error`: Internal error (contact IBM support)
+//   - `pending_registration`: The software instance's registration to Resource Controller,
+//     and the creation of any required software license(s), is being processed.
+//
+// The enumerated values for this property may
+// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+const (
+	InstanceSoftwareAttachmentLifecycleReasonCodeFailedLicensingConst     = "failed_licensing"
+	InstanceSoftwareAttachmentLifecycleReasonCodeFailedRegistrationConst  = "failed_registration"
+	InstanceSoftwareAttachmentLifecycleReasonCodeInternalErrorConst       = "internal_error"
+	InstanceSoftwareAttachmentLifecycleReasonCodePendingRegistrationConst = "pending_registration"
+)
+
+// UnmarshalInstanceSoftwareAttachmentLifecycleReason unmarshals an instance of InstanceSoftwareAttachmentLifecycleReason from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentLifecycleReason(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentLifecycleReason)
+	err = core.UnmarshalPrimitive(m, "code", &obj.Code)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "code-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "message", &obj.Message)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "message-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "more_info", &obj.MoreInfo)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "more_info-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentOfferingInstance : InstanceSoftwareAttachmentOfferingInstance struct
+type InstanceSoftwareAttachmentOfferingInstance struct {
+	// The CRN for the software offering instance registered with Resource Controller that is associated with the instance
+	// software attachment.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentOfferingInstance unmarshals an instance of InstanceSoftwareAttachmentOfferingInstance from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentOfferingInstance(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentOfferingInstance)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "crn-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceSoftwareAttachmentPatch : InstanceSoftwareAttachmentPatch struct
+type InstanceSoftwareAttachmentPatch struct {
+	// The name for this instance software attachment. The name must not be used by another software attachment for this
+	// instance.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalInstanceSoftwareAttachmentPatch unmarshals an instance of InstanceSoftwareAttachmentPatch from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the InstanceSoftwareAttachmentPatch
+func (instanceSoftwareAttachmentPatch *InstanceSoftwareAttachmentPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(instanceSoftwareAttachmentPatch.Name) {
+		_patch["name"] = instanceSoftwareAttachmentPatch.Name
+	}
+
+	return
+}
+
+// InstanceSoftwareAttachmentReference : InstanceSoftwareAttachmentReference struct
+type InstanceSoftwareAttachmentReference struct {
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *Deleted `json:"deleted,omitempty"`
+
+	// The URL for this instance software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this instance software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this instance software attachment. The name is unique across all instance software attachments for the
+	// instance.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the InstanceSoftwareAttachmentReference.ResourceType property.
+// The resource type.
+const (
+	InstanceSoftwareAttachmentReferenceResourceTypeInstanceSoftwareAttachmentConst = "instance_software_attachment"
+)
+
+// UnmarshalInstanceSoftwareAttachmentReference unmarshals an instance of InstanceSoftwareAttachmentReference from the specified map of raw messages.
+func UnmarshalInstanceSoftwareAttachmentReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceSoftwareAttachmentReference)
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDeleted)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "deleted-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // InstanceStatusReason : InstanceStatusReason struct
 type InstanceStatusReason struct {
 	// A snake case string succinctly identifying the status reason.
@@ -73526,8 +75273,9 @@ type InstanceTemplate struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not
-	// subsequently managed. Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and
+	// can only be changed by reinitializing the instance. Accordingly, it is reflected as
+	// an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization)
 	// property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
@@ -73552,8 +75300,8 @@ type InstanceTemplate struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -73583,6 +75331,12 @@ type InstanceTemplate struct {
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -73779,6 +75533,11 @@ func UnmarshalInstanceTemplate(m map[string]json.RawMessage, result interface{})
 		err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
+			return
+		}
+		err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+		if err != nil {
+			err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 			return
 		}
 		err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
@@ -74022,8 +75781,9 @@ type InstanceTemplatePrototype struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not
-	// subsequently managed. Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and
+	// can only be changed by reinitializing the instance. Accordingly, it is reflected as
+	// an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization)
 	// property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
@@ -74042,8 +75802,8 @@ type InstanceTemplatePrototype struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -74075,6 +75835,12 @@ type InstanceTemplatePrototype struct {
 	// The resource group to use. If unspecified, the account's [default resource
 	// group](https://cloud.ibm.com/apidocs/resource-manager#introduction) will be used.
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -74232,6 +75998,11 @@ func UnmarshalInstanceTemplatePrototype(m map[string]json.RawMessage, result int
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupIdentity)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
@@ -75130,6 +76901,59 @@ func (_options *ListBackupPolicyPlansOptions) SetName(name string) *ListBackupPo
 
 // SetHeaders : Allow user to set Headers
 func (options *ListBackupPolicyPlansOptions) SetHeaders(param map[string]string) *ListBackupPolicyPlansOptions {
+	options.Headers = param
+	return options
+}
+
+// ListBareMetalServerCapacitiesOptions : The ListBareMetalServerCapacities options.
+type ListBareMetalServerCapacitiesOptions struct {
+	// A server-provided token determining what resource to start the page on.
+	Start *string `json:"start,omitempty"`
+
+	// The number of resources to return on a page.
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Filters the collection to resources with a `profile.name` property matching the specified profile name.
+	ProfileName *string `json:"profile.name,omitempty"`
+
+	// Filters the collection to resources with a `zone.name` property matching the exact specified name.
+	ZoneName *string `json:"zone.name,omitempty"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewListBareMetalServerCapacitiesOptions : Instantiate ListBareMetalServerCapacitiesOptions
+func (*VpcV1) NewListBareMetalServerCapacitiesOptions() *ListBareMetalServerCapacitiesOptions {
+	return &ListBareMetalServerCapacitiesOptions{}
+}
+
+// SetStart : Allow user to set Start
+func (_options *ListBareMetalServerCapacitiesOptions) SetStart(start string) *ListBareMetalServerCapacitiesOptions {
+	_options.Start = core.StringPtr(start)
+	return _options
+}
+
+// SetLimit : Allow user to set Limit
+func (_options *ListBareMetalServerCapacitiesOptions) SetLimit(limit int64) *ListBareMetalServerCapacitiesOptions {
+	_options.Limit = core.Int64Ptr(limit)
+	return _options
+}
+
+// SetProfileName : Allow user to set ProfileName
+func (_options *ListBareMetalServerCapacitiesOptions) SetProfileName(profileName string) *ListBareMetalServerCapacitiesOptions {
+	_options.ProfileName = core.StringPtr(profileName)
+	return _options
+}
+
+// SetZoneName : Allow user to set ZoneName
+func (_options *ListBareMetalServerCapacitiesOptions) SetZoneName(zoneName string) *ListBareMetalServerCapacitiesOptions {
+	_options.ZoneName = core.StringPtr(zoneName)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListBareMetalServerCapacitiesOptions) SetHeaders(param map[string]string) *ListBareMetalServerCapacitiesOptions {
 	options.Headers = param
 	return options
 }
@@ -77295,6 +79119,34 @@ func (options *ListInstanceProfilesOptions) SetHeaders(param map[string]string) 
 	return options
 }
 
+// ListInstanceSoftwareAttachmentsOptions : The ListInstanceSoftwareAttachments options.
+type ListInstanceSoftwareAttachmentsOptions struct {
+	// The virtual server instance identifier.
+	InstanceID *string `json:"instance_id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewListInstanceSoftwareAttachmentsOptions : Instantiate ListInstanceSoftwareAttachmentsOptions
+func (*VpcV1) NewListInstanceSoftwareAttachmentsOptions(instanceID string) *ListInstanceSoftwareAttachmentsOptions {
+	return &ListInstanceSoftwareAttachmentsOptions{
+		InstanceID: core.StringPtr(instanceID),
+	}
+}
+
+// SetInstanceID : Allow user to set InstanceID
+func (_options *ListInstanceSoftwareAttachmentsOptions) SetInstanceID(instanceID string) *ListInstanceSoftwareAttachmentsOptions {
+	_options.InstanceID = core.StringPtr(instanceID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListInstanceSoftwareAttachmentsOptions) SetHeaders(param map[string]string) *ListInstanceSoftwareAttachmentsOptions {
+	options.Headers = param
+	return options
+}
+
 // ListInstanceTemplatesOptions : The ListInstanceTemplates options.
 type ListInstanceTemplatesOptions struct {
 
@@ -79241,6 +81093,34 @@ func (options *ListSnapshotInstanceProfilesOptions) SetHeaders(param map[string]
 	return options
 }
 
+// ListSnapshotSoftwareAttachmentsOptions : The ListSnapshotSoftwareAttachments options.
+type ListSnapshotSoftwareAttachmentsOptions struct {
+	// The snapshot identifier.
+	SnapshotID *string `json:"snapshot_id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewListSnapshotSoftwareAttachmentsOptions : Instantiate ListSnapshotSoftwareAttachmentsOptions
+func (*VpcV1) NewListSnapshotSoftwareAttachmentsOptions(snapshotID string) *ListSnapshotSoftwareAttachmentsOptions {
+	return &ListSnapshotSoftwareAttachmentsOptions{
+		SnapshotID: core.StringPtr(snapshotID),
+	}
+}
+
+// SetSnapshotID : Allow user to set SnapshotID
+func (_options *ListSnapshotSoftwareAttachmentsOptions) SetSnapshotID(snapshotID string) *ListSnapshotSoftwareAttachmentsOptions {
+	_options.SnapshotID = core.StringPtr(snapshotID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListSnapshotSoftwareAttachmentsOptions) SetHeaders(param map[string]string) *ListSnapshotSoftwareAttachmentsOptions {
+	options.Headers = param
+	return options
+}
+
 // ListSnapshotsOptions : The ListSnapshots options.
 type ListSnapshotsOptions struct {
 	// A server-provided token determining what resource to start the page on.
@@ -79920,6 +81800,34 @@ func (_options *ListVolumeProfilesOptions) SetLimit(limit int64) *ListVolumeProf
 
 // SetHeaders : Allow user to set Headers
 func (options *ListVolumeProfilesOptions) SetHeaders(param map[string]string) *ListVolumeProfilesOptions {
+	options.Headers = param
+	return options
+}
+
+// ListVolumeSoftwareAttachmentsOptions : The ListVolumeSoftwareAttachments options.
+type ListVolumeSoftwareAttachmentsOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewListVolumeSoftwareAttachmentsOptions : Instantiate ListVolumeSoftwareAttachmentsOptions
+func (*VpcV1) NewListVolumeSoftwareAttachmentsOptions(volumeID string) *ListVolumeSoftwareAttachmentsOptions {
+	return &ListVolumeSoftwareAttachmentsOptions{
+		VolumeID: core.StringPtr(volumeID),
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *ListVolumeSoftwareAttachmentsOptions) SetVolumeID(volumeID string) *ListVolumeSoftwareAttachmentsOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *ListVolumeSoftwareAttachmentsOptions) SetHeaders(param map[string]string) *ListVolumeSoftwareAttachmentsOptions {
 	options.Headers = param
 	return options
 }
@@ -80932,6 +82840,9 @@ type LoadBalancer struct {
 	// Indicates whether this load balancer supports advanced health checks.
 	AdvancedHealthChecksSupported *bool `json:"advanced_health_checks_supported" validate:"required"`
 
+	// Indicates whether this load balancer supports asymmetric routing.
+	AsymmetricRoutingSupported *bool `json:"asymmetric_routing_supported" validate:"required"`
+
 	// The load balancer pool members attached to this load balancer.
 	AttachedLoadBalancerPoolMembers []LoadBalancerPoolMemberReference `json:"attached_load_balancer_pool_members" validate:"required"`
 
@@ -80987,6 +82898,9 @@ type LoadBalancer struct {
 
 	// The logging configuration for this load balancer.
 	Logging *LoadBalancerLogging `json:"logging" validate:"required"`
+
+	// Indicates whether this load balancer supports mTLS.
+	MtlsSupported *bool `json:"mtls_supported" validate:"required"`
 
 	// The name for this load balancer. The name is unique across all load balancers in the VPC.
 	Name *string `json:"name" validate:"required"`
@@ -81156,6 +83070,11 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 		err = core.SDKErrorf(err, "", "advanced_health_checks_supported-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "asymmetric_routing_supported", &obj.AsymmetricRoutingSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "asymmetric_routing_supported-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "attached_load_balancer_pool_members", &obj.AttachedLoadBalancerPoolMembers, UnmarshalLoadBalancerPoolMemberReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "attached_load_balancer_pool_members-error", common.GetComponentInfo())
@@ -81229,6 +83148,11 @@ func UnmarshalLoadBalancer(m map[string]json.RawMessage, result interface{}) (er
 	err = core.UnmarshalModel(m, "logging", &obj.Logging, UnmarshalLoadBalancerLogging)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "logging-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "mtls_supported", &obj.MtlsSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "mtls_supported-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
@@ -81583,6 +83507,8 @@ type LoadBalancerListener struct {
 	// If absent, this listener is not using a certificate instance.
 	CertificateInstance *CertificateInstanceReference `json:"certificate_instance,omitempty"`
 
+	ClientAuthentication *LoadBalancerListenerClientAuthentication `json:"client_authentication,omitempty"`
+
 	// The concurrent connection limit for the listener. If reached, incoming connections may be queued or rejected.
 	//
 	// This property will be present for load balancers in the `application` family.
@@ -81674,6 +83600,11 @@ func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interfac
 		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerListenerClientAuthentication)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "connection_limit-error", common.GetComponentInfo())
@@ -81737,6 +83668,173 @@ func UnmarshalLoadBalancerListener(m map[string]json.RawMessage, result interfac
 	err = core.UnmarshalPrimitive(m, "provisioning_status", &obj.ProvisioningStatus)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "provisioning_status-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerListenerClientAuthentication : LoadBalancerListenerClientAuthentication struct
+type LoadBalancerListenerClientAuthentication struct {
+	// The certificate instance used for the listener client certificate authority.
+	CertificateAuthority *CertificateInstanceReference `json:"certificate_authority" validate:"required"`
+
+	// A [PEM-encoded](https://www.rfc-editor.org/rfc/rfc7468) certificate revocation list
+	// (CRL) used for the listener.
+	CertificateRevocationList *string `json:"certificate_revocation_list,omitempty"`
+}
+
+// UnmarshalLoadBalancerListenerClientAuthentication unmarshals an instance of LoadBalancerListenerClientAuthentication from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerClientAuthentication(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerClientAuthentication)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalCertificateInstanceReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "certificate_revocation_list", &obj.CertificateRevocationList)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_revocation_list-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch : The certificate instance to use for the listener client certificate authority.
+//
+// Specify `null` to remove an existing certificate authority.
+// Models which "extend" this model:
+// - LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN
+type LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch struct {
+	// The CRN for this certificate instance.
+	CRN *string `json:"crn,omitempty"`
+}
+
+func (*LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch) isaLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch() bool {
+	return true
+}
+
+type LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchIntf interface {
+	isaLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch() bool
+	asPatch() map[string]interface{}
+}
+
+// UnmarshalLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch unmarshals an instance of LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "crn-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch
+func (loadBalancerListenerClientAuthenticationCertificateAuthorityPatch *LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerListenerClientAuthenticationCertificateAuthorityPatch.CRN) {
+		_patch["crn"] = loadBalancerListenerClientAuthenticationCertificateAuthorityPatch.CRN
+	}
+
+	return
+}
+
+// LoadBalancerListenerClientAuthenticationPatch : The client authentication to use for this listener.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The listener must have a `protocol` of `https`.
+//
+// Specify `null` to remove an existing client authentication.
+type LoadBalancerListenerClientAuthenticationPatch struct {
+	// The certificate instance to use for the listener client certificate authority.
+	//
+	// Specify `null` to remove an existing certificate authority.
+	CertificateAuthority LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchIntf `json:"certificate_authority,omitempty"`
+
+	// A [PEM-encoded](https://www.rfc-editor.org/rfc/rfc7468) (with the label `X509 CRL`) certificate revocation list
+	// (CRL) to use for the listener.
+	//
+	// The CRL must be formatted using the X.509 standard as described in
+	// [RFC 5280](https://www.rfc-editor.org/rfc/rfc5280).
+	//
+	// Specify `null` to remove an existing certificate revocation list.
+	CertificateRevocationList *string `json:"certificate_revocation_list,omitempty"`
+}
+
+// UnmarshalLoadBalancerListenerClientAuthenticationPatch unmarshals an instance of LoadBalancerListenerClientAuthenticationPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerClientAuthenticationPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerClientAuthenticationPatch)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "certificate_revocation_list", &obj.CertificateRevocationList)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_revocation_list-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerListenerClientAuthenticationPatch
+func (loadBalancerListenerClientAuthenticationPatch *LoadBalancerListenerClientAuthenticationPatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerListenerClientAuthenticationPatch.CertificateAuthority) {
+		_patch["certificate_authority"] = loadBalancerListenerClientAuthenticationPatch.CertificateAuthority.asPatch()
+	}
+	if !core.IsNil(loadBalancerListenerClientAuthenticationPatch.CertificateRevocationList) {
+		_patch["certificate_revocation_list"] = loadBalancerListenerClientAuthenticationPatch.CertificateRevocationList
+	}
+
+	return
+}
+
+// LoadBalancerListenerClientAuthenticationPrototype : The client authentication to use for this listener.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The listener must have a `protocol` of `https`.
+type LoadBalancerListenerClientAuthenticationPrototype struct {
+	// The certificate instance to use for the listener client certificate authority.
+	//
+	// Required if `certificate_revocation_list` is specified.
+	CertificateAuthority CertificateInstanceIdentityIntf `json:"certificate_authority" validate:"required"`
+
+	// A [PEM-encoded](https://www.rfc-editor.org/rfc/rfc7468) (with the label `X509 CRL`) certificate revocation list
+	// (CRL) to use for the listener.
+	//
+	// The CRL must be formatted using the X.509 standard as described in
+	// [RFC 5280](https://www.rfc-editor.org/rfc/rfc5280).
+	//
+	// If specified, `certificate_authority` must also be specified.
+	CertificateRevocationList *string `json:"certificate_revocation_list,omitempty"`
+}
+
+// NewLoadBalancerListenerClientAuthenticationPrototype : Instantiate LoadBalancerListenerClientAuthenticationPrototype (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerListenerClientAuthenticationPrototype(certificateAuthority CertificateInstanceIdentityIntf) (_model *LoadBalancerListenerClientAuthenticationPrototype, err error) {
+	_model = &LoadBalancerListenerClientAuthenticationPrototype{
+		CertificateAuthority: certificateAuthority,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+// UnmarshalLoadBalancerListenerClientAuthenticationPrototype unmarshals an instance of LoadBalancerListenerClientAuthenticationPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerClientAuthenticationPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerClientAuthenticationPrototype)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "certificate_revocation_list", &obj.CertificateRevocationList)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_revocation_list-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -82024,6 +84122,14 @@ type LoadBalancerListenerPatch struct {
 	// `protocol` of `https`.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
 
+	// The client authentication to use for this listener.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The listener must
+	// have a `protocol` of `https`.
+	//
+	// Specify `null` to remove an existing client authentication.
+	ClientAuthentication *LoadBalancerListenerClientAuthenticationPatch `json:"client_authentication,omitempty"`
+
 	// The concurrent connection limit for the listener. If reached, incoming connections may be queued or rejected.
 	//
 	// Supported for load balancers in the `application` family.
@@ -82139,6 +84245,11 @@ func UnmarshalLoadBalancerListenerPatch(m map[string]json.RawMessage, result int
 		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerListenerClientAuthenticationPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "connection_limit-error", common.GetComponentInfo())
@@ -82191,6 +84302,9 @@ func (loadBalancerListenerPatch *LoadBalancerListenerPatch) AsPatch() (_patch ma
 	}
 	if !core.IsNil(loadBalancerListenerPatch.CertificateInstance) {
 		_patch["certificate_instance"] = loadBalancerListenerPatch.CertificateInstance.asPatch()
+	}
+	if !core.IsNil(loadBalancerListenerPatch.ClientAuthentication) {
+		_patch["client_authentication"] = loadBalancerListenerPatch.ClientAuthentication.asPatch()
 	}
 	if !core.IsNil(loadBalancerListenerPatch.ConnectionLimit) {
 		_patch["connection_limit"] = loadBalancerListenerPatch.ConnectionLimit
@@ -83074,13 +85188,13 @@ func UnmarshalLoadBalancerListenerPolicyTarget(m map[string]json.RawMessage, res
 
 // LoadBalancerListenerPolicyTargetPatch : - If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` for a
 //
-//		listener in this load balancer.
-//	  - If `action` is `forward_to_pool`, specify a `LoadBalancerPoolIdentity` for a pool in
-//	    this load balancer.
-//	  - If `action` is `https_redirect`, specify a
-//	    `LoadBalancerListenerPolicyHTTPSRedirectPatch` for a listener in this load balancer
-//	    with a `protocol` of `https`.
-//	  - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPatch`.
+//	listener in this load balancer.
+//   - If `action` is `forward_to_pool`, specify a `LoadBalancerPoolIdentity` for a pool in
+//     this load balancer.
+//   - If `action` is `https_redirect`, specify a
+//     `LoadBalancerListenerPolicyHTTPSRedirectPatch` for a listener in this load balancer
+//     with a `protocol` of `https`.
+//   - If `action` is `redirect`, specify a `LoadBalancerListenerPolicyRedirectURLPatch`.
 //
 // Models which "extend" this model:
 // - LoadBalancerListenerPolicyTargetPatchLoadBalancerPoolIdentity
@@ -83199,14 +85313,14 @@ func (loadBalancerListenerPolicyTargetPatch *LoadBalancerListenerPolicyTargetPat
 
 // LoadBalancerListenerPolicyTargetPrototype : - If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` in this
 //
-//		load balancer to forward to.
-//	  - If `action` is `forward_to_pool`, use `LoadBalancerPoolIdentity` to specify a pool in
-//	    this load balancer to forward to.
-//	  - If `action` is `https_redirect`, use
-//	    `LoadBalancerListenerPolicyHTTPSRedirectPrototype` to specify a listener on this
-//	    load balancer to redirect to.
-//	  - If `action` is `redirect`, use `LoadBalancerListenerPolicyRedirectURLPrototype`to
-//	    specify a URL to redirect to.
+//	load balancer to forward to.
+//   - If `action` is `forward_to_pool`, use `LoadBalancerPoolIdentity` to specify a pool in
+//     this load balancer to forward to.
+//   - If `action` is `https_redirect`, use
+//     `LoadBalancerListenerPolicyHTTPSRedirectPrototype` to specify a listener on this
+//     load balancer to redirect to.
+//   - If `action` is `redirect`, use `LoadBalancerListenerPolicyRedirectURLPrototype`to
+//     specify a URL to redirect to.
 //
 // Models which "extend" this model:
 // - LoadBalancerListenerPolicyTargetPrototypeLoadBalancerPoolIdentity
@@ -83310,6 +85424,12 @@ type LoadBalancerListenerPrototypeLoadBalancerContext struct {
 	// The certificate instance to use for SSL termination. The listener must have a
 	// `protocol` of `https`.
 	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
+
+	// The client authentication to use for this listener.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The listener must
+	// have a `protocol` of `https`.
+	ClientAuthentication *LoadBalancerListenerClientAuthenticationPrototype `json:"client_authentication,omitempty"`
 
 	// The concurrent connection limit for the listener. If reached, incoming connections may be queued or rejected.
 	//
@@ -83435,6 +85555,11 @@ func UnmarshalLoadBalancerListenerPrototypeLoadBalancerContext(m map[string]json
 	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceIdentity)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerListenerClientAuthenticationPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "connection_limit", &obj.ConnectionLimit)
@@ -83731,6 +85856,9 @@ type LoadBalancerPool struct {
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Algorithm *string `json:"algorithm" validate:"required"`
 
+	// The client authentication used for this pool.
+	ClientAuthentication *LoadBalancerPoolClientAuthentication `json:"client_authentication,omitempty"`
+
 	// The date and time that this pool was created.
 	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
 
@@ -83788,6 +85916,11 @@ type LoadBalancerPool struct {
 	// [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	ProxyProtocol *string `json:"proxy_protocol" validate:"required"`
 
+	// The server authentication used for this pool.
+	//
+	// This property will be absent if the `pool.protocol` is not `https`.
+	ServerAuthentication *LoadBalancerPoolServerAuthentication `json:"server_authentication,omitempty"`
+
 	// The session persistence of this pool.
 	//
 	// If absent, session persistence will be disabled, and traffic will be distributed
@@ -83803,6 +85936,7 @@ type LoadBalancerPool struct {
 const (
 	LoadBalancerPoolAlgorithmLeastConnectionsConst   = "least_connections"
 	LoadBalancerPoolAlgorithmRoundRobinConst         = "round_robin"
+	LoadBalancerPoolAlgorithmWeightedForwardingConst = "weighted_forwarding"
 	LoadBalancerPoolAlgorithmWeightedRoundRobinConst = "weighted_round_robin"
 )
 
@@ -83851,6 +85985,11 @@ func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{})
 	err = core.UnmarshalPrimitive(m, "algorithm", &obj.Algorithm)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "algorithm-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerPoolClientAuthentication)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
@@ -83908,9 +86047,103 @@ func UnmarshalLoadBalancerPool(m map[string]json.RawMessage, result interface{})
 		err = core.SDKErrorf(err, "", "proxy_protocol-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "server_authentication", &obj.ServerAuthentication, UnmarshalLoadBalancerPoolServerAuthentication)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "server_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "session_persistence", &obj.SessionPersistence, UnmarshalLoadBalancerPoolSessionPersistence)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "session_persistence-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolClientAuthentication : The client authentication used for this pool.
+type LoadBalancerPoolClientAuthentication struct {
+	CertificateInstance *CertificateInstanceReference `json:"certificate_instance" validate:"required"`
+}
+
+// UnmarshalLoadBalancerPoolClientAuthentication unmarshals an instance of LoadBalancerPoolClientAuthentication from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolClientAuthentication(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolClientAuthentication)
+	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolClientAuthenticationPatch : The client authentication to use for this pool.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The pool must have a `protocol` of `https`.
+//
+// Specify `null` to remove an existing client authentication.
+type LoadBalancerPoolClientAuthenticationPatch struct {
+	// The backend certificate instance to use for client
+	// certificate verification.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool
+	// must have a `protocol` of `https`.
+	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance,omitempty"`
+}
+
+// UnmarshalLoadBalancerPoolClientAuthenticationPatch unmarshals an instance of LoadBalancerPoolClientAuthenticationPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolClientAuthenticationPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolClientAuthenticationPatch)
+	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolClientAuthenticationPatch
+func (loadBalancerPoolClientAuthenticationPatch *LoadBalancerPoolClientAuthenticationPatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolClientAuthenticationPatch.CertificateInstance) {
+		_patch["certificate_instance"] = loadBalancerPoolClientAuthenticationPatch.CertificateInstance.asPatch()
+	}
+
+	return
+}
+
+// LoadBalancerPoolClientAuthenticationPrototype : The client authentication to use for this pool.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The pool must have a `protocol` of `https`.
+type LoadBalancerPoolClientAuthenticationPrototype struct {
+	// The backend certificate instance to use for client
+	// certificate verification.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool
+	// must have a `protocol` of `https`.
+	CertificateInstance CertificateInstanceIdentityIntf `json:"certificate_instance" validate:"required"`
+}
+
+// NewLoadBalancerPoolClientAuthenticationPrototype : Instantiate LoadBalancerPoolClientAuthenticationPrototype (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerPoolClientAuthenticationPrototype(certificateInstance CertificateInstanceIdentityIntf) (_model *LoadBalancerPoolClientAuthenticationPrototype, err error) {
+	_model = &LoadBalancerPoolClientAuthenticationPrototype{
+		CertificateInstance: certificateInstance,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+// UnmarshalLoadBalancerPoolClientAuthenticationPrototype unmarshals an instance of LoadBalancerPoolClientAuthenticationPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolClientAuthenticationPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolClientAuthenticationPrototype)
+	err = core.UnmarshalModel(m, "certificate_instance", &obj.CertificateInstance, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_instance-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -85512,9 +87745,28 @@ func (loadBalancerPoolMemberTargetPrototype *LoadBalancerPoolMemberTargetPrototy
 
 // LoadBalancerPoolPatch : LoadBalancerPoolPatch struct
 type LoadBalancerPoolPatch struct {
-	// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-	// `availability` with value `subnet` in the profile.
+	// The load balancing algorithm.
+	//
+	// - `least_connections`: Routes traffic to the pool member with the least active
+	//   connections. Supported by `application` and `network` family load balancers that
+	//   have `availability` with value `subnet` in the profile.
+	// - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+	//   `application` and `network` family load balancers.
+	// - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+	//   configured member weights. Supported by `application` and `network`
+	//   family load balancers.
+	// - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+	//   proportionally to configured member weights. Supported by `network` family
+	//   load balancers with an `asymmetric_routing_supported` value of `true`.
 	Algorithm *string `json:"algorithm,omitempty"`
+
+	// The client authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	//
+	// Specify `null` to remove an existing client authentication.
+	ClientAuthentication *LoadBalancerPoolClientAuthenticationPatch `json:"client_authentication,omitempty"`
 
 	// The failsafe policy for this load balancer pool.
 	FailsafePolicy *LoadBalancerPoolFailsafePolicyPatch `json:"failsafe_policy,omitempty"`
@@ -85557,16 +87809,36 @@ type LoadBalancerPoolPatch struct {
 	// For load balancers in the `network` family, this property must be `disabled`.
 	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
+	// The server authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	//
+	// Specify `null` to remove an existing server authentication.
+	ServerAuthentication *LoadBalancerPoolServerAuthenticationPatch `json:"server_authentication,omitempty"`
+
 	// The session persistence of this pool.
 	SessionPersistence *LoadBalancerPoolSessionPersistencePatch `json:"session_persistence,omitempty"`
 }
 
 // Constants associated with the LoadBalancerPoolPatch.Algorithm property.
-// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-// `availability` with value `subnet` in the profile.
+// The load balancing algorithm.
+//
+//   - `least_connections`: Routes traffic to the pool member with the least active
+//     connections. Supported by `application` and `network` family load balancers that
+//     have `availability` with value `subnet` in the profile.
+//   - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+//     `application` and `network` family load balancers.
+//   - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+//     configured member weights. Supported by `application` and `network`
+//     family load balancers.
+//   - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+//     proportionally to configured member weights. Supported by `network` family
+//     load balancers with an `asymmetric_routing_supported` value of `true`.
 const (
 	LoadBalancerPoolPatchAlgorithmLeastConnectionsConst   = "least_connections"
 	LoadBalancerPoolPatchAlgorithmRoundRobinConst         = "round_robin"
+	LoadBalancerPoolPatchAlgorithmWeightedForwardingConst = "weighted_forwarding"
 	LoadBalancerPoolPatchAlgorithmWeightedRoundRobinConst = "weighted_round_robin"
 )
 
@@ -85608,6 +87880,11 @@ func UnmarshalLoadBalancerPoolPatch(m map[string]json.RawMessage, result interfa
 		err = core.SDKErrorf(err, "", "algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerPoolClientAuthenticationPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "failsafe_policy", &obj.FailsafePolicy, UnmarshalLoadBalancerPoolFailsafePolicyPatch)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "failsafe_policy-error", common.GetComponentInfo())
@@ -85633,6 +87910,11 @@ func UnmarshalLoadBalancerPoolPatch(m map[string]json.RawMessage, result interfa
 		err = core.SDKErrorf(err, "", "proxy_protocol-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "server_authentication", &obj.ServerAuthentication, UnmarshalLoadBalancerPoolServerAuthenticationPatch)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "server_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "session_persistence", &obj.SessionPersistence, UnmarshalLoadBalancerPoolSessionPersistencePatch)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "session_persistence-error", common.GetComponentInfo())
@@ -85647,6 +87929,9 @@ func (loadBalancerPoolPatch *LoadBalancerPoolPatch) AsPatch() (_patch map[string
 	_patch = map[string]interface{}{}
 	if !core.IsNil(loadBalancerPoolPatch.Algorithm) {
 		_patch["algorithm"] = loadBalancerPoolPatch.Algorithm
+	}
+	if !core.IsNil(loadBalancerPoolPatch.ClientAuthentication) {
+		_patch["client_authentication"] = loadBalancerPoolPatch.ClientAuthentication.asPatch()
 	}
 	if !core.IsNil(loadBalancerPoolPatch.FailsafePolicy) {
 		_patch["failsafe_policy"] = loadBalancerPoolPatch.FailsafePolicy.asPatch()
@@ -85663,6 +87948,9 @@ func (loadBalancerPoolPatch *LoadBalancerPoolPatch) AsPatch() (_patch map[string
 	if !core.IsNil(loadBalancerPoolPatch.ProxyProtocol) {
 		_patch["proxy_protocol"] = loadBalancerPoolPatch.ProxyProtocol
 	}
+	if !core.IsNil(loadBalancerPoolPatch.ServerAuthentication) {
+		_patch["server_authentication"] = loadBalancerPoolPatch.ServerAuthentication.asPatch()
+	}
 	if !core.IsNil(loadBalancerPoolPatch.SessionPersistence) {
 		_patch["session_persistence"] = loadBalancerPoolPatch.SessionPersistence.asPatch()
 	}
@@ -85672,9 +87960,26 @@ func (loadBalancerPoolPatch *LoadBalancerPoolPatch) AsPatch() (_patch map[string
 
 // LoadBalancerPoolPrototypeLoadBalancerContext : LoadBalancerPoolPrototypeLoadBalancerContext struct
 type LoadBalancerPoolPrototypeLoadBalancerContext struct {
-	// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-	// `availability` with value `subnet` in the profile.
+	// The load balancing algorithm.
+	//
+	// - `least_connections`: Routes traffic to the pool member with the least active
+	//   connections. Supported by `application` and `network` family load balancers that
+	//   have `availability` with value `subnet` in the profile.
+	// - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+	//   `application` and `network` family load balancers.
+	// - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+	//   configured member weights. Supported by `application` and `network`
+	//   family load balancers.
+	// - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+	//   proportionally to configured member weights. Supported by `network` family
+	//   load balancers with an `asymmetric_routing_supported` value of `true`.
 	Algorithm *string `json:"algorithm" validate:"required"`
+
+	// The client authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	ClientAuthentication *LoadBalancerPoolClientAuthenticationPrototype `json:"client_authentication,omitempty"`
 
 	// The health monitor of this pool.
 	//
@@ -85717,6 +88022,12 @@ type LoadBalancerPoolPrototypeLoadBalancerContext struct {
 	// For load balancers in the `network` family, this property must be `disabled`.
 	ProxyProtocol *string `json:"proxy_protocol,omitempty"`
 
+	// The server authentication to use for this pool.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	ServerAuthentication *LoadBalancerPoolServerAuthenticationPrototype `json:"server_authentication,omitempty"`
+
 	// The session persistence of this pool. If specified, the load balancer must have
 	// `source_ip_session_persistence_supported` set to `true` in its profile.
 	//
@@ -85726,11 +88037,23 @@ type LoadBalancerPoolPrototypeLoadBalancerContext struct {
 }
 
 // Constants associated with the LoadBalancerPoolPrototypeLoadBalancerContext.Algorithm property.
-// The load balancing algorithm. The `least_connections` algorithm is only supported for load balancers that have
-// `availability` with value `subnet` in the profile.
+// The load balancing algorithm.
+//
+//   - `least_connections`: Routes traffic to the pool member with the least active
+//     connections. Supported by `application` and `network` family load balancers that
+//     have `availability` with value `subnet` in the profile.
+//   - `round_robin`: Distributes traffic sequentially across pool members. Supported by
+//     `application` and `network` family load balancers.
+//   - `weighted_round_robin`: Distributes traffic across pool members proportionally to
+//     configured member weights. Supported by `application` and `network`
+//     family load balancers.
+//   - `weighted_forwarding`: Forwards the layer 4 packets across backend pools
+//     proportionally to configured member weights. Supported by `network` family
+//     load balancers with an `asymmetric_routing_supported` value of `true`.
 const (
 	LoadBalancerPoolPrototypeLoadBalancerContextAlgorithmLeastConnectionsConst   = "least_connections"
 	LoadBalancerPoolPrototypeLoadBalancerContextAlgorithmRoundRobinConst         = "round_robin"
+	LoadBalancerPoolPrototypeLoadBalancerContextAlgorithmWeightedForwardingConst = "weighted_forwarding"
 	LoadBalancerPoolPrototypeLoadBalancerContextAlgorithmWeightedRoundRobinConst = "weighted_round_robin"
 )
 
@@ -85784,6 +88107,11 @@ func UnmarshalLoadBalancerPoolPrototypeLoadBalancerContext(m map[string]json.Raw
 		err = core.SDKErrorf(err, "", "algorithm-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "client_authentication", &obj.ClientAuthentication, UnmarshalLoadBalancerPoolClientAuthenticationPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "client_authentication-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "health_monitor", &obj.HealthMonitor, UnmarshalLoadBalancerPoolHealthMonitorPrototype)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "health_monitor-error", common.GetComponentInfo())
@@ -85807,6 +88135,11 @@ func UnmarshalLoadBalancerPoolPrototypeLoadBalancerContext(m map[string]json.Raw
 	err = core.UnmarshalPrimitive(m, "proxy_protocol", &obj.ProxyProtocol)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "proxy_protocol-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "server_authentication", &obj.ServerAuthentication, UnmarshalLoadBalancerPoolServerAuthenticationPrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "server_authentication-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalModel(m, "session_persistence", &obj.SessionPersistence, UnmarshalLoadBalancerPoolSessionPersistencePrototype)
@@ -85855,6 +88188,128 @@ func UnmarshalLoadBalancerPoolReference(m map[string]json.RawMessage, result int
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolServerAuthentication : The server authentication used for this pool.
+//
+// This property will be absent if the `pool.protocol` is not `https`.
+type LoadBalancerPoolServerAuthentication struct {
+	// The backend server certificate authority instance used for server
+	// certificate verification.
+	CertificateAuthority *CertificateInstanceReference `json:"certificate_authority,omitempty"`
+
+	// If set to `true`, the backend server certificate is verified.
+	VerifyCertificate *bool `json:"verify_certificate" validate:"required"`
+}
+
+// UnmarshalLoadBalancerPoolServerAuthentication unmarshals an instance of LoadBalancerPoolServerAuthentication from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolServerAuthentication(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolServerAuthentication)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalCertificateInstanceReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "verify_certificate", &obj.VerifyCertificate)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "verify_certificate-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerPoolServerAuthenticationPatch : The server authentication to use for this pool.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The pool must have a `protocol` of `https`.
+//
+// Specify `null` to remove an existing server authentication.
+type LoadBalancerPoolServerAuthenticationPatch struct {
+	// The backend server certificate authority instance to use for server
+	// certificate verification.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	//
+	// If specified, `verify_certificate` must be `true`.
+	CertificateAuthority CertificateInstanceIdentityIntf `json:"certificate_authority,omitempty"`
+
+	// Indicates whether server certificate verification is enabled.
+	//
+	// If set to `true`, the backend server certificate is verified by:
+	// - `certificate_authority`, if specified.
+	// - the system default certificate authorities, if `certificate_authority`
+	//   is not specified.
+	VerifyCertificate *bool `json:"verify_certificate,omitempty"`
+}
+
+// UnmarshalLoadBalancerPoolServerAuthenticationPatch unmarshals an instance of LoadBalancerPoolServerAuthenticationPatch from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolServerAuthenticationPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolServerAuthenticationPatch)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "verify_certificate", &obj.VerifyCertificate)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "verify_certificate-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerPoolServerAuthenticationPatch
+func (loadBalancerPoolServerAuthenticationPatch *LoadBalancerPoolServerAuthenticationPatch) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerPoolServerAuthenticationPatch.CertificateAuthority) {
+		_patch["certificate_authority"] = loadBalancerPoolServerAuthenticationPatch.CertificateAuthority.asPatch()
+	}
+	if !core.IsNil(loadBalancerPoolServerAuthenticationPatch.VerifyCertificate) {
+		_patch["verify_certificate"] = loadBalancerPoolServerAuthenticationPatch.VerifyCertificate
+	}
+
+	return
+}
+
+// LoadBalancerPoolServerAuthenticationPrototype : The server authentication to use for this pool.
+//
+// Supported by load balancers with `mtls_supported` set to `true`. The pool must have a `protocol` of `https`.
+type LoadBalancerPoolServerAuthenticationPrototype struct {
+	// The backend server certificate authority instance to use for server
+	// certificate verification.
+	//
+	// Supported by load balancers with `mtls_supported` set to `true`. The pool must
+	// have a `protocol` of `https`.
+	//
+	// If specified, `verify_certificate` must be `true`.
+	CertificateAuthority CertificateInstanceIdentityIntf `json:"certificate_authority,omitempty"`
+
+	// Indicates whether server certificate verification is enabled.
+	//
+	// If set to `true`, the backend server certificate is verified by:
+	// - `certificate_authority`, if specified.
+	// - the system default certificate authorities, if `certificate_authority`
+	//   is not specified.
+	VerifyCertificate *bool `json:"verify_certificate,omitempty"`
+}
+
+// UnmarshalLoadBalancerPoolServerAuthenticationPrototype unmarshals an instance of LoadBalancerPoolServerAuthenticationPrototype from the specified map of raw messages.
+func UnmarshalLoadBalancerPoolServerAuthenticationPrototype(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerPoolServerAuthenticationPrototype)
+	err = core.UnmarshalModel(m, "certificate_authority", &obj.CertificateAuthority, UnmarshalCertificateInstanceIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "certificate_authority-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "verify_certificate", &obj.VerifyCertificate)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "verify_certificate-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -86016,6 +88471,8 @@ type LoadBalancerProfile struct {
 
 	AdvancedHealthChecksSupported LoadBalancerProfileAdvancedHealthCheckSupportedIntf `json:"advanced_health_checks_supported" validate:"required"`
 
+	AsymmetricRoutingSupported LoadBalancerProfileAsymmetricRoutingSupportedIntf `json:"asymmetric_routing_supported" validate:"required"`
+
 	Availability LoadBalancerProfileAvailabilityIntf `json:"availability" validate:"required"`
 
 	FailsafePolicyActions LoadBalancerProfileFailsafePolicyActionsIntf `json:"failsafe_policy_actions" validate:"required"`
@@ -86035,6 +88492,8 @@ type LoadBalancerProfile struct {
 
 	// Indicates which logging type(s) are supported for a load balancer with this profile.
 	LoggingSupported *LoadBalancerProfileLoggingSupported `json:"logging_supported" validate:"required"`
+
+	MtlsSupported LoadBalancerProfileMtlsSupportedIntf `json:"mtls_supported" validate:"required"`
 
 	// The globally unique name for this load balancer profile.
 	Name *string `json:"name" validate:"required"`
@@ -86076,6 +88535,11 @@ func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface
 		err = core.SDKErrorf(err, "", "advanced_health_checks_supported-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "asymmetric_routing_supported", &obj.AsymmetricRoutingSupported, UnmarshalLoadBalancerProfileAsymmetricRoutingSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "asymmetric_routing_supported-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "availability", &obj.Availability, UnmarshalLoadBalancerProfileAvailability)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "availability-error", common.GetComponentInfo())
@@ -86109,6 +88573,11 @@ func UnmarshalLoadBalancerProfile(m map[string]json.RawMessage, result interface
 	err = core.UnmarshalModel(m, "logging_supported", &obj.LoggingSupported, UnmarshalLoadBalancerProfileLoggingSupported)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "logging_supported-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "mtls_supported", &obj.MtlsSupported, UnmarshalLoadBalancerProfileMtlsSupported)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "mtls_supported-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
@@ -86225,6 +88694,49 @@ type LoadBalancerProfileAdvancedHealthCheckSupportedIntf interface {
 // UnmarshalLoadBalancerProfileAdvancedHealthCheckSupported unmarshals an instance of LoadBalancerProfileAdvancedHealthCheckSupported from the specified map of raw messages.
 func UnmarshalLoadBalancerProfileAdvancedHealthCheckSupported(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerProfileAdvancedHealthCheckSupported)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileAsymmetricRoutingSupported : LoadBalancerProfileAsymmetricRoutingSupported struct
+// Models which "extend" this model:
+// - LoadBalancerProfileAsymmetricRoutingSupportedFixed
+// - LoadBalancerProfileAsymmetricRoutingSupportedDependent
+type LoadBalancerProfileAsymmetricRoutingSupported struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *bool `json:"value,omitempty"`
+}
+
+// Constants associated with the LoadBalancerProfileAsymmetricRoutingSupported.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAsymmetricRoutingSupportedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileAsymmetricRoutingSupported) isaLoadBalancerProfileAsymmetricRoutingSupported() bool {
+	return true
+}
+
+type LoadBalancerProfileAsymmetricRoutingSupportedIntf interface {
+	isaLoadBalancerProfileAsymmetricRoutingSupported() bool
+}
+
+// UnmarshalLoadBalancerProfileAsymmetricRoutingSupported unmarshals an instance of LoadBalancerProfileAsymmetricRoutingSupported from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAsymmetricRoutingSupported(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAsymmetricRoutingSupported)
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
@@ -86584,6 +89096,49 @@ const (
 // UnmarshalLoadBalancerProfileLoggingSupported unmarshals an instance of LoadBalancerProfileLoggingSupported from the specified map of raw messages.
 func UnmarshalLoadBalancerProfileLoggingSupported(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerProfileLoggingSupported)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileMtlsSupported : LoadBalancerProfileMtlsSupported struct
+// Models which "extend" this model:
+// - LoadBalancerProfileMtlsSupportedFixed
+// - LoadBalancerProfileMtlsSupportedDependent
+type LoadBalancerProfileMtlsSupported struct {
+	// The type for this profile field.
+	Type *string `json:"type,omitempty"`
+
+	// The value for this profile field.
+	Value *bool `json:"value,omitempty"`
+}
+
+// Constants associated with the LoadBalancerProfileMtlsSupported.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileMtlsSupportedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileMtlsSupported) isaLoadBalancerProfileMtlsSupported() bool {
+	return true
+}
+
+type LoadBalancerProfileMtlsSupportedIntf interface {
+	isaLoadBalancerProfileMtlsSupported() bool
+}
+
+// UnmarshalLoadBalancerProfileMtlsSupported unmarshals an instance of LoadBalancerProfileMtlsSupported from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileMtlsSupported(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileMtlsSupported)
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
@@ -87712,1297 +90267,1298 @@ func UnmarshalNetworkACLRule(m map[string]json.RawMessage, result interface{}) (
 		err = core.SDKErrorf(err, "required discriminator property 'protocol' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "ah" {
+	switch discValue {
+	case "ah":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "any" {
+	case "any":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolAny)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolAny-error", common.GetComponentInfo())
 		}
-	} else if discValue == "esp" {
+	case "esp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "gre" {
+	case "gre":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp" {
+	case "icmp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIcmp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp_tcp_udp" {
+	case "icmp_tcp_udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIcmptcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "ip_in_ip" {
+	case "ip_in_ip":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "l2tp" {
+	case "l2tp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_0" {
+	case "number_0":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_10" {
+	case "number_10":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_100" {
+	case "number_100":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_101" {
+	case "number_101":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_102" {
+	case "number_102":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_103" {
+	case "number_103":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_104" {
+	case "number_104":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_105" {
+	case "number_105":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_106" {
+	case "number_106":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_107" {
+	case "number_107":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_108" {
+	case "number_108":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_109" {
+	case "number_109":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_11" {
+	case "number_11":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_110" {
+	case "number_110":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_111" {
+	case "number_111":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_113" {
+	case "number_113":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_114" {
+	case "number_114":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_116" {
+	case "number_116":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_117" {
+	case "number_117":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_118" {
+	case "number_118":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_119" {
+	case "number_119":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_12" {
+	case "number_12":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_120" {
+	case "number_120":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_121" {
+	case "number_121":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_122" {
+	case "number_122":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_123" {
+	case "number_123":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_124" {
+	case "number_124":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_125" {
+	case "number_125":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_126" {
+	case "number_126":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_127" {
+	case "number_127":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_128" {
+	case "number_128":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_129" {
+	case "number_129":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_13" {
+	case "number_13":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_130" {
+	case "number_130":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_131" {
+	case "number_131":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_133" {
+	case "number_133":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_134" {
+	case "number_134":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_135" {
+	case "number_135":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_136" {
+	case "number_136":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_137" {
+	case "number_137":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_138" {
+	case "number_138":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_139" {
+	case "number_139":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_14" {
+	case "number_14":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_140" {
+	case "number_140":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_141" {
+	case "number_141":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_142" {
+	case "number_142":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_143" {
+	case "number_143":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_144" {
+	case "number_144":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_145" {
+	case "number_145":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_146" {
+	case "number_146":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_147" {
+	case "number_147":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_148" {
+	case "number_148":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_149" {
+	case "number_149":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_15" {
+	case "number_15":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_150" {
+	case "number_150":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_151" {
+	case "number_151":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_152" {
+	case "number_152":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_153" {
+	case "number_153":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_154" {
+	case "number_154":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_155" {
+	case "number_155":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_156" {
+	case "number_156":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_157" {
+	case "number_157":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_158" {
+	case "number_158":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_159" {
+	case "number_159":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_16" {
+	case "number_16":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_160" {
+	case "number_160":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_161" {
+	case "number_161":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_162" {
+	case "number_162":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_163" {
+	case "number_163":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_164" {
+	case "number_164":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_165" {
+	case "number_165":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_166" {
+	case "number_166":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_167" {
+	case "number_167":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_168" {
+	case "number_168":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_169" {
+	case "number_169":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_170" {
+	case "number_170":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_171" {
+	case "number_171":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_172" {
+	case "number_172":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_173" {
+	case "number_173":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_174" {
+	case "number_174":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_175" {
+	case "number_175":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_176" {
+	case "number_176":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_177" {
+	case "number_177":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_178" {
+	case "number_178":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_179" {
+	case "number_179":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_18" {
+	case "number_18":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_180" {
+	case "number_180":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_181" {
+	case "number_181":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_182" {
+	case "number_182":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_183" {
+	case "number_183":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_184" {
+	case "number_184":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_185" {
+	case "number_185":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_186" {
+	case "number_186":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_187" {
+	case "number_187":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_188" {
+	case "number_188":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_189" {
+	case "number_189":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_19" {
+	case "number_19":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_190" {
+	case "number_190":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_191" {
+	case "number_191":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_192" {
+	case "number_192":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_193" {
+	case "number_193":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_194" {
+	case "number_194":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_195" {
+	case "number_195":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_196" {
+	case "number_196":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_197" {
+	case "number_197":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_198" {
+	case "number_198":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_199" {
+	case "number_199":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_2" {
+	case "number_2":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_20" {
+	case "number_20":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_200" {
+	case "number_200":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_201" {
+	case "number_201":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_202" {
+	case "number_202":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_203" {
+	case "number_203":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_204" {
+	case "number_204":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_205" {
+	case "number_205":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_206" {
+	case "number_206":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_207" {
+	case "number_207":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_208" {
+	case "number_208":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_209" {
+	case "number_209":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_21" {
+	case "number_21":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_210" {
+	case "number_210":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_211" {
+	case "number_211":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_212" {
+	case "number_212":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_213" {
+	case "number_213":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_214" {
+	case "number_214":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_215" {
+	case "number_215":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_216" {
+	case "number_216":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_217" {
+	case "number_217":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_218" {
+	case "number_218":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_219" {
+	case "number_219":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_22" {
+	case "number_22":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_220" {
+	case "number_220":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_221" {
+	case "number_221":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_222" {
+	case "number_222":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_223" {
+	case "number_223":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_224" {
+	case "number_224":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_225" {
+	case "number_225":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_226" {
+	case "number_226":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_227" {
+	case "number_227":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_228" {
+	case "number_228":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_229" {
+	case "number_229":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_23" {
+	case "number_23":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_230" {
+	case "number_230":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_231" {
+	case "number_231":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_232" {
+	case "number_232":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_233" {
+	case "number_233":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_234" {
+	case "number_234":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_235" {
+	case "number_235":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_236" {
+	case "number_236":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_237" {
+	case "number_237":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_238" {
+	case "number_238":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_239" {
+	case "number_239":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_24" {
+	case "number_24":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_240" {
+	case "number_240":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_241" {
+	case "number_241":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_242" {
+	case "number_242":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_243" {
+	case "number_243":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_244" {
+	case "number_244":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_245" {
+	case "number_245":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_246" {
+	case "number_246":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_247" {
+	case "number_247":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_248" {
+	case "number_248":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_249" {
+	case "number_249":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_25" {
+	case "number_25":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_250" {
+	case "number_250":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_251" {
+	case "number_251":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_252" {
+	case "number_252":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_253" {
+	case "number_253":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_254" {
+	case "number_254":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_255" {
+	case "number_255":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_26" {
+	case "number_26":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_27" {
+	case "number_27":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_28" {
+	case "number_28":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_29" {
+	case "number_29":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_3" {
+	case "number_3":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_30" {
+	case "number_30":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_31" {
+	case "number_31":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_32" {
+	case "number_32":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_33" {
+	case "number_33":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_34" {
+	case "number_34":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_35" {
+	case "number_35":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_36" {
+	case "number_36":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_37" {
+	case "number_37":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_38" {
+	case "number_38":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_39" {
+	case "number_39":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_40" {
+	case "number_40":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_41" {
+	case "number_41":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_42" {
+	case "number_42":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_43" {
+	case "number_43":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_44" {
+	case "number_44":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_45" {
+	case "number_45":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_48" {
+	case "number_48":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_49" {
+	case "number_49":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_5" {
+	case "number_5":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_52" {
+	case "number_52":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_53" {
+	case "number_53":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_54" {
+	case "number_54":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_55" {
+	case "number_55":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_56" {
+	case "number_56":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_57" {
+	case "number_57":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_58" {
+	case "number_58":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_59" {
+	case "number_59":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_60" {
+	case "number_60":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_61" {
+	case "number_61":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_62" {
+	case "number_62":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_63" {
+	case "number_63":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_64" {
+	case "number_64":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_65" {
+	case "number_65":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_66" {
+	case "number_66":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_67" {
+	case "number_67":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_68" {
+	case "number_68":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_69" {
+	case "number_69":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_7" {
+	case "number_7":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_70" {
+	case "number_70":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_71" {
+	case "number_71":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_72" {
+	case "number_72":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_73" {
+	case "number_73":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_74" {
+	case "number_74":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_75" {
+	case "number_75":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_76" {
+	case "number_76":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_77" {
+	case "number_77":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_78" {
+	case "number_78":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_79" {
+	case "number_79":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_8" {
+	case "number_8":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_80" {
+	case "number_80":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_81" {
+	case "number_81":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_82" {
+	case "number_82":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_83" {
+	case "number_83":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_84" {
+	case "number_84":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_85" {
+	case "number_85":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_86" {
+	case "number_86":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_87" {
+	case "number_87":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_88" {
+	case "number_88":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_89" {
+	case "number_89":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_9" {
+	case "number_9":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_90" {
+	case "number_90":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_91" {
+	case "number_91":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_92" {
+	case "number_92":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_93" {
+	case "number_93":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_94" {
+	case "number_94":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_95" {
+	case "number_95":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_96" {
+	case "number_96":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_97" {
+	case "number_97":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_98" {
+	case "number_98":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_99" {
+	case "number_99":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "rsvp" {
+	case "rsvp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "sctp" {
+	case "sctp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "tcp" {
+	case "tcp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "udp" {
+	case "udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "vrrp" {
+	case "vrrp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		// errMsg := fmt.Sprintf("unrecognized value for discriminator property 'protocol': %s", discValue)
 		// err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 		// Fallback to base NetworkACLRule for unknown protocols
@@ -89560,1297 +92116,1298 @@ func UnmarshalNetworkACLRuleItem(m map[string]json.RawMessage, result interface{
 		err = core.SDKErrorf(err, "required discriminator property 'protocol' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "ah" {
+	switch discValue {
+	case "ah":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "any" {
+	case "any":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolAny)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolAny-error", common.GetComponentInfo())
 		}
-	} else if discValue == "esp" {
+	case "esp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "gre" {
+	case "gre":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp" {
+	case "icmp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIcmp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp_tcp_udp" {
+	case "icmp_tcp_udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "ip_in_ip" {
+	case "ip_in_ip":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "l2tp" {
+	case "l2tp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_0" {
+	case "number_0":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_10" {
+	case "number_10":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_100" {
+	case "number_100":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_101" {
+	case "number_101":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_102" {
+	case "number_102":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_103" {
+	case "number_103":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_104" {
+	case "number_104":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_105" {
+	case "number_105":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_106" {
+	case "number_106":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_107" {
+	case "number_107":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_108" {
+	case "number_108":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_109" {
+	case "number_109":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_11" {
+	case "number_11":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_110" {
+	case "number_110":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_111" {
+	case "number_111":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_113" {
+	case "number_113":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_114" {
+	case "number_114":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_116" {
+	case "number_116":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_117" {
+	case "number_117":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_118" {
+	case "number_118":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_119" {
+	case "number_119":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_12" {
+	case "number_12":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_120" {
+	case "number_120":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_121" {
+	case "number_121":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_122" {
+	case "number_122":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_123" {
+	case "number_123":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_124" {
+	case "number_124":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_125" {
+	case "number_125":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_126" {
+	case "number_126":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_127" {
+	case "number_127":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_128" {
+	case "number_128":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_129" {
+	case "number_129":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_13" {
+	case "number_13":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_130" {
+	case "number_130":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_131" {
+	case "number_131":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_133" {
+	case "number_133":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_134" {
+	case "number_134":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_135" {
+	case "number_135":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_136" {
+	case "number_136":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_137" {
+	case "number_137":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_138" {
+	case "number_138":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_139" {
+	case "number_139":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_14" {
+	case "number_14":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_140" {
+	case "number_140":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_141" {
+	case "number_141":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_142" {
+	case "number_142":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_143" {
+	case "number_143":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_144" {
+	case "number_144":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_145" {
+	case "number_145":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_146" {
+	case "number_146":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_147" {
+	case "number_147":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_148" {
+	case "number_148":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_149" {
+	case "number_149":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_15" {
+	case "number_15":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_150" {
+	case "number_150":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_151" {
+	case "number_151":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_152" {
+	case "number_152":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_153" {
+	case "number_153":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_154" {
+	case "number_154":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_155" {
+	case "number_155":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_156" {
+	case "number_156":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_157" {
+	case "number_157":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_158" {
+	case "number_158":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_159" {
+	case "number_159":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_16" {
+	case "number_16":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_160" {
+	case "number_160":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_161" {
+	case "number_161":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_162" {
+	case "number_162":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_163" {
+	case "number_163":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_164" {
+	case "number_164":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_165" {
+	case "number_165":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_166" {
+	case "number_166":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_167" {
+	case "number_167":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_168" {
+	case "number_168":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_169" {
+	case "number_169":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_170" {
+	case "number_170":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_171" {
+	case "number_171":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_172" {
+	case "number_172":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_173" {
+	case "number_173":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_174" {
+	case "number_174":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_175" {
+	case "number_175":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_176" {
+	case "number_176":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_177" {
+	case "number_177":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_178" {
+	case "number_178":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_179" {
+	case "number_179":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_18" {
+	case "number_18":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_180" {
+	case "number_180":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_181" {
+	case "number_181":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_182" {
+	case "number_182":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_183" {
+	case "number_183":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_184" {
+	case "number_184":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_185" {
+	case "number_185":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_186" {
+	case "number_186":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_187" {
+	case "number_187":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_188" {
+	case "number_188":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_189" {
+	case "number_189":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_19" {
+	case "number_19":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_190" {
+	case "number_190":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_191" {
+	case "number_191":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_192" {
+	case "number_192":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_193" {
+	case "number_193":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_194" {
+	case "number_194":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_195" {
+	case "number_195":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_196" {
+	case "number_196":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_197" {
+	case "number_197":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_198" {
+	case "number_198":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_199" {
+	case "number_199":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_2" {
+	case "number_2":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_20" {
+	case "number_20":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_200" {
+	case "number_200":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_201" {
+	case "number_201":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_202" {
+	case "number_202":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_203" {
+	case "number_203":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_204" {
+	case "number_204":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_205" {
+	case "number_205":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_206" {
+	case "number_206":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_207" {
+	case "number_207":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_208" {
+	case "number_208":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_209" {
+	case "number_209":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_21" {
+	case "number_21":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_210" {
+	case "number_210":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_211" {
+	case "number_211":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_212" {
+	case "number_212":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_213" {
+	case "number_213":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_214" {
+	case "number_214":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_215" {
+	case "number_215":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_216" {
+	case "number_216":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_217" {
+	case "number_217":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_218" {
+	case "number_218":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_219" {
+	case "number_219":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_22" {
+	case "number_22":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_220" {
+	case "number_220":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_221" {
+	case "number_221":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_222" {
+	case "number_222":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_223" {
+	case "number_223":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_224" {
+	case "number_224":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_225" {
+	case "number_225":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_226" {
+	case "number_226":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_227" {
+	case "number_227":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_228" {
+	case "number_228":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_229" {
+	case "number_229":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_23" {
+	case "number_23":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_230" {
+	case "number_230":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_231" {
+	case "number_231":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_232" {
+	case "number_232":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_233" {
+	case "number_233":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_234" {
+	case "number_234":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_235" {
+	case "number_235":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_236" {
+	case "number_236":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_237" {
+	case "number_237":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_238" {
+	case "number_238":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_239" {
+	case "number_239":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_24" {
+	case "number_24":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_240" {
+	case "number_240":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_241" {
+	case "number_241":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_242" {
+	case "number_242":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_243" {
+	case "number_243":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_244" {
+	case "number_244":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_245" {
+	case "number_245":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_246" {
+	case "number_246":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_247" {
+	case "number_247":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_248" {
+	case "number_248":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_249" {
+	case "number_249":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_25" {
+	case "number_25":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_250" {
+	case "number_250":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_251" {
+	case "number_251":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_252" {
+	case "number_252":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_253" {
+	case "number_253":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_254" {
+	case "number_254":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_255" {
+	case "number_255":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_26" {
+	case "number_26":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_27" {
+	case "number_27":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_28" {
+	case "number_28":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_29" {
+	case "number_29":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_3" {
+	case "number_3":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_30" {
+	case "number_30":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_31" {
+	case "number_31":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_32" {
+	case "number_32":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_33" {
+	case "number_33":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_34" {
+	case "number_34":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_35" {
+	case "number_35":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_36" {
+	case "number_36":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_37" {
+	case "number_37":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_38" {
+	case "number_38":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_39" {
+	case "number_39":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_40" {
+	case "number_40":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_41" {
+	case "number_41":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_42" {
+	case "number_42":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_43" {
+	case "number_43":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_44" {
+	case "number_44":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_45" {
+	case "number_45":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_48" {
+	case "number_48":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_49" {
+	case "number_49":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_5" {
+	case "number_5":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_52" {
+	case "number_52":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_53" {
+	case "number_53":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_54" {
+	case "number_54":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_55" {
+	case "number_55":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_56" {
+	case "number_56":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_57" {
+	case "number_57":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_58" {
+	case "number_58":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_59" {
+	case "number_59":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_60" {
+	case "number_60":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_61" {
+	case "number_61":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_62" {
+	case "number_62":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_63" {
+	case "number_63":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_64" {
+	case "number_64":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_65" {
+	case "number_65":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_66" {
+	case "number_66":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_67" {
+	case "number_67":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_68" {
+	case "number_68":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_69" {
+	case "number_69":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_7" {
+	case "number_7":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_70" {
+	case "number_70":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_71" {
+	case "number_71":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_72" {
+	case "number_72":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_73" {
+	case "number_73":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_74" {
+	case "number_74":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_75" {
+	case "number_75":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_76" {
+	case "number_76":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_77" {
+	case "number_77":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_78" {
+	case "number_78":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_79" {
+	case "number_79":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_8" {
+	case "number_8":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_80" {
+	case "number_80":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_81" {
+	case "number_81":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_82" {
+	case "number_82":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_83" {
+	case "number_83":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_84" {
+	case "number_84":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_85" {
+	case "number_85":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_86" {
+	case "number_86":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_87" {
+	case "number_87":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_88" {
+	case "number_88":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_89" {
+	case "number_89":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_9" {
+	case "number_9":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_90" {
+	case "number_90":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_91" {
+	case "number_91":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_92" {
+	case "number_92":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_93" {
+	case "number_93":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_94" {
+	case "number_94":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_95" {
+	case "number_95":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_96" {
+	case "number_96":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_97" {
+	case "number_97":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_98" {
+	case "number_98":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_99" {
+	case "number_99":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "rsvp" {
+	case "rsvp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "sctp" {
+	case "sctp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "tcp" {
+	case "tcp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "udp" {
+	case "udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "vrrp" {
+	case "vrrp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalNetworkACLRuleItemNetworkACLRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-NetworkACLRuleItemNetworkACLRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		// errMsg := fmt.Sprintf("unrecognized value for discriminator property 'protocol': %s", discValue)
 		// err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 		// Fallback to base NetworkACLRuleItem for unknown protocols
@@ -99402,1297 +101959,1298 @@ func UnmarshalSecurityGroupRule(m map[string]json.RawMessage, result interface{}
 		err = core.SDKErrorf(err, "required discriminator property 'protocol' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "ah" {
+	switch discValue {
+	case "ah":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "any" {
+	case "any":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolAny)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolAny-error", common.GetComponentInfo())
 		}
-	} else if discValue == "esp" {
+	case "esp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "gre" {
+	case "gre":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp" {
+	case "icmp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleSecurityGroupRuleProtocolIcmp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "icmp_tcp_udp" {
+	case "icmp_tcp_udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIcmptcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIcmptcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "ip_in_ip" {
+	case "ip_in_ip":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "l2tp" {
+	case "l2tp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_0" {
+	case "number_0":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_10" {
+	case "number_10":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_100" {
+	case "number_100":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_101" {
+	case "number_101":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_102" {
+	case "number_102":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_103" {
+	case "number_103":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_104" {
+	case "number_104":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_105" {
+	case "number_105":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_106" {
+	case "number_106":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_107" {
+	case "number_107":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_108" {
+	case "number_108":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_109" {
+	case "number_109":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_11" {
+	case "number_11":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_110" {
+	case "number_110":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_111" {
+	case "number_111":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_113" {
+	case "number_113":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_114" {
+	case "number_114":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_116" {
+	case "number_116":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_117" {
+	case "number_117":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_118" {
+	case "number_118":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_119" {
+	case "number_119":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_12" {
+	case "number_12":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_120" {
+	case "number_120":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_121" {
+	case "number_121":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_122" {
+	case "number_122":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_123" {
+	case "number_123":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_124" {
+	case "number_124":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_125" {
+	case "number_125":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_126" {
+	case "number_126":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_127" {
+	case "number_127":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_128" {
+	case "number_128":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_129" {
+	case "number_129":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_13" {
+	case "number_13":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_130" {
+	case "number_130":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_131" {
+	case "number_131":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_133" {
+	case "number_133":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_134" {
+	case "number_134":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_135" {
+	case "number_135":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_136" {
+	case "number_136":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_137" {
+	case "number_137":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_138" {
+	case "number_138":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_139" {
+	case "number_139":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_14" {
+	case "number_14":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_140" {
+	case "number_140":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_141" {
+	case "number_141":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_142" {
+	case "number_142":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_143" {
+	case "number_143":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_144" {
+	case "number_144":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_145" {
+	case "number_145":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_146" {
+	case "number_146":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_147" {
+	case "number_147":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_148" {
+	case "number_148":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_149" {
+	case "number_149":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_15" {
+	case "number_15":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_150" {
+	case "number_150":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_151" {
+	case "number_151":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_152" {
+	case "number_152":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_153" {
+	case "number_153":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_154" {
+	case "number_154":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_155" {
+	case "number_155":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_156" {
+	case "number_156":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_157" {
+	case "number_157":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_158" {
+	case "number_158":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_159" {
+	case "number_159":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_16" {
+	case "number_16":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_160" {
+	case "number_160":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_161" {
+	case "number_161":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_162" {
+	case "number_162":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_163" {
+	case "number_163":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_164" {
+	case "number_164":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_165" {
+	case "number_165":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_166" {
+	case "number_166":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_167" {
+	case "number_167":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_168" {
+	case "number_168":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_169" {
+	case "number_169":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_170" {
+	case "number_170":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_171" {
+	case "number_171":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_172" {
+	case "number_172":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_173" {
+	case "number_173":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_174" {
+	case "number_174":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_175" {
+	case "number_175":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_176" {
+	case "number_176":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_177" {
+	case "number_177":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_178" {
+	case "number_178":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_179" {
+	case "number_179":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_18" {
+	case "number_18":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_180" {
+	case "number_180":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_181" {
+	case "number_181":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_182" {
+	case "number_182":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_183" {
+	case "number_183":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_184" {
+	case "number_184":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_185" {
+	case "number_185":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_186" {
+	case "number_186":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_187" {
+	case "number_187":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_188" {
+	case "number_188":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_189" {
+	case "number_189":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_19" {
+	case "number_19":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_190" {
+	case "number_190":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_191" {
+	case "number_191":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_192" {
+	case "number_192":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_193" {
+	case "number_193":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_194" {
+	case "number_194":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_195" {
+	case "number_195":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_196" {
+	case "number_196":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_197" {
+	case "number_197":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_198" {
+	case "number_198":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_199" {
+	case "number_199":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_2" {
+	case "number_2":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_20" {
+	case "number_20":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_200" {
+	case "number_200":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_201" {
+	case "number_201":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_202" {
+	case "number_202":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_203" {
+	case "number_203":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_204" {
+	case "number_204":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_205" {
+	case "number_205":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_206" {
+	case "number_206":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_207" {
+	case "number_207":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_208" {
+	case "number_208":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_209" {
+	case "number_209":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_21" {
+	case "number_21":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_210" {
+	case "number_210":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_211" {
+	case "number_211":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_212" {
+	case "number_212":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_213" {
+	case "number_213":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_214" {
+	case "number_214":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_215" {
+	case "number_215":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_216" {
+	case "number_216":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_217" {
+	case "number_217":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_218" {
+	case "number_218":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_219" {
+	case "number_219":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_22" {
+	case "number_22":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_220" {
+	case "number_220":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_221" {
+	case "number_221":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_222" {
+	case "number_222":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_223" {
+	case "number_223":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_224" {
+	case "number_224":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_225" {
+	case "number_225":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_226" {
+	case "number_226":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_227" {
+	case "number_227":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_228" {
+	case "number_228":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_229" {
+	case "number_229":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_23" {
+	case "number_23":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_230" {
+	case "number_230":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_231" {
+	case "number_231":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_232" {
+	case "number_232":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_233" {
+	case "number_233":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_234" {
+	case "number_234":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_235" {
+	case "number_235":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_236" {
+	case "number_236":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_237" {
+	case "number_237":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_238" {
+	case "number_238":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_239" {
+	case "number_239":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_24" {
+	case "number_24":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_240" {
+	case "number_240":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_241" {
+	case "number_241":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_242" {
+	case "number_242":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_243" {
+	case "number_243":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_244" {
+	case "number_244":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_245" {
+	case "number_245":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_246" {
+	case "number_246":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_247" {
+	case "number_247":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_248" {
+	case "number_248":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_249" {
+	case "number_249":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_25" {
+	case "number_25":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_250" {
+	case "number_250":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_251" {
+	case "number_251":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_252" {
+	case "number_252":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_253" {
+	case "number_253":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_254" {
+	case "number_254":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_255" {
+	case "number_255":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_26" {
+	case "number_26":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_27" {
+	case "number_27":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_28" {
+	case "number_28":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_29" {
+	case "number_29":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_3" {
+	case "number_3":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_30" {
+	case "number_30":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_31" {
+	case "number_31":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_32" {
+	case "number_32":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_33" {
+	case "number_33":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_34" {
+	case "number_34":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_35" {
+	case "number_35":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_36" {
+	case "number_36":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_37" {
+	case "number_37":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_38" {
+	case "number_38":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_39" {
+	case "number_39":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_40" {
+	case "number_40":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_41" {
+	case "number_41":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_42" {
+	case "number_42":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_43" {
+	case "number_43":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_44" {
+	case "number_44":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_45" {
+	case "number_45":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_48" {
+	case "number_48":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_49" {
+	case "number_49":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_5" {
+	case "number_5":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_52" {
+	case "number_52":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_53" {
+	case "number_53":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_54" {
+	case "number_54":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_55" {
+	case "number_55":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_56" {
+	case "number_56":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_57" {
+	case "number_57":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_58" {
+	case "number_58":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_59" {
+	case "number_59":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_60" {
+	case "number_60":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_61" {
+	case "number_61":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_62" {
+	case "number_62":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_63" {
+	case "number_63":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_64" {
+	case "number_64":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_65" {
+	case "number_65":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_66" {
+	case "number_66":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_67" {
+	case "number_67":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_68" {
+	case "number_68":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_69" {
+	case "number_69":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_7" {
+	case "number_7":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_70" {
+	case "number_70":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_71" {
+	case "number_71":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_72" {
+	case "number_72":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_73" {
+	case "number_73":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_74" {
+	case "number_74":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_75" {
+	case "number_75":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_76" {
+	case "number_76":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_77" {
+	case "number_77":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_78" {
+	case "number_78":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_79" {
+	case "number_79":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_8" {
+	case "number_8":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_80" {
+	case "number_80":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_81" {
+	case "number_81":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_82" {
+	case "number_82":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_83" {
+	case "number_83":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_84" {
+	case "number_84":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_85" {
+	case "number_85":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_86" {
+	case "number_86":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_87" {
+	case "number_87":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_88" {
+	case "number_88":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_89" {
+	case "number_89":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_9" {
+	case "number_9":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_90" {
+	case "number_90":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_91" {
+	case "number_91":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_92" {
+	case "number_92":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_93" {
+	case "number_93":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_94" {
+	case "number_94":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_95" {
+	case "number_95":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_96" {
+	case "number_96":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_97" {
+	case "number_97":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_98" {
+	case "number_98":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "number_99" {
+	case "number_99":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "rsvp" {
+	case "rsvp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "sctp" {
+	case "sctp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else if discValue == "tcp" {
+	case "tcp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleSecurityGroupRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "udp" {
+	case "udp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleSecurityGroupRuleProtocolTcpudp-error", common.GetComponentInfo())
 		}
-	} else if discValue == "vrrp" {
+	case "vrrp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalSecurityGroupRuleProtocolIndividual)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-SecurityGroupRuleProtocolIndividual-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		// errMsg := fmt.Sprintf("unrecognized value for discriminator property 'protocol': %s", discValue)
 		// err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 		// Fallback to base SecurityGroupRule for unknown protocols
@@ -105903,6 +108461,9 @@ type Snapshot struct {
 	// If present, the snapshot consistency group which created this snapshot.
 	SnapshotConsistencyGroup *SnapshotConsistencyGroupReference `json:"snapshot_consistency_group,omitempty"`
 
+	// The software attachments for this snapshot.
+	SoftwareAttachments []SnapshotSoftwareAttachmentReference `json:"software_attachments" validate:"required"`
+
 	// If present, the image from which the data on this snapshot was most directly
 	// provisioned.
 	SourceImage *ImageReference `json:"source_image,omitempty"`
@@ -106076,6 +108637,11 @@ func UnmarshalSnapshot(m map[string]json.RawMessage, result interface{}) (err er
 		err = core.SDKErrorf(err, "", "snapshot_consistency_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalSnapshotSoftwareAttachmentReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "source_image", &obj.SourceImage, UnmarshalImageReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "source_image-error", common.GetComponentInfo())
@@ -106129,7 +108695,11 @@ type SnapshotAllowedUse struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance" validate:"required"`
 }
 
@@ -106181,7 +108751,11 @@ type SnapshotAllowedUsePatch struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -106254,7 +108828,11 @@ type SnapshotAllowedUsePrototype struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint.
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -107310,6 +109888,277 @@ func UnmarshalSnapshotRemote(m map[string]json.RawMessage, result interface{}) (
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "region-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachment : SnapshotSoftwareAttachment struct
+type SnapshotSoftwareAttachment struct {
+	// The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user)
+	// offering for this snapshot software attachment. May be absent if
+	// `software_attachment.lifecycle_state` is not `stable`.
+	CatalogOffering *SnapshotSoftwareAttachmentCatalogOffering `json:"catalog_offering,omitempty"`
+
+	// The date and time that the snapshot software attachment was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The entitlement for the snapshot software attachment's licensable software.
+	Entitlement *SnapshotSoftwareAttachmentEntitlement `json:"entitlement,omitempty"`
+
+	// The URL for this snapshot software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotSoftwareAttachment.ResourceType property.
+// The resource type.
+const (
+	SnapshotSoftwareAttachmentResourceTypeSnapshotSoftwareAttachmentConst = "snapshot_software_attachment"
+)
+
+// UnmarshalSnapshotSoftwareAttachment unmarshals an instance of SnapshotSoftwareAttachment from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachment(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachment)
+	err = core.UnmarshalModel(m, "catalog_offering", &obj.CatalogOffering, UnmarshalSnapshotSoftwareAttachmentCatalogOffering)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "catalog_offering-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "created_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "entitlement", &obj.Entitlement, UnmarshalSnapshotSoftwareAttachmentEntitlement)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "entitlement-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentCatalogOffering : The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering for this snapshot software
+// attachment. May be absent if
+// `software_attachment.lifecycle_state` is not `stable`.
+type SnapshotSoftwareAttachmentCatalogOffering struct {
+	// The billing plan for the catalog offering version associated with this snapshot software
+	// attachment.
+	//
+	// If absent, no billing plan is associated with the catalog offering version (free).
+	Plan *CatalogOfferingVersionPlanReference `json:"plan,omitempty"`
+
+	// The catalog offering version associated with this snapshot software attachment.
+	Version *CatalogOfferingVersionReference `json:"version" validate:"required"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentCatalogOffering unmarshals an instance of SnapshotSoftwareAttachmentCatalogOffering from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentCatalogOffering(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentCatalogOffering)
+	err = core.UnmarshalModel(m, "plan", &obj.Plan, UnmarshalCatalogOfferingVersionPlanReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "plan-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "version", &obj.Version, UnmarshalCatalogOfferingVersionReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "version-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentCollection : SnapshotSoftwareAttachmentCollection struct
+type SnapshotSoftwareAttachmentCollection struct {
+	// The software attachments for the snapshot.
+	SoftwareAttachments []SnapshotSoftwareAttachment `json:"software_attachments" validate:"required"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentCollection unmarshals an instance of SnapshotSoftwareAttachmentCollection from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentCollection)
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalSnapshotSoftwareAttachment)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentEntitlement : The entitlement for the snapshot software attachment's licensable software.
+type SnapshotSoftwareAttachmentEntitlement struct {
+	// The licensable software for this snapshot software attachment entitlement. The software will be licensed when an
+	// instance is provisioned from this snapshot.
+	LicensableSoftware []SnapshotSoftwareAttachmentEntitlementLicensableSoftware `json:"licensable_software" validate:"required"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentEntitlement unmarshals an instance of SnapshotSoftwareAttachmentEntitlement from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentEntitlement(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentEntitlement)
+	err = core.UnmarshalModel(m, "licensable_software", &obj.LicensableSoftware, UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftware)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "licensable_software-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentEntitlementLicensableSoftware : The licensable software for this snapshot software attachment's entitlement.
+type SnapshotSoftwareAttachmentEntitlementLicensableSoftware struct {
+	// The SKU for this licensable software.
+	Sku *string `json:"sku" validate:"required"`
+
+	Vendor *SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor `json:"vendor" validate:"required"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftware unmarshals an instance of SnapshotSoftwareAttachmentEntitlementLicensableSoftware from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftware(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentEntitlementLicensableSoftware)
+	err = core.UnmarshalPrimitive(m, "sku", &obj.Sku)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "sku-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "vendor", &obj.Vendor, UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "vendor-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor : SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor struct
+type SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor struct {
+	// The name of the vendor providing this licensable software.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor unmarshals an instance of SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentEntitlementLicensableSoftwareVendor)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// SnapshotSoftwareAttachmentPatch : SnapshotSoftwareAttachmentPatch struct
+type SnapshotSoftwareAttachmentPatch struct {
+	// The name for this snapshot software attachment. The name must not be used by another software attachment for this
+	// snapshot.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalSnapshotSoftwareAttachmentPatch unmarshals an instance of SnapshotSoftwareAttachmentPatch from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the SnapshotSoftwareAttachmentPatch
+func (snapshotSoftwareAttachmentPatch *SnapshotSoftwareAttachmentPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(snapshotSoftwareAttachmentPatch.Name) {
+		_patch["name"] = snapshotSoftwareAttachmentPatch.Name
+	}
+
+	return
+}
+
+// SnapshotSoftwareAttachmentReference : SnapshotSoftwareAttachmentReference struct
+type SnapshotSoftwareAttachmentReference struct {
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *Deleted `json:"deleted,omitempty"`
+
+	// The URL for this snapshot software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this snapshot software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the SnapshotSoftwareAttachmentReference.ResourceType property.
+// The resource type.
+const (
+	SnapshotSoftwareAttachmentReferenceResourceTypeSnapshotSoftwareAttachmentConst = "snapshot_software_attachment"
+)
+
+// UnmarshalSnapshotSoftwareAttachmentReference unmarshals an instance of SnapshotSoftwareAttachmentReference from the specified map of raw messages.
+func UnmarshalSnapshotSoftwareAttachmentReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(SnapshotSoftwareAttachmentReference)
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDeleted)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "deleted-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -109672,6 +112521,54 @@ func (options *UpdateInstanceOptions) SetHeaders(param map[string]string) *Updat
 	return options
 }
 
+// UpdateInstanceSoftwareAttachmentOptions : The UpdateInstanceSoftwareAttachment options.
+type UpdateInstanceSoftwareAttachmentOptions struct {
+	// The virtual server instance identifier.
+	InstanceID *string `json:"instance_id" validate:"required,ne="`
+
+	// The instance software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The instance software attachment patch.
+	InstanceSoftwareAttachmentPatch map[string]interface{} `json:"InstanceSoftwareAttachment_patch" validate:"required"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewUpdateInstanceSoftwareAttachmentOptions : Instantiate UpdateInstanceSoftwareAttachmentOptions
+func (*VpcV1) NewUpdateInstanceSoftwareAttachmentOptions(instanceID string, id string, instanceSoftwareAttachmentPatch map[string]interface{}) *UpdateInstanceSoftwareAttachmentOptions {
+	return &UpdateInstanceSoftwareAttachmentOptions{
+		InstanceID:                      core.StringPtr(instanceID),
+		ID:                              core.StringPtr(id),
+		InstanceSoftwareAttachmentPatch: instanceSoftwareAttachmentPatch,
+	}
+}
+
+// SetInstanceID : Allow user to set InstanceID
+func (_options *UpdateInstanceSoftwareAttachmentOptions) SetInstanceID(instanceID string) *UpdateInstanceSoftwareAttachmentOptions {
+	_options.InstanceID = core.StringPtr(instanceID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateInstanceSoftwareAttachmentOptions) SetID(id string) *UpdateInstanceSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetInstanceSoftwareAttachmentPatch : Allow user to set InstanceSoftwareAttachmentPatch
+func (_options *UpdateInstanceSoftwareAttachmentOptions) SetInstanceSoftwareAttachmentPatch(instanceSoftwareAttachmentPatch map[string]interface{}) *UpdateInstanceSoftwareAttachmentOptions {
+	_options.InstanceSoftwareAttachmentPatch = instanceSoftwareAttachmentPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateInstanceSoftwareAttachmentOptions) SetHeaders(param map[string]string) *UpdateInstanceSoftwareAttachmentOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdateInstanceTemplateOptions : The UpdateInstanceTemplate options.
 type UpdateInstanceTemplateOptions struct {
 	// The instance template identifier.
@@ -110832,6 +113729,54 @@ func (options *UpdateSnapshotOptions) SetHeaders(param map[string]string) *Updat
 	return options
 }
 
+// UpdateSnapshotSoftwareAttachmentOptions : The UpdateSnapshotSoftwareAttachment options.
+type UpdateSnapshotSoftwareAttachmentOptions struct {
+	// The snapshot identifier.
+	SnapshotID *string `json:"snapshot_id" validate:"required,ne="`
+
+	// The snapshot software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The snapshot software attachment patch.
+	SnapshotSoftwareAttachmentPatch map[string]interface{} `json:"SnapshotSoftwareAttachment_patch" validate:"required"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewUpdateSnapshotSoftwareAttachmentOptions : Instantiate UpdateSnapshotSoftwareAttachmentOptions
+func (*VpcV1) NewUpdateSnapshotSoftwareAttachmentOptions(snapshotID string, id string, snapshotSoftwareAttachmentPatch map[string]interface{}) *UpdateSnapshotSoftwareAttachmentOptions {
+	return &UpdateSnapshotSoftwareAttachmentOptions{
+		SnapshotID:                      core.StringPtr(snapshotID),
+		ID:                              core.StringPtr(id),
+		SnapshotSoftwareAttachmentPatch: snapshotSoftwareAttachmentPatch,
+	}
+}
+
+// SetSnapshotID : Allow user to set SnapshotID
+func (_options *UpdateSnapshotSoftwareAttachmentOptions) SetSnapshotID(snapshotID string) *UpdateSnapshotSoftwareAttachmentOptions {
+	_options.SnapshotID = core.StringPtr(snapshotID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateSnapshotSoftwareAttachmentOptions) SetID(id string) *UpdateSnapshotSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetSnapshotSoftwareAttachmentPatch : Allow user to set SnapshotSoftwareAttachmentPatch
+func (_options *UpdateSnapshotSoftwareAttachmentOptions) SetSnapshotSoftwareAttachmentPatch(snapshotSoftwareAttachmentPatch map[string]interface{}) *UpdateSnapshotSoftwareAttachmentOptions {
+	_options.SnapshotSoftwareAttachmentPatch = snapshotSoftwareAttachmentPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateSnapshotSoftwareAttachmentOptions) SetHeaders(param map[string]string) *UpdateSnapshotSoftwareAttachmentOptions {
+	options.Headers = param
+	return options
+}
+
 // UpdateSubnetOptions : The UpdateSubnet options.
 type UpdateSubnetOptions struct {
 	// The subnet identifier.
@@ -111058,6 +114003,54 @@ func (_options *UpdateVolumeOptions) SetIfMatch(ifMatch string) *UpdateVolumeOpt
 
 // SetHeaders : Allow user to set Headers
 func (options *UpdateVolumeOptions) SetHeaders(param map[string]string) *UpdateVolumeOptions {
+	options.Headers = param
+	return options
+}
+
+// UpdateVolumeSoftwareAttachmentOptions : The UpdateVolumeSoftwareAttachment options.
+type UpdateVolumeSoftwareAttachmentOptions struct {
+	// The volume identifier.
+	VolumeID *string `json:"volume_id" validate:"required,ne="`
+
+	// The volume software attachment identifier.
+	ID *string `json:"id" validate:"required,ne="`
+
+	// The volume software attachment patch.
+	VolumeSoftwareAttachmentPatch map[string]interface{} `json:"VolumeSoftwareAttachment_patch" validate:"required"`
+
+	// Allows users to set headers on API requests.
+	Headers map[string]string
+}
+
+// NewUpdateVolumeSoftwareAttachmentOptions : Instantiate UpdateVolumeSoftwareAttachmentOptions
+func (*VpcV1) NewUpdateVolumeSoftwareAttachmentOptions(volumeID string, id string, volumeSoftwareAttachmentPatch map[string]interface{}) *UpdateVolumeSoftwareAttachmentOptions {
+	return &UpdateVolumeSoftwareAttachmentOptions{
+		VolumeID:                      core.StringPtr(volumeID),
+		ID:                            core.StringPtr(id),
+		VolumeSoftwareAttachmentPatch: volumeSoftwareAttachmentPatch,
+	}
+}
+
+// SetVolumeID : Allow user to set VolumeID
+func (_options *UpdateVolumeSoftwareAttachmentOptions) SetVolumeID(volumeID string) *UpdateVolumeSoftwareAttachmentOptions {
+	_options.VolumeID = core.StringPtr(volumeID)
+	return _options
+}
+
+// SetID : Allow user to set ID
+func (_options *UpdateVolumeSoftwareAttachmentOptions) SetID(id string) *UpdateVolumeSoftwareAttachmentOptions {
+	_options.ID = core.StringPtr(id)
+	return _options
+}
+
+// SetVolumeSoftwareAttachmentPatch : Allow user to set VolumeSoftwareAttachmentPatch
+func (_options *UpdateVolumeSoftwareAttachmentOptions) SetVolumeSoftwareAttachmentPatch(volumeSoftwareAttachmentPatch map[string]interface{}) *UpdateVolumeSoftwareAttachmentOptions {
+	_options.VolumeSoftwareAttachmentPatch = volumeSoftwareAttachmentPatch
+	return _options
+}
+
+// SetHeaders : Allow user to set Headers
+func (options *UpdateVolumeSoftwareAttachmentOptions) SetHeaders(param map[string]string) *UpdateVolumeSoftwareAttachmentOptions {
 	options.Headers = param
 	return options
 }
@@ -113499,17 +116492,18 @@ func UnmarshalVPNGatewayConnection(m map[string]json.RawMessage, result interfac
 		err = core.SDKErrorf(err, "required discriminator property 'mode' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "policy" {
+	switch discValue {
+	case "policy":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNGatewayConnectionPolicyMode)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNGatewayConnectionPolicyMode-error", common.GetComponentInfo())
 		}
-	} else if discValue == "route" {
+	case "route":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNGatewayConnectionRouteMode)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNGatewayConnectionRouteMode-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		errMsg := fmt.Sprintf("unrecognized value for discriminator property 'mode': %s", discValue)
 		err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 	}
@@ -116563,17 +119557,18 @@ func UnmarshalVPNServerAuthenticationPrototype(m map[string]json.RawMessage, res
 		err = core.SDKErrorf(err, "required discriminator property 'method' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "certificate" {
+	switch discValue {
+	case "certificate":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNServerAuthenticationPrototypeVPNServerAuthenticationByCertificatePrototype)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNServerAuthenticationPrototypeVPNServerAuthenticationByCertificatePrototype-error", common.GetComponentInfo())
 		}
-	} else if discValue == "username" {
+	case "username":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNServerAuthenticationPrototypeVPNServerAuthenticationByUsernamePrototype)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNServerAuthenticationPrototypeVPNServerAuthenticationByUsernamePrototype-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		errMsg := fmt.Sprintf("unrecognized value for discriminator property 'method': %s", discValue)
 		err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 	}
@@ -118273,6 +121268,9 @@ type Volume struct {
 	// The resource type.
 	ResourceType *string `json:"resource_type" validate:"required"`
 
+	// The software attachments for this volume.
+	SoftwareAttachments []VolumeSoftwareAttachmentReference `json:"software_attachments" validate:"required"`
+
 	// The image from which this volume was created (this may be
 	// [deleted](https://cloud.ibm.com/apidocs/vpc#deleted-resources)).
 	// If absent, this volume was not created from an image.
@@ -118502,6 +121500,11 @@ func UnmarshalVolume(m map[string]json.RawMessage, result interface{}) (err erro
 		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalVolumeSoftwareAttachmentReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalModel(m, "source_image", &obj.SourceImage, UnmarshalImageReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "source_image-error", common.GetComponentInfo())
@@ -118569,7 +121572,11 @@ type VolumeAllowedUse struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance" validate:"required"`
 }
 
@@ -118620,7 +121627,11 @@ type VolumeAllowedUsePatch struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -118692,7 +121703,11 @@ type VolumeAllowedUsePrototype struct {
 	// - `gpu.count` (integer): The number of GPUs
 	// - `gpu.manufacturer` (string): The GPU manufacturer
 	// - `gpu.memory` (integer): The overall amount of GPU memory in GiB (gibibytes)
-	// - `gpu.model` (string): The GPU model.
+	// - `gpu.model` (string): The GPU model
+	// - `metadata_service.enabled` (boolean): Whether the metadata service is enabled
+	// - `metadata_service.protocol` (string): The communication protocol used for the
+	//   metadata service endpoint
+	// - `vcpu.count` (integer): The number of virtual CPUs.
 	Instance *string `json:"instance,omitempty"`
 }
 
@@ -121475,6 +124490,277 @@ func UnmarshalVolumeRemote(m map[string]json.RawMessage, result interface{}) (er
 	err = core.UnmarshalModel(m, "region", &obj.Region, UnmarshalRegionReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "region-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachment : VolumeSoftwareAttachment struct
+type VolumeSoftwareAttachment struct {
+	// The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user)
+	// offering for this volume software attachment. May be absent if
+	// `software_attachment.lifecycle_state` is not `stable`.
+	CatalogOffering *VolumeSoftwareAttachmentCatalogOffering `json:"catalog_offering,omitempty"`
+
+	// The date and time that the volume software attachment was created.
+	CreatedAt *strfmt.DateTime `json:"created_at" validate:"required"`
+
+	// The entitlement for the volume software attachment's licensable software.
+	Entitlement *VolumeSoftwareAttachmentEntitlement `json:"entitlement,omitempty"`
+
+	// The URL for this volume software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this volume software attachment. The name is unique across all software attachments for the volume.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the VolumeSoftwareAttachment.ResourceType property.
+// The resource type.
+const (
+	VolumeSoftwareAttachmentResourceTypeVolumeSoftwareAttachmentConst = "volume_software_attachment"
+)
+
+// UnmarshalVolumeSoftwareAttachment unmarshals an instance of VolumeSoftwareAttachment from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachment(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachment)
+	err = core.UnmarshalModel(m, "catalog_offering", &obj.CatalogOffering, UnmarshalVolumeSoftwareAttachmentCatalogOffering)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "catalog_offering-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "created_at", &obj.CreatedAt)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "created_at-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "entitlement", &obj.Entitlement, UnmarshalVolumeSoftwareAttachmentEntitlement)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "entitlement-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentCatalogOffering : The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering for this volume software
+// attachment. May be absent if
+// `software_attachment.lifecycle_state` is not `stable`.
+type VolumeSoftwareAttachmentCatalogOffering struct {
+	// The billing plan for the catalog offering version associated with this volume software
+	// attachment.
+	//
+	// If absent, no billing plan is associated with the catalog offering version (free).
+	Plan *CatalogOfferingVersionPlanReference `json:"plan,omitempty"`
+
+	// The catalog offering version associated with this volume software attachment.
+	Version *CatalogOfferingVersionReference `json:"version" validate:"required"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentCatalogOffering unmarshals an instance of VolumeSoftwareAttachmentCatalogOffering from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentCatalogOffering(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentCatalogOffering)
+	err = core.UnmarshalModel(m, "plan", &obj.Plan, UnmarshalCatalogOfferingVersionPlanReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "plan-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "version", &obj.Version, UnmarshalCatalogOfferingVersionReference)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "version-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentCollection : VolumeSoftwareAttachmentCollection struct
+type VolumeSoftwareAttachmentCollection struct {
+	// The software attachments for the volume.
+	SoftwareAttachments []VolumeSoftwareAttachment `json:"software_attachments" validate:"required"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentCollection unmarshals an instance of VolumeSoftwareAttachmentCollection from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentCollection(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentCollection)
+	err = core.UnmarshalModel(m, "software_attachments", &obj.SoftwareAttachments, UnmarshalVolumeSoftwareAttachment)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "software_attachments-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentEntitlement : The entitlement for the volume software attachment's licensable software.
+type VolumeSoftwareAttachmentEntitlement struct {
+	// The licensable software for this volume software attachment entitlement. The software will be licensed when an
+	// instance is provisioned from this volume.
+	LicensableSoftware []VolumeSoftwareAttachmentEntitlementLicensableSoftware `json:"licensable_software" validate:"required"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentEntitlement unmarshals an instance of VolumeSoftwareAttachmentEntitlement from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentEntitlement(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentEntitlement)
+	err = core.UnmarshalModel(m, "licensable_software", &obj.LicensableSoftware, UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftware)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "licensable_software-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentEntitlementLicensableSoftware : VolumeSoftwareAttachmentEntitlementLicensableSoftware struct
+type VolumeSoftwareAttachmentEntitlementLicensableSoftware struct {
+	// The SKU for this licensable software.
+	Sku *string `json:"sku" validate:"required"`
+
+	Vendor *VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor `json:"vendor" validate:"required"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftware unmarshals an instance of VolumeSoftwareAttachmentEntitlementLicensableSoftware from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftware(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentEntitlementLicensableSoftware)
+	err = core.UnmarshalPrimitive(m, "sku", &obj.Sku)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "sku-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "vendor", &obj.Vendor, UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "vendor-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor : VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor struct
+type VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor struct {
+	// The name of the vendor providing this licensable software.
+	Name *string `json:"name" validate:"required"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor unmarshals an instance of VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentEntitlementLicensableSoftwareVendor)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// VolumeSoftwareAttachmentPatch : VolumeSoftwareAttachmentPatch struct
+type VolumeSoftwareAttachmentPatch struct {
+	// The name for this volume software attachment. The name must not be used by another software attachment for this
+	// volume.
+	Name *string `json:"name,omitempty"`
+}
+
+// UnmarshalVolumeSoftwareAttachmentPatch unmarshals an instance of VolumeSoftwareAttachmentPatch from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentPatch(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentPatch)
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// AsPatch returns a generic map representation of the VolumeSoftwareAttachmentPatch
+func (volumeSoftwareAttachmentPatch *VolumeSoftwareAttachmentPatch) AsPatch() (_patch map[string]interface{}, err error) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(volumeSoftwareAttachmentPatch.Name) {
+		_patch["name"] = volumeSoftwareAttachmentPatch.Name
+	}
+
+	return
+}
+
+// VolumeSoftwareAttachmentReference : VolumeSoftwareAttachmentReference struct
+type VolumeSoftwareAttachmentReference struct {
+	// If present, this property indicates the referenced resource has been deleted, and provides
+	// some supplementary information.
+	Deleted *Deleted `json:"deleted,omitempty"`
+
+	// The URL for this volume software attachment.
+	Href *string `json:"href" validate:"required"`
+
+	// The unique identifier for this volume software attachment.
+	ID *string `json:"id" validate:"required"`
+
+	// The name for this volume software attachment. The name is unique across all software attachments for the volume.
+	Name *string `json:"name" validate:"required"`
+
+	// The resource type.
+	ResourceType *string `json:"resource_type" validate:"required"`
+}
+
+// Constants associated with the VolumeSoftwareAttachmentReference.ResourceType property.
+// The resource type.
+const (
+	VolumeSoftwareAttachmentReferenceResourceTypeVolumeSoftwareAttachmentConst = "volume_software_attachment"
+)
+
+// UnmarshalVolumeSoftwareAttachmentReference unmarshals an instance of VolumeSoftwareAttachmentReference from the specified map of raw messages.
+func UnmarshalVolumeSoftwareAttachmentReference(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(VolumeSoftwareAttachmentReference)
+	err = core.UnmarshalModel(m, "deleted", &obj.Deleted, UnmarshalDeleted)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "deleted-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "href", &obj.Href)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "href-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "id", &obj.ID)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "id-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "name", &obj.Name)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "name-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "resource_type", &obj.ResourceType)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "resource_type-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -134463,7 +137749,7 @@ func UnmarshalInstanceProfileVcpuEnum(m map[string]json.RawMessage, result inter
 	return
 }
 
-// InstanceProfileVcpuFixed : The VCPU count for an instance with this profile.
+// InstanceProfileVcpuFixed : The default VCPU count for an instance with this profile.
 // This model "extends" InstanceProfileVcpu
 type InstanceProfileVcpuFixed struct {
 	// The type for this profile field.
@@ -134925,8 +138211,8 @@ type InstancePrototypeInstanceByCatalogOffering struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -134944,8 +138230,8 @@ type InstancePrototypeInstanceByCatalogOffering struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -134968,6 +138254,12 @@ type InstancePrototypeInstanceByCatalogOffering struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -135124,6 +138416,11 @@ func UnmarshalInstancePrototypeInstanceByCatalogOffering(m map[string]json.RawMe
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -135217,8 +138514,8 @@ type InstancePrototypeInstanceByImage struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -135236,8 +138533,8 @@ type InstancePrototypeInstanceByImage struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -135260,6 +138557,12 @@ type InstancePrototypeInstanceByImage struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -135410,6 +138713,11 @@ func UnmarshalInstancePrototypeInstanceByImage(m map[string]json.RawMessage, res
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -135501,8 +138809,8 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -135520,8 +138828,8 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -135544,6 +138852,12 @@ type InstancePrototypeInstanceBySourceSnapshot struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -135691,6 +139005,11 @@ func UnmarshalInstancePrototypeInstanceBySourceSnapshot(m map[string]json.RawMes
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -135780,8 +139099,8 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -135799,8 +139118,8 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -135823,6 +139142,12 @@ type InstancePrototypeInstanceBySourceTemplate struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -135990,6 +139315,11 @@ func UnmarshalInstancePrototypeInstanceBySourceTemplate(m map[string]json.RawMes
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -136091,8 +139421,8 @@ type InstancePrototypeInstanceByVolume struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -136110,8 +139440,8 @@ type InstancePrototypeInstanceByVolume struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -136134,6 +139464,12 @@ type InstancePrototypeInstanceByVolume struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -136281,6 +139617,11 @@ func UnmarshalInstancePrototypeInstanceByVolume(m map[string]json.RawMessage, re
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -136339,6 +139680,238 @@ func UnmarshalInstancePrototypeInstanceByVolume(m map[string]json.RawMessage, re
 	err = core.UnmarshalModel(m, "primary_network_interface", &obj.PrimaryNetworkInterface, UnmarshalNetworkInterfacePrototype)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "primary_network_interface-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReinitializePrototypeInstanceReinitializeByImage : Reinitialize an instance by using an image. The image must be within the same operating system family as the current
+// instance image, and must have the same licensing model.
+// This model "extends" InstanceReinitializePrototype
+type InstanceReinitializePrototypeInstanceReinitializeByImage struct {
+	// The default trusted profile configuration to use for this virtual server instance. If not specified, the instance
+	// will be reinitialized without a default trusted profile.
+	//
+	// This property's value is used when reinitializing the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
+	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
+	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
+
+	// The public SSH keys for the reinitialized instance. The keys will be made available to the virtual server instance
+	// as cloud-init vendor data. For cloud-init enabled images, the keys will also be added as SSH authorized keys for the
+	// [default user]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
+	//
+	// For Windows images, only keys with a `type` value of `rsa` must be specified, and one will be selected to encrypt
+	// [the administrator password](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization). Keys are optional for
+	// other images.
+	//
+	// If no keys are specified, the instance will be reinitialized without a key.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the virtual
+	// server instance. If not specified, the instance will be reinitialized without user data.
+	UserData *string `json:"user_data,omitempty"`
+
+	// The boot volume attachment for the virtual server instance. If not specified,
+	// a new boot volume attachment will be created.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByImageContext `json:"boot_volume_attachment,omitempty"`
+
+	// The image to use when reinitializing the virtual server instance.
+	Image ImageIdentityIntf `json:"image" validate:"required"`
+}
+
+// NewInstanceReinitializePrototypeInstanceReinitializeByImage : Instantiate InstanceReinitializePrototypeInstanceReinitializeByImage (Generic Model Constructor)
+func (*VpcV1) NewInstanceReinitializePrototypeInstanceReinitializeByImage(image ImageIdentityIntf) (_model *InstanceReinitializePrototypeInstanceReinitializeByImage, err error) {
+	_model = &InstanceReinitializePrototypeInstanceReinitializeByImage{
+		Image: image,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*InstanceReinitializePrototypeInstanceReinitializeByImage) isaInstanceReinitializePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceReinitializePrototypeInstanceReinitializeByImage unmarshals an instance of InstanceReinitializePrototypeInstanceReinitializeByImage from the specified map of raw messages.
+func UnmarshalInstanceReinitializePrototypeInstanceReinitializeByImage(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReinitializePrototypeInstanceReinitializeByImage)
+	err = core.UnmarshalModel(m, "default_trusted_profile", &obj.DefaultTrustedProfile, UnmarshalInstanceDefaultTrustedProfilePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "default_trusted_profile-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "keys-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "user_data-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByImageContext)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "boot_volume_attachment-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "image", &obj.Image, UnmarshalImageIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "image-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReinitializePrototypeInstanceReinitializeBySnapshot : Reinitialize an instance by using a snapshot.
+// This model "extends" InstanceReinitializePrototype
+type InstanceReinitializePrototypeInstanceReinitializeBySnapshot struct {
+	// The default trusted profile configuration to use for this virtual server instance. If not specified, the instance
+	// will be reinitialized without a default trusted profile.
+	//
+	// This property's value is used when reinitializing the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
+	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
+	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
+
+	// The public SSH keys for the reinitialized instance. The keys will be made available to the virtual server instance
+	// as cloud-init vendor data. For cloud-init enabled images, the keys will also be added as SSH authorized keys for the
+	// [default user]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
+	//
+	// For Windows images, only keys with a `type` value of `rsa` must be specified, and one will be selected to encrypt
+	// [the administrator password](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization). Keys are optional for
+	// other images.
+	//
+	// If no keys are specified, the instance will be reinitialized without a key.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the virtual
+	// server instance. If not specified, the instance will be reinitialized without user data.
+	UserData *string `json:"user_data,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceBySourceSnapshotContext `json:"boot_volume_attachment" validate:"required"`
+}
+
+// NewInstanceReinitializePrototypeInstanceReinitializeBySnapshot : Instantiate InstanceReinitializePrototypeInstanceReinitializeBySnapshot (Generic Model Constructor)
+func (*VpcV1) NewInstanceReinitializePrototypeInstanceReinitializeBySnapshot(bootVolumeAttachment *VolumeAttachmentPrototypeInstanceBySourceSnapshotContext) (_model *InstanceReinitializePrototypeInstanceReinitializeBySnapshot, err error) {
+	_model = &InstanceReinitializePrototypeInstanceReinitializeBySnapshot{
+		BootVolumeAttachment: bootVolumeAttachment,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*InstanceReinitializePrototypeInstanceReinitializeBySnapshot) isaInstanceReinitializePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceReinitializePrototypeInstanceReinitializeBySnapshot unmarshals an instance of InstanceReinitializePrototypeInstanceReinitializeBySnapshot from the specified map of raw messages.
+func UnmarshalInstanceReinitializePrototypeInstanceReinitializeBySnapshot(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReinitializePrototypeInstanceReinitializeBySnapshot)
+	err = core.UnmarshalModel(m, "default_trusted_profile", &obj.DefaultTrustedProfile, UnmarshalInstanceDefaultTrustedProfilePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "default_trusted_profile-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "keys-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "user_data-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceBySourceSnapshotContext)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "boot_volume_attachment-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// InstanceReinitializePrototypeInstanceReinitializeByVolume : Reinitialize an instance by using a boot volume.
+// This model "extends" InstanceReinitializePrototype
+type InstanceReinitializePrototypeInstanceReinitializeByVolume struct {
+	// The default trusted profile configuration to use for this virtual server instance. If not specified, the instance
+	// will be reinitialized without a default trusted profile.
+	//
+	// This property's value is used when reinitializing the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
+	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
+	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
+
+	// The public SSH keys for the reinitialized instance. The keys will be made available to the virtual server instance
+	// as cloud-init vendor data. For cloud-init enabled images, the keys will also be added as SSH authorized keys for the
+	// [default user]
+	// (https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_linux#determining-default-user-account).
+	//
+	// For Windows images, only keys with a `type` value of `rsa` must be specified, and one will be selected to encrypt
+	// [the administrator password](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization). Keys are optional for
+	// other images.
+	//
+	// If no keys are specified, the instance will be reinitialized without a key.
+	Keys []KeyIdentityIntf `json:"keys,omitempty"`
+
+	// The [user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data) to make available when setting up the virtual
+	// server instance. If not specified, the instance will be reinitialized without user data.
+	UserData *string `json:"user_data,omitempty"`
+
+	// The boot volume attachment for the virtual server instance.
+	BootVolumeAttachment *VolumeAttachmentPrototypeInstanceByVolumeContext `json:"boot_volume_attachment" validate:"required"`
+}
+
+// NewInstanceReinitializePrototypeInstanceReinitializeByVolume : Instantiate InstanceReinitializePrototypeInstanceReinitializeByVolume (Generic Model Constructor)
+func (*VpcV1) NewInstanceReinitializePrototypeInstanceReinitializeByVolume(bootVolumeAttachment *VolumeAttachmentPrototypeInstanceByVolumeContext) (_model *InstanceReinitializePrototypeInstanceReinitializeByVolume, err error) {
+	_model = &InstanceReinitializePrototypeInstanceReinitializeByVolume{
+		BootVolumeAttachment: bootVolumeAttachment,
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*InstanceReinitializePrototypeInstanceReinitializeByVolume) isaInstanceReinitializePrototype() bool {
+	return true
+}
+
+// UnmarshalInstanceReinitializePrototypeInstanceReinitializeByVolume unmarshals an instance of InstanceReinitializePrototypeInstanceReinitializeByVolume from the specified map of raw messages.
+func UnmarshalInstanceReinitializePrototypeInstanceReinitializeByVolume(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(InstanceReinitializePrototypeInstanceReinitializeByVolume)
+	err = core.UnmarshalModel(m, "default_trusted_profile", &obj.DefaultTrustedProfile, UnmarshalInstanceDefaultTrustedProfilePrototype)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "default_trusted_profile-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "keys", &obj.Keys, UnmarshalKeyIdentity)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "keys-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "user_data", &obj.UserData)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "user_data-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalModel(m, "boot_volume_attachment", &obj.BootVolumeAttachment, UnmarshalVolumeAttachmentPrototypeInstanceByVolumeContext)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "boot_volume_attachment-error", common.GetComponentInfo())
 		return
 	}
 	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
@@ -136502,8 +140075,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOffering struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -136521,8 +140094,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOffering struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -136543,6 +140116,12 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOffering struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -136699,6 +140278,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByCatalogOffering(m map[s
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -136792,8 +140376,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImage struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -136811,8 +140395,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImage struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -136833,6 +140417,12 @@ type InstanceTemplatePrototypeInstanceTemplateByImage struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -136983,6 +140573,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByImage(m map[string]json
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -137074,8 +140669,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshot struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -137093,8 +140688,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshot struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -137115,6 +140710,12 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshot struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -137262,6 +140863,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceSnapshot(m map[st
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -137351,8 +140957,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceTemplate struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -137370,8 +140976,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceTemplate struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -137392,6 +140998,12 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceTemplate struct {
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -137559,6 +141171,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceTemplate(m map[st
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -137666,8 +141283,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -137691,8 +141308,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -137713,6 +141330,12 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext struct {
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -137889,6 +141512,11 @@ func UnmarshalInstanceTemplateInstanceByCatalogOfferingInstanceTemplateContext(m
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -137986,8 +141614,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContext struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -138011,8 +141639,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContext struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -138033,6 +141661,12 @@ type InstanceTemplateInstanceByImageInstanceTemplateContext struct {
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -138203,6 +141837,11 @@ func UnmarshalInstanceTemplateInstanceByImageInstanceTemplateContext(m map[strin
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -138300,8 +141939,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext struct {
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -138325,8 +141964,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext struct {
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -138347,6 +141986,12 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext struct {
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -138512,6 +142157,11 @@ func UnmarshalInstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext(m 
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
@@ -138887,6 +142537,51 @@ func (loadBalancerIdentityByID *LoadBalancerIdentityByID) asPatch() (_patch map[
 	_patch = map[string]interface{}{}
 	if !core.IsNil(loadBalancerIdentityByID.ID) {
 		_patch["id"] = loadBalancerIdentityByID.ID
+	}
+
+	return
+}
+
+// LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN : LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN struct
+// This model "extends" LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch
+type LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN struct {
+	// The CRN for this certificate instance.
+	CRN *string `json:"crn" validate:"required"`
+}
+
+// NewLoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN : Instantiate LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN (Generic Model Constructor)
+func (*VpcV1) NewLoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN(crn string) (_model *LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN, err error) {
+	_model = &LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN{
+		CRN: core.StringPtr(crn),
+	}
+	err = core.ValidateStruct(_model, "required parameters")
+	if err != nil {
+		err = core.SDKErrorf(err, "", "model-missing-required", common.GetComponentInfo())
+	}
+	return
+}
+
+func (*LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN) isaLoadBalancerListenerClientAuthenticationCertificateAuthorityPatch() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN unmarshals an instance of LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN from the specified map of raw messages.
+func UnmarshalLoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN)
+	err = core.UnmarshalPrimitive(m, "crn", &obj.CRN)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "crn-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// asPatch returns a generic map representation of the LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN
+func (loadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN *LoadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN) asPatch() (_patch map[string]interface{}) {
+	_patch = map[string]interface{}{}
+	if !core.IsNil(loadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN.CRN) {
+		_patch["crn"] = loadBalancerListenerClientAuthenticationCertificateAuthorityPatchByCRN.CRN
 	}
 
 	return
@@ -140900,6 +144595,72 @@ func UnmarshalLoadBalancerProfileAdvancedHealthCheckSupportedFixed(m map[string]
 	return
 }
 
+// LoadBalancerProfileAsymmetricRoutingSupportedDependent : The asymmetric routing support for a load balancer with this profile depends on its configuration.
+// This model "extends" LoadBalancerProfileAsymmetricRoutingSupported
+type LoadBalancerProfileAsymmetricRoutingSupportedDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileAsymmetricRoutingSupportedDependent.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAsymmetricRoutingSupportedDependentTypeDependentConst = "dependent"
+)
+
+func (*LoadBalancerProfileAsymmetricRoutingSupportedDependent) isaLoadBalancerProfileAsymmetricRoutingSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileAsymmetricRoutingSupportedDependent unmarshals an instance of LoadBalancerProfileAsymmetricRoutingSupportedDependent from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAsymmetricRoutingSupportedDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAsymmetricRoutingSupportedDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileAsymmetricRoutingSupportedFixed : The asymmetric routing support for a load balancer with this profile.
+// This model "extends" LoadBalancerProfileAsymmetricRoutingSupported
+type LoadBalancerProfileAsymmetricRoutingSupportedFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *bool `json:"value" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileAsymmetricRoutingSupportedFixed.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileAsymmetricRoutingSupportedFixedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileAsymmetricRoutingSupportedFixed) isaLoadBalancerProfileAsymmetricRoutingSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileAsymmetricRoutingSupportedFixed unmarshals an instance of LoadBalancerProfileAsymmetricRoutingSupportedFixed from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileAsymmetricRoutingSupportedFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileAsymmetricRoutingSupportedFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
 // LoadBalancerProfileAvailabilityDependent : The availability mode for a load balancer with this profile depends on its configuration.
 // This model "extends" LoadBalancerProfileAvailability
 type LoadBalancerProfileAvailabilityDependent struct {
@@ -141272,6 +145033,72 @@ func (*LoadBalancerProfileInstanceGroupsSupportedFixed) isaLoadBalancerProfileIn
 // UnmarshalLoadBalancerProfileInstanceGroupsSupportedFixed unmarshals an instance of LoadBalancerProfileInstanceGroupsSupportedFixed from the specified map of raw messages.
 func UnmarshalLoadBalancerProfileInstanceGroupsSupportedFixed(m map[string]json.RawMessage, result interface{}) (err error) {
 	obj := new(LoadBalancerProfileInstanceGroupsSupportedFixed)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "value", &obj.Value)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "value-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileMtlsSupportedDependent : The mTLS support for a load balancer with this profile depends on its configuration.
+// This model "extends" LoadBalancerProfileMtlsSupported
+type LoadBalancerProfileMtlsSupportedDependent struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileMtlsSupportedDependent.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileMtlsSupportedDependentTypeDependentConst = "dependent"
+)
+
+func (*LoadBalancerProfileMtlsSupportedDependent) isaLoadBalancerProfileMtlsSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileMtlsSupportedDependent unmarshals an instance of LoadBalancerProfileMtlsSupportedDependent from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileMtlsSupportedDependent(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileMtlsSupportedDependent)
+	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
+		return
+	}
+	reflect.ValueOf(result).Elem().Set(reflect.ValueOf(obj))
+	return
+}
+
+// LoadBalancerProfileMtlsSupportedFixed : The mTLS support for a load balancer with this profile.
+// This model "extends" LoadBalancerProfileMtlsSupported
+type LoadBalancerProfileMtlsSupportedFixed struct {
+	// The type for this profile field.
+	Type *string `json:"type" validate:"required"`
+
+	// The value for this profile field.
+	Value *bool `json:"value" validate:"required"`
+}
+
+// Constants associated with the LoadBalancerProfileMtlsSupportedFixed.Type property.
+// The type for this profile field.
+const (
+	LoadBalancerProfileMtlsSupportedFixedTypeFixedConst = "fixed"
+)
+
+func (*LoadBalancerProfileMtlsSupportedFixed) isaLoadBalancerProfileMtlsSupported() bool {
+	return true
+}
+
+// UnmarshalLoadBalancerProfileMtlsSupportedFixed unmarshals an instance of LoadBalancerProfileMtlsSupportedFixed from the specified map of raw messages.
+func UnmarshalLoadBalancerProfileMtlsSupportedFixed(m map[string]json.RawMessage, result interface{}) (err error) {
+	obj := new(LoadBalancerProfileMtlsSupportedFixed)
 	err = core.UnmarshalPrimitive(m, "type", &obj.Type)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "type-error", common.GetComponentInfo())
@@ -156719,17 +160546,18 @@ func UnmarshalVPNGatewayConnectionRouteMode(m map[string]json.RawMessage, result
 		err = core.SDKErrorf(err, "required discriminator property 'routing_protocol' not found in JSON object", "missing-discriminator", common.GetComponentInfo())
 		return
 	}
-	if discValue == "bgp" {
+	switch discValue {
+	case "bgp":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNGatewayConnectionRouteModeVPNGatewayConnectionDynamicRouteMode)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNGatewayConnectionRouteModeVPNGatewayConnectionDynamicRouteMode-error", common.GetComponentInfo())
 		}
-	} else if discValue == "none" {
+	case "none":
 		err = core.UnmarshalModel(m, "", result, UnmarshalVPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode)
 		if err != nil {
 			err = core.SDKErrorf(err, "", "unmarshal-VPNGatewayConnectionRouteModeVPNGatewayConnectionStaticRouteMode-error", common.GetComponentInfo())
 		}
-	} else {
+	default:
 		errMsg := fmt.Sprintf("unrecognized value for discriminator property 'routing_protocol': %s", discValue)
 		err = core.SDKErrorf(err, errMsg, "invalid-discriminator", common.GetComponentInfo())
 	}
@@ -163074,8 +166902,8 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -163093,8 +166921,8 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -163117,6 +166945,12 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -163269,6 +167103,11 @@ func UnmarshalInstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferin
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -163347,8 +167186,8 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -163366,8 +167205,8 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -163390,6 +167229,12 @@ type InstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferingInstance
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -163542,6 +167387,11 @@ func UnmarshalInstancePrototypeInstanceByCatalogOfferingInstanceByCatalogOfferin
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -163620,8 +167470,8 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkAttachment 
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -163639,8 +167489,8 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkAttachment 
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -163663,6 +167513,12 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkAttachment 
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -163816,6 +167672,11 @@ func UnmarshalInstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkAt
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -163894,8 +167755,8 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkInterface s
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -163913,8 +167774,8 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkInterface s
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -163937,6 +167798,12 @@ type InstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkInterface s
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -164090,6 +167957,11 @@ func UnmarshalInstancePrototypeInstanceByImageInstanceByImageInstanceByNetworkIn
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -164168,8 +168040,8 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -164187,8 +168059,8 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -164211,6 +168083,12 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -164361,6 +168239,11 @@ func UnmarshalInstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotI
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -164434,8 +168317,8 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -164453,8 +168336,8 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -164477,6 +168360,12 @@ type InstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotInstanceBy
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -164627,6 +168516,11 @@ func UnmarshalInstancePrototypeInstanceBySourceSnapshotInstanceBySourceSnapshotI
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -164700,8 +168594,8 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkAttachmen
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -164719,8 +168613,8 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkAttachmen
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -164743,6 +168637,12 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkAttachmen
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -164893,6 +168793,11 @@ func UnmarshalInstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetwork
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -164966,8 +168871,8 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkInterface
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -164985,8 +168890,8 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkInterface
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -165009,6 +168914,12 @@ type InstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetworkInterface
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -165159,6 +169070,11 @@ func UnmarshalInstancePrototypeInstanceByVolumeInstanceByVolumeInstanceByNetwork
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -165232,8 +169148,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -165251,8 +169167,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -165273,6 +169189,12 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -165425,6 +169347,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstance
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -165503,8 +169430,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -165522,8 +169449,8 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -165544,6 +169471,12 @@ type InstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstanceTemplateB
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -165696,6 +169629,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByCatalogOfferingInstance
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -165774,8 +169712,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -165793,8 +169731,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -165815,6 +169753,12 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -165968,6 +169912,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateBy
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -166046,8 +169995,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -166065,8 +170014,8 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -166087,6 +170036,12 @@ type InstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateByImageInst
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -166240,6 +170195,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateByImageInstanceTemplateBy
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -166318,8 +170278,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -166337,8 +170297,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -166359,6 +170319,12 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -166509,6 +170475,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceT
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -166582,8 +170553,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -166601,8 +170572,8 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -166623,6 +170594,12 @@ type InstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceTemplateBy
 	ReservationAffinity *InstanceReservationAffinityPrototype `json:"reservation_affinity,omitempty"`
 
 	ResourceGroup ResourceGroupIdentityIntf `json:"resource_group,omitempty"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -166773,6 +170750,11 @@ func UnmarshalInstanceTemplatePrototypeInstanceTemplateBySourceSnapshotInstanceT
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -166852,8 +170834,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -166877,8 +170859,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -166899,6 +170881,12 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -167057,6 +171045,11 @@ func UnmarshalInstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextIn
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -167141,8 +171134,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -167166,8 +171159,8 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -167188,6 +171181,12 @@ type InstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextInstanceByC
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -167346,6 +171345,11 @@ func UnmarshalInstanceTemplateInstanceByCatalogOfferingInstanceTemplateContextIn
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -167430,8 +171434,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -167455,8 +171459,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -167477,6 +171481,12 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -167636,6 +171646,11 @@ func UnmarshalInstanceTemplateInstanceByImageInstanceTemplateContextInstanceByIm
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -167720,8 +171735,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -167745,8 +171760,8 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -167767,6 +171782,12 @@ type InstanceTemplateInstanceByImageInstanceTemplateContextInstanceByImageInstan
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -167926,6 +171947,11 @@ func UnmarshalInstanceTemplateInstanceByImageInstanceTemplateContextInstanceByIm
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -168010,8 +172036,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -168035,8 +172061,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -168057,6 +172083,12 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -168216,6 +172248,11 @@ func UnmarshalInstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextIns
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
 		return
 	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
+		return
+	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "total_volume_bandwidth-error", common.GetComponentInfo())
@@ -168300,8 +172337,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 
 	// The default trusted profile configuration to use for this virtual server instance
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	DefaultTrustedProfile *InstanceDefaultTrustedProfilePrototype `json:"default_trusted_profile,omitempty"`
 
@@ -168325,8 +172362,8 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 	// no keys are specified, the instance will be inaccessible unless the specified image provides another means of
 	// access.
 	//
-	// This property's value is used when provisioning the virtual server instance, but not subsequently managed.
-	// Accordingly, it is reflected as an [instance
+	// This property's value is used when provisioning the virtual server instance, and can only be changed by
+	// reinitializing the instance. Accordingly, it is reflected as an [instance
 	// initialization](https://cloud.ibm.com/apidocs/vpc#get-instance-initialization) property.
 	Keys []KeyIdentityIntf `json:"keys,omitempty"`
 
@@ -168347,6 +172384,12 @@ type InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextInstanceBySo
 
 	// The resource group for this instance template.
 	ResourceGroup *ResourceGroupReference `json:"resource_group" validate:"required"`
+
+	// The threads per core to use for this virtual server instance. Must be one of the values in the profile's
+	// `threads_per_core.values`.
+	//
+	// If unspecified, the default threads per core from the profile will be used.
+	ThreadsPerCore *int64 `json:"threads_per_core,omitempty"`
 
 	// The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes. An increase in
 	// this value will result in a corresponding decrease to
@@ -168507,6 +172550,11 @@ func UnmarshalInstanceTemplateInstanceBySourceSnapshotInstanceTemplateContextIns
 	err = core.UnmarshalModel(m, "resource_group", &obj.ResourceGroup, UnmarshalResourceGroupReference)
 	if err != nil {
 		err = core.SDKErrorf(err, "", "resource_group-error", common.GetComponentInfo())
+		return
+	}
+	err = core.UnmarshalPrimitive(m, "threads_per_core", &obj.ThreadsPerCore)
+	if err != nil {
+		err = core.SDKErrorf(err, "", "threads_per_core-error", common.GetComponentInfo())
 		return
 	}
 	err = core.UnmarshalPrimitive(m, "total_volume_bandwidth", &obj.TotalVolumeBandwidth)
@@ -171906,7 +175954,7 @@ func (vpc *VpcV1) NewBackupPoliciesPager(options *ListBackupPoliciesOptions) (pa
 		return
 	}
 
-	var optionsCopy ListBackupPoliciesOptions = *options
+	optionsCopy := *options
 	pager = &BackupPoliciesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -171928,7 +175976,8 @@ func (pager *BackupPoliciesPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBackupPoliciesWithContext(ctx, pager.options)
+	var result *BackupPolicyCollection
+	result, _, err = pager.client.ListBackupPoliciesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -171998,7 +176047,7 @@ func (vpc *VpcV1) NewBackupPolicyJobsPager(options *ListBackupPolicyJobsOptions)
 		return
 	}
 
-	var optionsCopy ListBackupPolicyJobsOptions = *options
+	optionsCopy := *options
 	pager = &BackupPolicyJobsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172020,7 +176069,8 @@ func (pager *BackupPolicyJobsPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBackupPolicyJobsWithContext(ctx, pager.options)
+	var result *BackupPolicyJobCollection
+	result, _, err = pager.client.ListBackupPolicyJobsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172073,6 +176123,99 @@ func (pager *BackupPolicyJobsPager) GetAll() (allItems []BackupPolicyJob, err er
 	return
 }
 
+// BareMetalServerCapacitiesPager can be used to simplify the use of the "ListBareMetalServerCapacities" method.
+type BareMetalServerCapacitiesPager struct {
+	hasNext     bool
+	options     *ListBareMetalServerCapacitiesOptions
+	client      *VpcV1
+	pageContext struct {
+		next *string
+	}
+}
+
+// NewBareMetalServerCapacitiesPager returns a new BareMetalServerCapacitiesPager instance.
+func (vpc *VpcV1) NewBareMetalServerCapacitiesPager(options *ListBareMetalServerCapacitiesOptions) (pager *BareMetalServerCapacitiesPager, err error) {
+	if options.Start != nil && *options.Start != "" {
+		err = core.SDKErrorf(nil, "the 'options.Start' field should not be set", "no-query-setting", common.GetComponentInfo())
+		return
+	}
+
+	optionsCopy := *options
+	pager = &BareMetalServerCapacitiesPager{
+		hasNext: true,
+		options: &optionsCopy,
+		client:  vpc,
+	}
+	return
+}
+
+// HasNext returns true if there are potentially more results to be retrieved.
+func (pager *BareMetalServerCapacitiesPager) HasNext() bool {
+	return pager.hasNext
+}
+
+// GetNextWithContext returns the next page of results using the specified Context.
+func (pager *BareMetalServerCapacitiesPager) GetNextWithContext(ctx context.Context) (page []BareMetalServerCapacity, err error) {
+	if !pager.HasNext() {
+		return nil, fmt.Errorf("no more results available")
+	}
+
+	pager.options.Start = pager.pageContext.next
+
+	var result *BareMetalServerCapacityCollection
+	result, _, err = pager.client.ListBareMetalServerCapacitiesWithContext(ctx, pager.options)
+	if err != nil {
+		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+		return
+	}
+
+	var next *string
+	if result.Next != nil {
+		var start *string
+		start, err = core.GetQueryParam(result.Next.Href, "start")
+		if err != nil {
+			errMsg := fmt.Sprintf("error retrieving 'start' query parameter from URL '%s': %s", *result.Next.Href, err.Error())
+			err = core.SDKErrorf(err, errMsg, "get-query-error", common.GetComponentInfo())
+			return
+		}
+		next = start
+	}
+	pager.pageContext.next = next
+	pager.hasNext = (pager.pageContext.next != nil)
+	page = result.Capacities
+
+	return
+}
+
+// GetAllWithContext returns all results by invoking GetNextWithContext() repeatedly
+// until all pages of results have been retrieved.
+func (pager *BareMetalServerCapacitiesPager) GetAllWithContext(ctx context.Context) (allItems []BareMetalServerCapacity, err error) {
+	for pager.HasNext() {
+		var nextPage []BareMetalServerCapacity
+		nextPage, err = pager.GetNextWithContext(ctx)
+		if err != nil {
+			err = core.RepurposeSDKProblem(err, "error-getting-next-page")
+			return
+		}
+		allItems = append(allItems, nextPage...)
+	}
+	return
+}
+
+// GetNext invokes GetNextWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerCapacitiesPager) GetNext() (page []BareMetalServerCapacity, err error) {
+	page, err = pager.GetNextWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
+// GetAll invokes GetAllWithContext() using context.Background() as the Context parameter.
+func (pager *BareMetalServerCapacitiesPager) GetAll() (allItems []BareMetalServerCapacity, err error) {
+	allItems, err = pager.GetAllWithContext(context.Background())
+	err = core.RepurposeSDKProblem(err, "")
+	return
+}
+
 // BareMetalServerProfilesPager can be used to simplify the use of the "ListBareMetalServerProfiles" method.
 type BareMetalServerProfilesPager struct {
 	hasNext     bool
@@ -172090,7 +176233,7 @@ func (vpc *VpcV1) NewBareMetalServerProfilesPager(options *ListBareMetalServerPr
 		return
 	}
 
-	var optionsCopy ListBareMetalServerProfilesOptions = *options
+	optionsCopy := *options
 	pager = &BareMetalServerProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172112,7 +176255,8 @@ func (pager *BareMetalServerProfilesPager) GetNextWithContext(ctx context.Contex
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBareMetalServerProfilesWithContext(ctx, pager.options)
+	var result *BareMetalServerProfileCollection
+	result, _, err = pager.client.ListBareMetalServerProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172182,7 +176326,7 @@ func (vpc *VpcV1) NewBareMetalServersPager(options *ListBareMetalServersOptions)
 		return
 	}
 
-	var optionsCopy ListBareMetalServersOptions = *options
+	optionsCopy := *options
 	pager = &BareMetalServersPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172204,7 +176348,8 @@ func (pager *BareMetalServersPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBareMetalServersWithContext(ctx, pager.options)
+	var result *BareMetalServerCollection
+	result, _, err = pager.client.ListBareMetalServersWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172274,7 +176419,7 @@ func (vpc *VpcV1) NewBareMetalServerNetworkAttachmentsPager(options *ListBareMet
 		return
 	}
 
-	var optionsCopy ListBareMetalServerNetworkAttachmentsOptions = *options
+	optionsCopy := *options
 	pager = &BareMetalServerNetworkAttachmentsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172296,7 +176441,8 @@ func (pager *BareMetalServerNetworkAttachmentsPager) GetNextWithContext(ctx cont
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBareMetalServerNetworkAttachmentsWithContext(ctx, pager.options)
+	var result *BareMetalServerNetworkAttachmentCollection
+	result, _, err = pager.client.ListBareMetalServerNetworkAttachmentsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172366,7 +176512,7 @@ func (vpc *VpcV1) NewBareMetalServerNetworkInterfacesPager(options *ListBareMeta
 		return
 	}
 
-	var optionsCopy ListBareMetalServerNetworkInterfacesOptions = *options
+	optionsCopy := *options
 	pager = &BareMetalServerNetworkInterfacesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172388,7 +176534,8 @@ func (pager *BareMetalServerNetworkInterfacesPager) GetNextWithContext(ctx conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListBareMetalServerNetworkInterfacesWithContext(ctx, pager.options)
+	var result *BareMetalServerNetworkInterfaceCollection
+	result, _, err = pager.client.ListBareMetalServerNetworkInterfacesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172458,7 +176605,7 @@ func (vpc *VpcV1) NewClusterNetworkProfilesPager(options *ListClusterNetworkProf
 		return
 	}
 
-	var optionsCopy ListClusterNetworkProfilesOptions = *options
+	optionsCopy := *options
 	pager = &ClusterNetworkProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172480,7 +176627,8 @@ func (pager *ClusterNetworkProfilesPager) GetNextWithContext(ctx context.Context
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListClusterNetworkProfilesWithContext(ctx, pager.options)
+	var result *ClusterNetworkProfileCollection
+	result, _, err = pager.client.ListClusterNetworkProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172550,7 +176698,7 @@ func (vpc *VpcV1) NewClusterNetworksPager(options *ListClusterNetworksOptions) (
 		return
 	}
 
-	var optionsCopy ListClusterNetworksOptions = *options
+	optionsCopy := *options
 	pager = &ClusterNetworksPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172572,7 +176720,8 @@ func (pager *ClusterNetworksPager) GetNextWithContext(ctx context.Context) (page
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListClusterNetworksWithContext(ctx, pager.options)
+	var result *ClusterNetworkCollection
+	result, _, err = pager.client.ListClusterNetworksWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172642,7 +176791,7 @@ func (vpc *VpcV1) NewClusterNetworkInterfacesPager(options *ListClusterNetworkIn
 		return
 	}
 
-	var optionsCopy ListClusterNetworkInterfacesOptions = *options
+	optionsCopy := *options
 	pager = &ClusterNetworkInterfacesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172664,7 +176813,8 @@ func (pager *ClusterNetworkInterfacesPager) GetNextWithContext(ctx context.Conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListClusterNetworkInterfacesWithContext(ctx, pager.options)
+	var result *ClusterNetworkInterfaceCollection
+	result, _, err = pager.client.ListClusterNetworkInterfacesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172734,7 +176884,7 @@ func (vpc *VpcV1) NewClusterNetworkSubnetsPager(options *ListClusterNetworkSubne
 		return
 	}
 
-	var optionsCopy ListClusterNetworkSubnetsOptions = *options
+	optionsCopy := *options
 	pager = &ClusterNetworkSubnetsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172756,7 +176906,8 @@ func (pager *ClusterNetworkSubnetsPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListClusterNetworkSubnetsWithContext(ctx, pager.options)
+	var result *ClusterNetworkSubnetCollection
+	result, _, err = pager.client.ListClusterNetworkSubnetsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172826,7 +176977,7 @@ func (vpc *VpcV1) NewClusterNetworkSubnetReservedIpsPager(options *ListClusterNe
 		return
 	}
 
-	var optionsCopy ListClusterNetworkSubnetReservedIpsOptions = *options
+	optionsCopy := *options
 	pager = &ClusterNetworkSubnetReservedIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172848,7 +176999,8 @@ func (pager *ClusterNetworkSubnetReservedIpsPager) GetNextWithContext(ctx contex
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListClusterNetworkSubnetReservedIpsWithContext(ctx, pager.options)
+	var result *ClusterNetworkSubnetReservedIPCollection
+	result, _, err = pager.client.ListClusterNetworkSubnetReservedIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -172918,7 +177070,7 @@ func (vpc *VpcV1) NewDedicatedHostGroupsPager(options *ListDedicatedHostGroupsOp
 		return
 	}
 
-	var optionsCopy ListDedicatedHostGroupsOptions = *options
+	optionsCopy := *options
 	pager = &DedicatedHostGroupsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -172940,7 +177092,8 @@ func (pager *DedicatedHostGroupsPager) GetNextWithContext(ctx context.Context) (
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListDedicatedHostGroupsWithContext(ctx, pager.options)
+	var result *DedicatedHostGroupCollection
+	result, _, err = pager.client.ListDedicatedHostGroupsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173010,7 +177163,7 @@ func (vpc *VpcV1) NewDedicatedHostProfilesPager(options *ListDedicatedHostProfil
 		return
 	}
 
-	var optionsCopy ListDedicatedHostProfilesOptions = *options
+	optionsCopy := *options
 	pager = &DedicatedHostProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173032,7 +177185,8 @@ func (pager *DedicatedHostProfilesPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListDedicatedHostProfilesWithContext(ctx, pager.options)
+	var result *DedicatedHostProfileCollection
+	result, _, err = pager.client.ListDedicatedHostProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173102,7 +177256,7 @@ func (vpc *VpcV1) NewDedicatedHostsPager(options *ListDedicatedHostsOptions) (pa
 		return
 	}
 
-	var optionsCopy ListDedicatedHostsOptions = *options
+	optionsCopy := *options
 	pager = &DedicatedHostsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173124,7 +177278,8 @@ func (pager *DedicatedHostsPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListDedicatedHostsWithContext(ctx, pager.options)
+	var result *DedicatedHostCollection
+	result, _, err = pager.client.ListDedicatedHostsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173194,7 +177349,7 @@ func (vpc *VpcV1) NewEndpointGatewaysPager(options *ListEndpointGatewaysOptions)
 		return
 	}
 
-	var optionsCopy ListEndpointGatewaysOptions = *options
+	optionsCopy := *options
 	pager = &EndpointGatewaysPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173216,7 +177371,8 @@ func (pager *EndpointGatewaysPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListEndpointGatewaysWithContext(ctx, pager.options)
+	var result *EndpointGatewayCollection
+	result, _, err = pager.client.ListEndpointGatewaysWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173286,7 +177442,7 @@ func (vpc *VpcV1) NewEndpointGatewayIpsPager(options *ListEndpointGatewayIpsOpti
 		return
 	}
 
-	var optionsCopy ListEndpointGatewayIpsOptions = *options
+	optionsCopy := *options
 	pager = &EndpointGatewayIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173308,7 +177464,8 @@ func (pager *EndpointGatewayIpsPager) GetNextWithContext(ctx context.Context) (p
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListEndpointGatewayIpsWithContext(ctx, pager.options)
+	var result *ReservedIPCollectionEndpointGatewayContext
+	result, _, err = pager.client.ListEndpointGatewayIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173378,7 +177535,7 @@ func (vpc *VpcV1) NewEndpointGatewayResourceBindingsPager(options *ListEndpointG
 		return
 	}
 
-	var optionsCopy ListEndpointGatewayResourceBindingsOptions = *options
+	optionsCopy := *options
 	pager = &EndpointGatewayResourceBindingsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173400,7 +177557,8 @@ func (pager *EndpointGatewayResourceBindingsPager) GetNextWithContext(ctx contex
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListEndpointGatewayResourceBindingsWithContext(ctx, pager.options)
+	var result *EndpointGatewayResourceBindingCollection
+	result, _, err = pager.client.ListEndpointGatewayResourceBindingsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173470,7 +177628,7 @@ func (vpc *VpcV1) NewFloatingIpsPager(options *ListFloatingIpsOptions) (pager *F
 		return
 	}
 
-	var optionsCopy ListFloatingIpsOptions = *options
+	optionsCopy := *options
 	pager = &FloatingIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173492,7 +177650,8 @@ func (pager *FloatingIpsPager) GetNextWithContext(ctx context.Context) (page []F
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListFloatingIpsWithContext(ctx, pager.options)
+	var result *FloatingIPCollection
+	result, _, err = pager.client.ListFloatingIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173562,7 +177721,7 @@ func (vpc *VpcV1) NewFlowLogCollectorsPager(options *ListFlowLogCollectorsOption
 		return
 	}
 
-	var optionsCopy ListFlowLogCollectorsOptions = *options
+	optionsCopy := *options
 	pager = &FlowLogCollectorsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173584,7 +177743,8 @@ func (pager *FlowLogCollectorsPager) GetNextWithContext(ctx context.Context) (pa
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListFlowLogCollectorsWithContext(ctx, pager.options)
+	var result *FlowLogCollectorCollection
+	result, _, err = pager.client.ListFlowLogCollectorsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173654,7 +177814,7 @@ func (vpc *VpcV1) NewImagesPager(options *ListImagesOptions) (pager *ImagesPager
 		return
 	}
 
-	var optionsCopy ListImagesOptions = *options
+	optionsCopy := *options
 	pager = &ImagesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173676,7 +177836,8 @@ func (pager *ImagesPager) GetNextWithContext(ctx context.Context) (page []Image,
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListImagesWithContext(ctx, pager.options)
+	var result *ImageCollection
+	result, _, err = pager.client.ListImagesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173746,7 +177907,7 @@ func (vpc *VpcV1) NewImageBareMetalServerProfilesPager(options *ListImageBareMet
 		return
 	}
 
-	var optionsCopy ListImageBareMetalServerProfilesOptions = *options
+	optionsCopy := *options
 	pager = &ImageBareMetalServerProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173768,7 +177929,8 @@ func (pager *ImageBareMetalServerProfilesPager) GetNextWithContext(ctx context.C
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListImageBareMetalServerProfilesWithContext(ctx, pager.options)
+	var result *ImageBareMetalServerProfileCollection
+	result, _, err = pager.client.ListImageBareMetalServerProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173838,7 +178000,7 @@ func (vpc *VpcV1) NewImageInstanceProfilesPager(options *ListImageInstanceProfil
 		return
 	}
 
-	var optionsCopy ListImageInstanceProfilesOptions = *options
+	optionsCopy := *options
 	pager = &ImageInstanceProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173860,7 +178022,8 @@ func (pager *ImageInstanceProfilesPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListImageInstanceProfilesWithContext(ctx, pager.options)
+	var result *ImageInstanceProfileCollection
+	result, _, err = pager.client.ListImageInstanceProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -173930,7 +178093,7 @@ func (vpc *VpcV1) NewOperatingSystemsPager(options *ListOperatingSystemsOptions)
 		return
 	}
 
-	var optionsCopy ListOperatingSystemsOptions = *options
+	optionsCopy := *options
 	pager = &OperatingSystemsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -173952,7 +178115,8 @@ func (pager *OperatingSystemsPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListOperatingSystemsWithContext(ctx, pager.options)
+	var result *OperatingSystemCollection
+	result, _, err = pager.client.ListOperatingSystemsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174022,7 +178186,7 @@ func (vpc *VpcV1) NewInstanceGroupsPager(options *ListInstanceGroupsOptions) (pa
 		return
 	}
 
-	var optionsCopy ListInstanceGroupsOptions = *options
+	optionsCopy := *options
 	pager = &InstanceGroupsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174044,7 +178208,8 @@ func (pager *InstanceGroupsPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceGroupsWithContext(ctx, pager.options)
+	var result *InstanceGroupCollection
+	result, _, err = pager.client.ListInstanceGroupsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174114,7 +178279,7 @@ func (vpc *VpcV1) NewInstanceGroupManagersPager(options *ListInstanceGroupManage
 		return
 	}
 
-	var optionsCopy ListInstanceGroupManagersOptions = *options
+	optionsCopy := *options
 	pager = &InstanceGroupManagersPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174136,7 +178301,8 @@ func (pager *InstanceGroupManagersPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceGroupManagersWithContext(ctx, pager.options)
+	var result *InstanceGroupManagerCollection
+	result, _, err = pager.client.ListInstanceGroupManagersWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174206,7 +178372,7 @@ func (vpc *VpcV1) NewInstanceGroupManagerActionsPager(options *ListInstanceGroup
 		return
 	}
 
-	var optionsCopy ListInstanceGroupManagerActionsOptions = *options
+	optionsCopy := *options
 	pager = &InstanceGroupManagerActionsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174228,7 +178394,8 @@ func (pager *InstanceGroupManagerActionsPager) GetNextWithContext(ctx context.Co
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceGroupManagerActionsWithContext(ctx, pager.options)
+	var result *InstanceGroupManagerActionsCollection
+	result, _, err = pager.client.ListInstanceGroupManagerActionsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174298,7 +178465,7 @@ func (vpc *VpcV1) NewInstanceGroupManagerPoliciesPager(options *ListInstanceGrou
 		return
 	}
 
-	var optionsCopy ListInstanceGroupManagerPoliciesOptions = *options
+	optionsCopy := *options
 	pager = &InstanceGroupManagerPoliciesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174320,7 +178487,8 @@ func (pager *InstanceGroupManagerPoliciesPager) GetNextWithContext(ctx context.C
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceGroupManagerPoliciesWithContext(ctx, pager.options)
+	var result *InstanceGroupManagerPolicyCollection
+	result, _, err = pager.client.ListInstanceGroupManagerPoliciesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174390,7 +178558,7 @@ func (vpc *VpcV1) NewInstanceGroupMembershipsPager(options *ListInstanceGroupMem
 		return
 	}
 
-	var optionsCopy ListInstanceGroupMembershipsOptions = *options
+	optionsCopy := *options
 	pager = &InstanceGroupMembershipsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174412,7 +178580,8 @@ func (pager *InstanceGroupMembershipsPager) GetNextWithContext(ctx context.Conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceGroupMembershipsWithContext(ctx, pager.options)
+	var result *InstanceGroupMembershipCollection
+	result, _, err = pager.client.ListInstanceGroupMembershipsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174482,7 +178651,7 @@ func (vpc *VpcV1) NewInstanceProfilesPager(options *ListInstanceProfilesOptions)
 		return
 	}
 
-	var optionsCopy ListInstanceProfilesOptions = *options
+	optionsCopy := *options
 	pager = &InstanceProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174504,7 +178673,8 @@ func (pager *InstanceProfilesPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceProfilesWithContext(ctx, pager.options)
+	var result *InstanceProfileCollection
+	result, _, err = pager.client.ListInstanceProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174574,7 +178744,7 @@ func (vpc *VpcV1) NewInstancesPager(options *ListInstancesOptions) (pager *Insta
 		return
 	}
 
-	var optionsCopy ListInstancesOptions = *options
+	optionsCopy := *options
 	pager = &InstancesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174596,7 +178766,8 @@ func (pager *InstancesPager) GetNextWithContext(ctx context.Context) (page []Ins
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstancesWithContext(ctx, pager.options)
+	var result *InstanceCollection
+	result, _, err = pager.client.ListInstancesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174666,7 +178837,7 @@ func (vpc *VpcV1) NewInstanceClusterNetworkAttachmentsPager(options *ListInstanc
 		return
 	}
 
-	var optionsCopy ListInstanceClusterNetworkAttachmentsOptions = *options
+	optionsCopy := *options
 	pager = &InstanceClusterNetworkAttachmentsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174688,7 +178859,8 @@ func (pager *InstanceClusterNetworkAttachmentsPager) GetNextWithContext(ctx cont
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceClusterNetworkAttachmentsWithContext(ctx, pager.options)
+	var result *InstanceClusterNetworkAttachmentCollection
+	result, _, err = pager.client.ListInstanceClusterNetworkAttachmentsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174758,7 +178930,7 @@ func (vpc *VpcV1) NewInstanceNetworkInterfaceIpsPager(options *ListInstanceNetwo
 		return
 	}
 
-	var optionsCopy ListInstanceNetworkInterfaceIpsOptions = *options
+	optionsCopy := *options
 	pager = &InstanceNetworkInterfaceIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174780,7 +178952,8 @@ func (pager *InstanceNetworkInterfaceIpsPager) GetNextWithContext(ctx context.Co
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListInstanceNetworkInterfaceIpsWithContext(ctx, pager.options)
+	var result *ReservedIPCollectionInstanceNetworkInterfaceContext
+	result, _, err = pager.client.ListInstanceNetworkInterfaceIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174850,7 +179023,7 @@ func (vpc *VpcV1) NewKeysPager(options *ListKeysOptions) (pager *KeysPager, err 
 		return
 	}
 
-	var optionsCopy ListKeysOptions = *options
+	optionsCopy := *options
 	pager = &KeysPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174872,7 +179045,8 @@ func (pager *KeysPager) GetNextWithContext(ctx context.Context) (page []Key, err
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListKeysWithContext(ctx, pager.options)
+	var result *KeyCollection
+	result, _, err = pager.client.ListKeysWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -174942,7 +179116,7 @@ func (vpc *VpcV1) NewLoadBalancerProfilesPager(options *ListLoadBalancerProfiles
 		return
 	}
 
-	var optionsCopy ListLoadBalancerProfilesOptions = *options
+	optionsCopy := *options
 	pager = &LoadBalancerProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -174964,7 +179138,8 @@ func (pager *LoadBalancerProfilesPager) GetNextWithContext(ctx context.Context) 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListLoadBalancerProfilesWithContext(ctx, pager.options)
+	var result *LoadBalancerProfileCollection
+	result, _, err = pager.client.ListLoadBalancerProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175034,7 +179209,7 @@ func (vpc *VpcV1) NewLoadBalancersPager(options *ListLoadBalancersOptions) (page
 		return
 	}
 
-	var optionsCopy ListLoadBalancersOptions = *options
+	optionsCopy := *options
 	pager = &LoadBalancersPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175056,7 +179231,8 @@ func (pager *LoadBalancersPager) GetNextWithContext(ctx context.Context) (page [
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListLoadBalancersWithContext(ctx, pager.options)
+	var result *LoadBalancerCollection
+	result, _, err = pager.client.ListLoadBalancersWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175126,7 +179302,7 @@ func (vpc *VpcV1) NewNetworkAclsPager(options *ListNetworkAclsOptions) (pager *N
 		return
 	}
 
-	var optionsCopy ListNetworkAclsOptions = *options
+	optionsCopy := *options
 	pager = &NetworkAclsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175148,7 +179324,8 @@ func (pager *NetworkAclsPager) GetNextWithContext(ctx context.Context) (page []N
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListNetworkAclsWithContext(ctx, pager.options)
+	var result *NetworkACLCollection
+	result, _, err = pager.client.ListNetworkAclsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175218,7 +179395,7 @@ func (vpc *VpcV1) NewNetworkACLRulesPager(options *ListNetworkACLRulesOptions) (
 		return
 	}
 
-	var optionsCopy ListNetworkACLRulesOptions = *options
+	optionsCopy := *options
 	pager = &NetworkACLRulesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175240,7 +179417,8 @@ func (pager *NetworkACLRulesPager) GetNextWithContext(ctx context.Context) (page
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListNetworkACLRulesWithContext(ctx, pager.options)
+	var result *NetworkACLRuleCollection
+	result, _, err = pager.client.ListNetworkACLRulesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175310,7 +179488,7 @@ func (vpc *VpcV1) NewPlacementGroupsPager(options *ListPlacementGroupsOptions) (
 		return
 	}
 
-	var optionsCopy ListPlacementGroupsOptions = *options
+	optionsCopy := *options
 	pager = &PlacementGroupsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175332,7 +179510,8 @@ func (pager *PlacementGroupsPager) GetNextWithContext(ctx context.Context) (page
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPlacementGroupsWithContext(ctx, pager.options)
+	var result *PlacementGroupCollection
+	result, _, err = pager.client.ListPlacementGroupsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175402,7 +179581,7 @@ func (vpc *VpcV1) NewPrivatePathServiceGatewaysPager(options *ListPrivatePathSer
 		return
 	}
 
-	var optionsCopy ListPrivatePathServiceGatewaysOptions = *options
+	optionsCopy := *options
 	pager = &PrivatePathServiceGatewaysPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175424,7 +179603,8 @@ func (pager *PrivatePathServiceGatewaysPager) GetNextWithContext(ctx context.Con
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPrivatePathServiceGatewaysWithContext(ctx, pager.options)
+	var result *PrivatePathServiceGatewayCollection
+	result, _, err = pager.client.ListPrivatePathServiceGatewaysWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175494,7 +179674,7 @@ func (vpc *VpcV1) NewPrivatePathServiceGatewayAccountPoliciesPager(options *List
 		return
 	}
 
-	var optionsCopy ListPrivatePathServiceGatewayAccountPoliciesOptions = *options
+	optionsCopy := *options
 	pager = &PrivatePathServiceGatewayAccountPoliciesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175516,7 +179696,8 @@ func (pager *PrivatePathServiceGatewayAccountPoliciesPager) GetNextWithContext(c
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPrivatePathServiceGatewayAccountPoliciesWithContext(ctx, pager.options)
+	var result *PrivatePathServiceGatewayAccountPolicyCollection
+	result, _, err = pager.client.ListPrivatePathServiceGatewayAccountPoliciesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175586,7 +179767,7 @@ func (vpc *VpcV1) NewPrivatePathServiceGatewayEndpointGatewayBindingsPager(optio
 		return
 	}
 
-	var optionsCopy ListPrivatePathServiceGatewayEndpointGatewayBindingsOptions = *options
+	optionsCopy := *options
 	pager = &PrivatePathServiceGatewayEndpointGatewayBindingsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175608,7 +179789,8 @@ func (pager *PrivatePathServiceGatewayEndpointGatewayBindingsPager) GetNextWithC
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext(ctx, pager.options)
+	var result *PrivatePathServiceGatewayEndpointGatewayBindingCollection
+	result, _, err = pager.client.ListPrivatePathServiceGatewayEndpointGatewayBindingsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175678,7 +179860,7 @@ func (vpc *VpcV1) NewPublicAddressRangesPager(options *ListPublicAddressRangesOp
 		return
 	}
 
-	var optionsCopy ListPublicAddressRangesOptions = *options
+	optionsCopy := *options
 	pager = &PublicAddressRangesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175700,7 +179882,8 @@ func (pager *PublicAddressRangesPager) GetNextWithContext(ctx context.Context) (
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPublicAddressRangesWithContext(ctx, pager.options)
+	var result *PublicAddressRangeCollection
+	result, _, err = pager.client.ListPublicAddressRangesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175770,7 +179953,7 @@ func (vpc *VpcV1) NewPublicGatewaysPager(options *ListPublicGatewaysOptions) (pa
 		return
 	}
 
-	var optionsCopy ListPublicGatewaysOptions = *options
+	optionsCopy := *options
 	pager = &PublicGatewaysPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175792,7 +179975,8 @@ func (pager *PublicGatewaysPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListPublicGatewaysWithContext(ctx, pager.options)
+	var result *PublicGatewayCollection
+	result, _, err = pager.client.ListPublicGatewaysWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175862,7 +180046,7 @@ func (vpc *VpcV1) NewReservationsPager(options *ListReservationsOptions) (pager 
 		return
 	}
 
-	var optionsCopy ListReservationsOptions = *options
+	optionsCopy := *options
 	pager = &ReservationsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175884,7 +180068,8 @@ func (pager *ReservationsPager) GetNextWithContext(ctx context.Context) (page []
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListReservationsWithContext(ctx, pager.options)
+	var result *ReservationCollection
+	result, _, err = pager.client.ListReservationsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -175954,7 +180139,7 @@ func (vpc *VpcV1) NewSecurityGroupsPager(options *ListSecurityGroupsOptions) (pa
 		return
 	}
 
-	var optionsCopy ListSecurityGroupsOptions = *options
+	optionsCopy := *options
 	pager = &SecurityGroupsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -175976,7 +180161,8 @@ func (pager *SecurityGroupsPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSecurityGroupsWithContext(ctx, pager.options)
+	var result *SecurityGroupCollection
+	result, _, err = pager.client.ListSecurityGroupsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176046,7 +180232,7 @@ func (vpc *VpcV1) NewSecurityGroupTargetsPager(options *ListSecurityGroupTargets
 		return
 	}
 
-	var optionsCopy ListSecurityGroupTargetsOptions = *options
+	optionsCopy := *options
 	pager = &SecurityGroupTargetsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176068,7 +180254,8 @@ func (pager *SecurityGroupTargetsPager) GetNextWithContext(ctx context.Context) 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSecurityGroupTargetsWithContext(ctx, pager.options)
+	var result *SecurityGroupTargetCollection
+	result, _, err = pager.client.ListSecurityGroupTargetsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176138,7 +180325,7 @@ func (vpc *VpcV1) NewShareProfilesPager(options *ListShareProfilesOptions) (page
 		return
 	}
 
-	var optionsCopy ListShareProfilesOptions = *options
+	optionsCopy := *options
 	pager = &ShareProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176160,7 +180347,8 @@ func (pager *ShareProfilesPager) GetNextWithContext(ctx context.Context) (page [
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListShareProfilesWithContext(ctx, pager.options)
+	var result *ShareProfileCollection
+	result, _, err = pager.client.ListShareProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176230,7 +180418,7 @@ func (vpc *VpcV1) NewSharesPager(options *ListSharesOptions) (pager *SharesPager
 		return
 	}
 
-	var optionsCopy ListSharesOptions = *options
+	optionsCopy := *options
 	pager = &SharesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176252,7 +180440,8 @@ func (pager *SharesPager) GetNextWithContext(ctx context.Context) (page []Share,
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSharesWithContext(ctx, pager.options)
+	var result *ShareCollection
+	result, _, err = pager.client.ListSharesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176322,7 +180511,7 @@ func (vpc *VpcV1) NewShareAccessorBindingsPager(options *ListShareAccessorBindin
 		return
 	}
 
-	var optionsCopy ListShareAccessorBindingsOptions = *options
+	optionsCopy := *options
 	pager = &ShareAccessorBindingsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176344,7 +180533,8 @@ func (pager *ShareAccessorBindingsPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListShareAccessorBindingsWithContext(ctx, pager.options)
+	var result *ShareAccessorBindingCollection
+	result, _, err = pager.client.ListShareAccessorBindingsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176414,7 +180604,7 @@ func (vpc *VpcV1) NewShareMountTargetsPager(options *ListShareMountTargetsOption
 		return
 	}
 
-	var optionsCopy ListShareMountTargetsOptions = *options
+	optionsCopy := *options
 	pager = &ShareMountTargetsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176436,7 +180626,8 @@ func (pager *ShareMountTargetsPager) GetNextWithContext(ctx context.Context) (pa
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListShareMountTargetsWithContext(ctx, pager.options)
+	var result *ShareMountTargetCollection
+	result, _, err = pager.client.ListShareMountTargetsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176506,7 +180697,7 @@ func (vpc *VpcV1) NewShareSnapshotsPager(options *ListShareSnapshotsOptions) (pa
 		return
 	}
 
-	var optionsCopy ListShareSnapshotsOptions = *options
+	optionsCopy := *options
 	pager = &ShareSnapshotsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176528,7 +180719,8 @@ func (pager *ShareSnapshotsPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListShareSnapshotsWithContext(ctx, pager.options)
+	var result *ShareSnapshotCollection
+	result, _, err = pager.client.ListShareSnapshotsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176598,7 +180790,7 @@ func (vpc *VpcV1) NewSnapshotConsistencyGroupsPager(options *ListSnapshotConsist
 		return
 	}
 
-	var optionsCopy ListSnapshotConsistencyGroupsOptions = *options
+	optionsCopy := *options
 	pager = &SnapshotConsistencyGroupsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176620,7 +180812,8 @@ func (pager *SnapshotConsistencyGroupsPager) GetNextWithContext(ctx context.Cont
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSnapshotConsistencyGroupsWithContext(ctx, pager.options)
+	var result *SnapshotConsistencyGroupCollection
+	result, _, err = pager.client.ListSnapshotConsistencyGroupsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176690,7 +180883,7 @@ func (vpc *VpcV1) NewSnapshotsPager(options *ListSnapshotsOptions) (pager *Snaps
 		return
 	}
 
-	var optionsCopy ListSnapshotsOptions = *options
+	optionsCopy := *options
 	pager = &SnapshotsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176712,7 +180905,8 @@ func (pager *SnapshotsPager) GetNextWithContext(ctx context.Context) (page []Sna
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSnapshotsWithContext(ctx, pager.options)
+	var result *SnapshotCollection
+	result, _, err = pager.client.ListSnapshotsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176782,7 +180976,7 @@ func (vpc *VpcV1) NewSnapshotInstanceProfilesPager(options *ListSnapshotInstance
 		return
 	}
 
-	var optionsCopy ListSnapshotInstanceProfilesOptions = *options
+	optionsCopy := *options
 	pager = &SnapshotInstanceProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176804,7 +180998,8 @@ func (pager *SnapshotInstanceProfilesPager) GetNextWithContext(ctx context.Conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSnapshotInstanceProfilesWithContext(ctx, pager.options)
+	var result *SnapshotInstanceProfileCollection
+	result, _, err = pager.client.ListSnapshotInstanceProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176874,7 +181069,7 @@ func (vpc *VpcV1) NewSubnetsPager(options *ListSubnetsOptions) (pager *SubnetsPa
 		return
 	}
 
-	var optionsCopy ListSubnetsOptions = *options
+	optionsCopy := *options
 	pager = &SubnetsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176896,7 +181091,8 @@ func (pager *SubnetsPager) GetNextWithContext(ctx context.Context) (page []Subne
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSubnetsWithContext(ctx, pager.options)
+	var result *SubnetCollection
+	result, _, err = pager.client.ListSubnetsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -176966,7 +181162,7 @@ func (vpc *VpcV1) NewSubnetReservedIpsPager(options *ListSubnetReservedIpsOption
 		return
 	}
 
-	var optionsCopy ListSubnetReservedIpsOptions = *options
+	optionsCopy := *options
 	pager = &SubnetReservedIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -176988,7 +181184,8 @@ func (pager *SubnetReservedIpsPager) GetNextWithContext(ctx context.Context) (pa
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListSubnetReservedIpsWithContext(ctx, pager.options)
+	var result *ReservedIPCollection
+	result, _, err = pager.client.ListSubnetReservedIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177058,7 +181255,7 @@ func (vpc *VpcV1) NewVirtualNetworkInterfacesPager(options *ListVirtualNetworkIn
 		return
 	}
 
-	var optionsCopy ListVirtualNetworkInterfacesOptions = *options
+	optionsCopy := *options
 	pager = &VirtualNetworkInterfacesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177080,7 +181277,8 @@ func (pager *VirtualNetworkInterfacesPager) GetNextWithContext(ctx context.Conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVirtualNetworkInterfacesWithContext(ctx, pager.options)
+	var result *VirtualNetworkInterfaceCollection
+	result, _, err = pager.client.ListVirtualNetworkInterfacesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177150,7 +181348,7 @@ func (vpc *VpcV1) NewNetworkInterfaceFloatingIpsPager(options *ListNetworkInterf
 		return
 	}
 
-	var optionsCopy ListNetworkInterfaceFloatingIpsOptions = *options
+	optionsCopy := *options
 	pager = &NetworkInterfaceFloatingIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177172,7 +181370,8 @@ func (pager *NetworkInterfaceFloatingIpsPager) GetNextWithContext(ctx context.Co
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListNetworkInterfaceFloatingIpsWithContext(ctx, pager.options)
+	var result *FloatingIPCollectionVirtualNetworkInterfaceContext
+	result, _, err = pager.client.ListNetworkInterfaceFloatingIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177242,7 +181441,7 @@ func (vpc *VpcV1) NewVirtualNetworkInterfaceIpsPager(options *ListVirtualNetwork
 		return
 	}
 
-	var optionsCopy ListVirtualNetworkInterfaceIpsOptions = *options
+	optionsCopy := *options
 	pager = &VirtualNetworkInterfaceIpsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177264,7 +181463,8 @@ func (pager *VirtualNetworkInterfaceIpsPager) GetNextWithContext(ctx context.Con
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVirtualNetworkInterfaceIpsWithContext(ctx, pager.options)
+	var result *ReservedIPCollectionVirtualNetworkInterfaceContext
+	result, _, err = pager.client.ListVirtualNetworkInterfaceIpsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177334,7 +181534,7 @@ func (vpc *VpcV1) NewVolumeProfilesPager(options *ListVolumeProfilesOptions) (pa
 		return
 	}
 
-	var optionsCopy ListVolumeProfilesOptions = *options
+	optionsCopy := *options
 	pager = &VolumeProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177356,7 +181556,8 @@ func (pager *VolumeProfilesPager) GetNextWithContext(ctx context.Context) (page 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVolumeProfilesWithContext(ctx, pager.options)
+	var result *VolumeProfileCollection
+	result, _, err = pager.client.ListVolumeProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177426,7 +181627,7 @@ func (vpc *VpcV1) NewVolumesPager(options *ListVolumesOptions) (pager *VolumesPa
 		return
 	}
 
-	var optionsCopy ListVolumesOptions = *options
+	optionsCopy := *options
 	pager = &VolumesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177448,7 +181649,8 @@ func (pager *VolumesPager) GetNextWithContext(ctx context.Context) (page []Volum
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVolumesWithContext(ctx, pager.options)
+	var result *VolumeCollection
+	result, _, err = pager.client.ListVolumesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177518,7 +181720,7 @@ func (vpc *VpcV1) NewVolumeInstanceProfilesPager(options *ListVolumeInstanceProf
 		return
 	}
 
-	var optionsCopy ListVolumeInstanceProfilesOptions = *options
+	optionsCopy := *options
 	pager = &VolumeInstanceProfilesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177540,7 +181742,8 @@ func (pager *VolumeInstanceProfilesPager) GetNextWithContext(ctx context.Context
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVolumeInstanceProfilesWithContext(ctx, pager.options)
+	var result *VolumeInstanceProfileCollection
+	result, _, err = pager.client.ListVolumeInstanceProfilesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177610,7 +181813,7 @@ func (vpc *VpcV1) NewVolumeJobsPager(options *ListVolumeJobsOptions) (pager *Vol
 		return
 	}
 
-	var optionsCopy ListVolumeJobsOptions = *options
+	optionsCopy := *options
 	pager = &VolumeJobsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177632,7 +181835,8 @@ func (pager *VolumeJobsPager) GetNextWithContext(ctx context.Context) (page []Vo
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVolumeJobsWithContext(ctx, pager.options)
+	var result *VolumeJobCollection
+	result, _, err = pager.client.ListVolumeJobsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177702,7 +181906,7 @@ func (vpc *VpcV1) NewVpcsPager(options *ListVpcsOptions) (pager *VpcsPager, err 
 		return
 	}
 
-	var optionsCopy ListVpcsOptions = *options
+	optionsCopy := *options
 	pager = &VpcsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177724,7 +181928,8 @@ func (pager *VpcsPager) GetNextWithContext(ctx context.Context) (page []VPC, err
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVpcsWithContext(ctx, pager.options)
+	var result *VPCCollection
+	result, _, err = pager.client.ListVpcsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177794,7 +181999,7 @@ func (vpc *VpcV1) NewVPCAddressPrefixesPager(options *ListVPCAddressPrefixesOpti
 		return
 	}
 
-	var optionsCopy ListVPCAddressPrefixesOptions = *options
+	optionsCopy := *options
 	pager = &VPCAddressPrefixesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177816,7 +182021,8 @@ func (pager *VPCAddressPrefixesPager) GetNextWithContext(ctx context.Context) (p
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPCAddressPrefixesWithContext(ctx, pager.options)
+	var result *AddressPrefixCollection
+	result, _, err = pager.client.ListVPCAddressPrefixesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177886,7 +182092,7 @@ func (vpc *VpcV1) NewVPCDnsResolutionBindingsPager(options *ListVPCDnsResolution
 		return
 	}
 
-	var optionsCopy ListVPCDnsResolutionBindingsOptions = *options
+	optionsCopy := *options
 	pager = &VPCDnsResolutionBindingsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -177908,7 +182114,8 @@ func (pager *VPCDnsResolutionBindingsPager) GetNextWithContext(ctx context.Conte
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPCDnsResolutionBindingsWithContext(ctx, pager.options)
+	var result *VpcdnsResolutionBindingCollection
+	result, _, err = pager.client.ListVPCDnsResolutionBindingsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -177978,7 +182185,7 @@ func (vpc *VpcV1) NewVPCRoutesPager(options *ListVPCRoutesOptions) (pager *VPCRo
 		return
 	}
 
-	var optionsCopy ListVPCRoutesOptions = *options
+	optionsCopy := *options
 	pager = &VPCRoutesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178000,7 +182207,8 @@ func (pager *VPCRoutesPager) GetNextWithContext(ctx context.Context) (page []Rou
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPCRoutesWithContext(ctx, pager.options)
+	var result *RouteCollectionVPCContext
+	result, _, err = pager.client.ListVPCRoutesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178070,7 +182278,7 @@ func (vpc *VpcV1) NewVPCRoutingTablesPager(options *ListVPCRoutingTablesOptions)
 		return
 	}
 
-	var optionsCopy ListVPCRoutingTablesOptions = *options
+	optionsCopy := *options
 	pager = &VPCRoutingTablesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178092,7 +182300,8 @@ func (pager *VPCRoutingTablesPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPCRoutingTablesWithContext(ctx, pager.options)
+	var result *RoutingTableCollection
+	result, _, err = pager.client.ListVPCRoutingTablesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178162,7 +182371,7 @@ func (vpc *VpcV1) NewVPCRoutingTableRoutesPager(options *ListVPCRoutingTableRout
 		return
 	}
 
-	var optionsCopy ListVPCRoutingTableRoutesOptions = *options
+	optionsCopy := *options
 	pager = &VPCRoutingTableRoutesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178184,7 +182393,8 @@ func (pager *VPCRoutingTableRoutesPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPCRoutingTableRoutesWithContext(ctx, pager.options)
+	var result *RouteCollection
+	result, _, err = pager.client.ListVPCRoutingTableRoutesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178254,7 +182464,7 @@ func (vpc *VpcV1) NewIkePoliciesPager(options *ListIkePoliciesOptions) (pager *I
 		return
 	}
 
-	var optionsCopy ListIkePoliciesOptions = *options
+	optionsCopy := *options
 	pager = &IkePoliciesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178276,7 +182486,8 @@ func (pager *IkePoliciesPager) GetNextWithContext(ctx context.Context) (page []I
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListIkePoliciesWithContext(ctx, pager.options)
+	var result *IkePolicyCollection
+	result, _, err = pager.client.ListIkePoliciesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178346,7 +182557,7 @@ func (vpc *VpcV1) NewIkePolicyConnectionsPager(options *ListIkePolicyConnections
 		return
 	}
 
-	var optionsCopy ListIkePolicyConnectionsOptions = *options
+	optionsCopy := *options
 	pager = &IkePolicyConnectionsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178368,7 +182579,8 @@ func (pager *IkePolicyConnectionsPager) GetNextWithContext(ctx context.Context) 
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListIkePolicyConnectionsWithContext(ctx, pager.options)
+	var result *IkePolicyConnectionCollection
+	result, _, err = pager.client.ListIkePolicyConnectionsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178438,7 +182650,7 @@ func (vpc *VpcV1) NewIpsecPoliciesPager(options *ListIpsecPoliciesOptions) (page
 		return
 	}
 
-	var optionsCopy ListIpsecPoliciesOptions = *options
+	optionsCopy := *options
 	pager = &IpsecPoliciesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178460,7 +182672,8 @@ func (pager *IpsecPoliciesPager) GetNextWithContext(ctx context.Context) (page [
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListIpsecPoliciesWithContext(ctx, pager.options)
+	var result *IPsecPolicyCollection
+	result, _, err = pager.client.ListIpsecPoliciesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178530,7 +182743,7 @@ func (vpc *VpcV1) NewIpsecPolicyConnectionsPager(options *ListIpsecPolicyConnect
 		return
 	}
 
-	var optionsCopy ListIpsecPolicyConnectionsOptions = *options
+	optionsCopy := *options
 	pager = &IpsecPolicyConnectionsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178552,7 +182765,8 @@ func (pager *IpsecPolicyConnectionsPager) GetNextWithContext(ctx context.Context
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListIpsecPolicyConnectionsWithContext(ctx, pager.options)
+	var result *IPsecPolicyConnectionCollection
+	result, _, err = pager.client.ListIpsecPolicyConnectionsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178622,7 +182836,7 @@ func (vpc *VpcV1) NewVPNGatewaysPager(options *ListVPNGatewaysOptions) (pager *V
 		return
 	}
 
-	var optionsCopy ListVPNGatewaysOptions = *options
+	optionsCopy := *options
 	pager = &VPNGatewaysPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178644,7 +182858,8 @@ func (pager *VPNGatewaysPager) GetNextWithContext(ctx context.Context) (page []V
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNGatewaysWithContext(ctx, pager.options)
+	var result *VPNGatewayCollection
+	result, _, err = pager.client.ListVPNGatewaysWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178714,7 +182929,7 @@ func (vpc *VpcV1) NewVPNGatewayConnectionsPager(options *ListVPNGatewayConnectio
 		return
 	}
 
-	var optionsCopy ListVPNGatewayConnectionsOptions = *options
+	optionsCopy := *options
 	pager = &VPNGatewayConnectionsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178736,7 +182951,8 @@ func (pager *VPNGatewayConnectionsPager) GetNextWithContext(ctx context.Context)
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNGatewayConnectionsWithContext(ctx, pager.options)
+	var result *VPNGatewayConnectionCollection
+	result, _, err = pager.client.ListVPNGatewayConnectionsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178806,7 +183022,7 @@ func (vpc *VpcV1) NewVPNGatewayServiceConnectionsPager(options *ListVPNGatewaySe
 		return
 	}
 
-	var optionsCopy ListVPNGatewayServiceConnectionsOptions = *options
+	optionsCopy := *options
 	pager = &VPNGatewayServiceConnectionsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178828,7 +183044,8 @@ func (pager *VPNGatewayServiceConnectionsPager) GetNextWithContext(ctx context.C
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNGatewayServiceConnectionsWithContext(ctx, pager.options)
+	var result *VPNGatewayServiceConnectionCollection
+	result, _, err = pager.client.ListVPNGatewayServiceConnectionsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178898,7 +183115,7 @@ func (vpc *VpcV1) NewVPNServersPager(options *ListVPNServersOptions) (pager *VPN
 		return
 	}
 
-	var optionsCopy ListVPNServersOptions = *options
+	optionsCopy := *options
 	pager = &VPNServersPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -178920,7 +183137,8 @@ func (pager *VPNServersPager) GetNextWithContext(ctx context.Context) (page []VP
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNServersWithContext(ctx, pager.options)
+	var result *VPNServerCollection
+	result, _, err = pager.client.ListVPNServersWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -178990,7 +183208,7 @@ func (vpc *VpcV1) NewVPNServerClientsPager(options *ListVPNServerClientsOptions)
 		return
 	}
 
-	var optionsCopy ListVPNServerClientsOptions = *options
+	optionsCopy := *options
 	pager = &VPNServerClientsPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -179012,7 +183230,8 @@ func (pager *VPNServerClientsPager) GetNextWithContext(ctx context.Context) (pag
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNServerClientsWithContext(ctx, pager.options)
+	var result *VPNServerClientCollection
+	result, _, err = pager.client.ListVPNServerClientsWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
@@ -179082,7 +183301,7 @@ func (vpc *VpcV1) NewVPNServerRoutesPager(options *ListVPNServerRoutesOptions) (
 		return
 	}
 
-	var optionsCopy ListVPNServerRoutesOptions = *options
+	optionsCopy := *options
 	pager = &VPNServerRoutesPager{
 		hasNext: true,
 		options: &optionsCopy,
@@ -179104,7 +183323,8 @@ func (pager *VPNServerRoutesPager) GetNextWithContext(ctx context.Context) (page
 
 	pager.options.Start = pager.pageContext.next
 
-	result, _, err := pager.client.ListVPNServerRoutesWithContext(ctx, pager.options)
+	var result *VPNServerRouteCollection
+	result, _, err = pager.client.ListVPNServerRoutesWithContext(ctx, pager.options)
 	if err != nil {
 		err = core.RepurposeSDKProblem(err, "error-getting-next-page")
 		return
