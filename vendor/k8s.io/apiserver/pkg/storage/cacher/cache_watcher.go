@@ -22,6 +22,8 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/utils/clock"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -63,6 +65,8 @@ type cacheWatcher struct {
 	deadline            time.Time
 	allowWatchBookmarks bool
 	groupResource       schema.GroupResource
+	watcherMetrics      *metrics.WatcherMetricsObservers
+	clock               clock.Clock
 
 	// human readable identifier that helps assigning cacheWatcher
 	// instance with request
@@ -95,8 +99,13 @@ func newCacheWatcher(
 	deadline time.Time,
 	allowWatchBookmarks bool,
 	groupResource schema.GroupResource,
+	watcherMetrics *metrics.WatcherMetricsObservers,
+	clk clock.Clock,
 	identifier string,
 ) *cacheWatcher {
+	if clk == nil {
+		clk = clock.RealClock{}
+	}
 	return &cacheWatcher{
 		input:               make(chan *watchCacheEvent, chanSize),
 		result:              make(chan watch.Event, chanSize),
@@ -108,6 +117,8 @@ func newCacheWatcher(
 		deadline:            deadline,
 		allowWatchBookmarks: allowWatchBookmarks,
 		groupResource:       groupResource,
+		watcherMetrics:      watcherMetrics,
+		clock:               clk,
 		identifier:          identifier,
 	}
 }
@@ -176,7 +187,7 @@ func (c *cacheWatcher) add(event *watchCacheEvent, timer *time.Timer) bool {
 		// This means that we couldn't send event to that watcher.
 		// Since we don't want to block on it infinitely,
 		// we simply terminate it.
-		metrics.TerminatedWatchersCounter.WithLabelValues(c.groupResource.String()).Inc()
+		metrics.TerminatedWatchersCounter.WithLabelValues(c.groupResource.Group, c.groupResource.Resource).Inc()
 		// This means that we couldn't send event to that watcher.
 		// Since we don't want to block on it infinitely, we simply terminate it.
 
@@ -371,10 +382,10 @@ func (c *cacheWatcher) convertToWatchEvent(event *watchCacheEvent) *watch.Event 
 		return e
 	}
 
-	curObjPasses := event.Type != watch.Deleted && c.filter(event.Key, event.ObjLabels, event.ObjFields)
+	curObjPasses := event.Type != watch.Deleted && c.filter(event.Key, event.ObjLabels, event.ObjFields, event.Object)
 	oldObjPasses := false
 	if event.PrevObject != nil {
-		oldObjPasses = c.filter(event.Key, event.PrevObjLabels, event.PrevObjFields)
+		oldObjPasses = c.filter(event.Key, event.PrevObjLabels, event.PrevObjFields, event.PrevObject)
 	}
 	if !curObjPasses && !oldObjPasses {
 		// Watcher is not interested in that object.
@@ -401,12 +412,13 @@ func (c *cacheWatcher) convertToWatchEvent(event *watchCacheEvent) *watch.Event 
 }
 
 // NOTE: sendWatchCacheEvent is assumed to not modify <event> !!!
-func (c *cacheWatcher) sendWatchCacheEvent(event *watchCacheEvent) {
+func (c *cacheWatcher) sendWatchCacheEvent(event *watchCacheEvent) (builtAt, sentAt time.Time) {
 	watchEvent := c.convertToWatchEvent(event)
 	if watchEvent == nil {
 		// Watcher is not interested in that object.
-		return
+		return time.Time{}, time.Time{}
 	}
+	builtAt = c.clock.Now()
 
 	// We need to ensure that if we put event X to the c.result, all
 	// previous events were already put into it before, no matter whether
@@ -422,19 +434,52 @@ func (c *cacheWatcher) sendWatchCacheEvent(event *watchCacheEvent) {
 	// events.
 	select {
 	case <-c.done:
-		return
+		return time.Time{}, time.Time{}
 	default:
 	}
 
 	select {
 	case c.result <- *watchEvent:
 		c.markBookmarkAfterRvSent(event)
+		sentAt = c.clock.Now()
 	case <-c.done:
 	}
+	return builtAt, sentAt
+}
+
+// streamInterval sends every event of cacheInterval to the result channel,
+// advancing *resourceVersion to the highest resourceVersion of any event the
+// interval yielded (including events the watcher's filter drops). It returns
+// the number of events the interval yielded. A non-nil error means the
+// interval has been invalidated (the watch cache history moved past it) and
+// can no longer serve events; the returned count is then meaningless.
+func (c *cacheWatcher) streamInterval(cacheInterval *watchCacheInterval, resourceVersion *uint64) (int, error) {
+	eventCount := 0
+	for event, err := range cacheInterval.All() {
+		if err != nil {
+			return eventCount, err
+		}
+		c.sendWatchCacheEvent(event)
+
+		// With some events already sent, update resourceVersion so that
+		// events that were buffered and not yet processed won't be delivered
+		// to this watcher second time causing going back in time.
+		//
+		// There is one case where events are not necessary ordered by
+		// resourceVersion, being a case of watching from resourceVersion=0,
+		// which at the beginning returns the state of each objects.
+		// For the purpose of it, we need to max it with the resource version
+		// that we have so far.
+		if event.ResourceVersion > *resourceVersion {
+			*resourceVersion = event.ResourceVersion
+		}
+		eventCount++
+	}
+	return eventCount, nil
 }
 
 func (c *cacheWatcher) processInterval(ctx context.Context, cacheInterval *watchCacheInterval, resourceVersion uint64) {
-	defer utilruntime.HandleCrash()
+	defer utilruntime.HandleCrashWithContext(ctx)
 	defer close(c.result)
 	defer c.Stop()
 
@@ -454,55 +499,45 @@ func (c *cacheWatcher) processInterval(ctx context.Context, cacheInterval *watch
 	const initProcessThreshold = 500 * time.Millisecond
 	startTime := time.Now()
 
-	initEventCount := 0
-	for {
-		event, err := cacheInterval.Next()
-		if err != nil {
-			// An error indicates that the cache interval
-			// has been invalidated and can no longer serve
-			// events.
-			//
-			// Initially we considered sending an "out-of-history"
-			// Error event in this case, but because historically
-			// such events weren't sent out of the watchCache, we
-			// decided not to. This is still ok, because on watch
-			// closure, the watcher will try to re-instantiate the
-			// watch and then will get an explicit "out-of-history"
-			// window. There is potential for optimization, but for
-			// now, in order to be on the safe side and not break
-			// custom clients, the cost of it is something that we
-			// are fully accepting.
-			klog.Warningf("couldn't retrieve watch event to serve: %#v", err)
-			return
-		}
-		if event == nil {
-			break
-		}
-		c.sendWatchCacheEvent(event)
+	// cacheInterval may be created from a version being more fresh than requested
+	// (e.g. for NotOlderThan semantic). In such a case, we need to prevent watch event
+	// with lower resourceVersion from being delivered to ensure watch contract.
+	if cacheInterval.resourceVersion > resourceVersion {
+		resourceVersion = cacheInterval.resourceVersion
+	}
 
-		// With some events already sent, update resourceVersion so that
-		// events that were buffered and not yet processed won't be delivered
-		// to this watcher second time causing going back in time.
+	initEventCount, err := c.streamInterval(cacheInterval, &resourceVersion)
+	if err != nil {
+		// An error indicates that the cache interval
+		// has been invalidated and can no longer serve
+		// events.
 		//
-		// There is one case where events are not necessary ordered by
-		// resourceVersion, being a case of watching from resourceVersion=0,
-		// which at the beginning returns the state of each objects.
-		// For the purpose of it, we need to max it with the resource version
-		// that we have so far.
-		if event.ResourceVersion > resourceVersion {
-			resourceVersion = event.ResourceVersion
-		}
-		initEventCount++
+		// Initially we considered sending an "out-of-history"
+		// Error event in this case, but because historically
+		// such events weren't sent out of the watchCache, we
+		// decided not to. This is still ok, because on watch
+		// closure, the watcher will try to re-instantiate the
+		// watch and then will get an explicit "out-of-history"
+		// window. There is potential for optimization, but for
+		// now, in order to be on the safe side and not break
+		// custom clients, the cost of it is something that we
+		// are fully accepting.
+		klog.Warningf("couldn't retrieve watch event to serve: %#v", err)
+		return
 	}
 
 	if initEventCount > 0 {
-		metrics.InitCounter.WithLabelValues(c.groupResource.String()).Add(float64(initEventCount))
+		metrics.InitCounter.WithLabelValues(c.groupResource.Group, c.groupResource.Resource).Add(float64(initEventCount))
 	}
 	processingTime := time.Since(startTime)
 	if processingTime > initProcessThreshold {
 		klog.V(2).Infof("processing %d initEvents of %s (%s) took %v", initEventCount, c.groupResource, c.identifier, processingTime)
 	}
 
+	// send bookmark after sending all events in cacheInterval for watchlist request
+	if cacheInterval.initialEventsEndBookmark != nil {
+		c.sendWatchCacheEvent(cacheInterval.initialEventsEndBookmark)
+	}
 	c.process(ctx, resourceVersion)
 }
 
@@ -521,14 +556,29 @@ func (c *cacheWatcher) process(ctx context.Context, resourceVersion uint64) {
 			if !ok {
 				return
 			}
+			dequeuedAt := c.clock.Now()
 			// only send events newer than resourceVersion
 			// or a bookmark event with an RV equal to resourceVersion
 			// if we haven't sent one to the client
 			if event.ResourceVersion > resourceVersion || (event.Type == watch.Bookmark && event.ResourceVersion == resourceVersion && !c.wasBookmarkAfterRvSent()) {
-				c.sendWatchCacheEvent(event)
+				builtAt, sentAt := c.sendWatchCacheEvent(event)
+				c.observeDispatchMetrics(event, dequeuedAt, builtAt, sentAt)
 			}
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func (c *cacheWatcher) observeDispatchMetrics(event *watchCacheEvent, dequeuedAt, builtAt, sentAt time.Time) {
+	if event.Type == watch.Bookmark || sentAt.IsZero() {
+		return
+	}
+	// The pre-fanout points are marked in processEvent; complete the per-watcher
+	// tail here then emit all stages.
+	tl := event.timeline
+	tl.MarkAt(metrics.PointWatcherDequeued, dequeuedAt)
+	tl.MarkAt(metrics.PointEventBuilt, builtAt)
+	tl.MarkAt(metrics.PointSentToClient, sentAt)
+	c.watcherMetrics.ObserveTimeline(&tl)
 }

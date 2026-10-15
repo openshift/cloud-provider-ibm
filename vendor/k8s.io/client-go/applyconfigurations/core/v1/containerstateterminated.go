@@ -19,22 +19,31 @@ limitations under the License.
 package v1
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ContainerStateTerminatedApplyConfiguration represents an declarative configuration of the ContainerStateTerminated type for use
+// ContainerStateTerminatedApplyConfiguration represents a declarative configuration of the ContainerStateTerminated type for use
 // with apply.
+//
+// ContainerStateTerminated is a terminated state of a container.
 type ContainerStateTerminatedApplyConfiguration struct {
-	ExitCode    *int32   `json:"exitCode,omitempty"`
-	Signal      *int32   `json:"signal,omitempty"`
-	Reason      *string  `json:"reason,omitempty"`
-	Message     *string  `json:"message,omitempty"`
-	StartedAt   *v1.Time `json:"startedAt,omitempty"`
-	FinishedAt  *v1.Time `json:"finishedAt,omitempty"`
-	ContainerID *string  `json:"containerID,omitempty"`
+	// exitCode is the exit status from the last termination of the container
+	ExitCode *int32 `json:"exitCode,omitempty"`
+	// signal from the last termination of the container
+	Signal *int32 `json:"signal,omitempty"`
+	// reason from the last termination of the container
+	Reason *string `json:"reason,omitempty"`
+	// message regarding the last termination of the container
+	Message *string `json:"message,omitempty"`
+	// startedAt is the time at which previous execution of the container started
+	StartedAt *metav1.Time `json:"startedAt,omitempty"`
+	// finishedAt is the time at which the container last terminated
+	FinishedAt *metav1.Time `json:"finishedAt,omitempty"`
+	// containerID is the container's ID in the format '<type>://<container_id>'
+	ContainerID *string `json:"containerID,omitempty"`
 }
 
-// ContainerStateTerminatedApplyConfiguration constructs an declarative configuration of the ContainerStateTerminated type for use with
+// ContainerStateTerminatedApplyConfiguration constructs a declarative configuration of the ContainerStateTerminated type for use with
 // apply.
 func ContainerStateTerminated() *ContainerStateTerminatedApplyConfiguration {
 	return &ContainerStateTerminatedApplyConfiguration{}
@@ -75,7 +84,7 @@ func (b *ContainerStateTerminatedApplyConfiguration) WithMessage(value string) *
 // WithStartedAt sets the StartedAt field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the StartedAt field is set to the value of the last call.
-func (b *ContainerStateTerminatedApplyConfiguration) WithStartedAt(value v1.Time) *ContainerStateTerminatedApplyConfiguration {
+func (b *ContainerStateTerminatedApplyConfiguration) WithStartedAt(value metav1.Time) *ContainerStateTerminatedApplyConfiguration {
 	b.StartedAt = &value
 	return b
 }
@@ -83,7 +92,7 @@ func (b *ContainerStateTerminatedApplyConfiguration) WithStartedAt(value v1.Time
 // WithFinishedAt sets the FinishedAt field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the FinishedAt field is set to the value of the last call.
-func (b *ContainerStateTerminatedApplyConfiguration) WithFinishedAt(value v1.Time) *ContainerStateTerminatedApplyConfiguration {
+func (b *ContainerStateTerminatedApplyConfiguration) WithFinishedAt(value metav1.Time) *ContainerStateTerminatedApplyConfiguration {
 	b.FinishedAt = &value
 	return b
 }

@@ -23,10 +23,12 @@ import (
 	"sync"
 	"time"
 
+	"sigs.k8s.io/structured-merge-diff/v7/fieldpath"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/validate/content"
 	"k8s.io/apimachinery/pkg/api/validation"
-	"k8s.io/apimachinery/pkg/api/validation/path"
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -40,15 +42,17 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/endpoints/handlers/fieldmanager"
 	genericapirequest "k8s.io/apiserver/pkg/endpoints/request"
+	"k8s.io/apiserver/pkg/features"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/registry/rest"
+	"k8s.io/apiserver/pkg/sharding"
 	"k8s.io/apiserver/pkg/storage"
 	storeerr "k8s.io/apiserver/pkg/storage/errors"
 	"k8s.io/apiserver/pkg/storage/etcd3/metrics"
 	"k8s.io/apiserver/pkg/util/dryrun"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	flowcontrolrequest "k8s.io/apiserver/pkg/util/flowcontrol/request"
 	"k8s.io/client-go/tools/cache"
-	"sigs.k8s.io/structured-merge-diff/v4/fieldpath"
 
 	"k8s.io/klog/v2"
 )
@@ -115,19 +119,33 @@ type Store struct {
 	// SingularQualifiedResource is the singular name of the resource.
 	SingularQualifiedResource schema.GroupResource
 
-	// KeyRootFunc returns the root etcd key for this resource; should not
-	// include trailing "/".  This is used for operations that work on the
-	// entire collection (listing and watching).
+	// KeyRootFunc returns the resource-relative key prefix for this resource;
+	// should not include trailing "/". This is used for operations that work
+	// on the entire collection (listing and watching). For example, it returns
+	// "/pods" or "/pods/<namespace>" for pods, and "/persistentvolumes" for
+	// persistent volumes.
 	//
 	// KeyRootFunc and KeyFunc must be supplied together or not at all.
 	KeyRootFunc func(ctx context.Context) string
 
-	// KeyFunc returns the key for a specific object in the collection.
-	// KeyFunc is called for Create/Update/Get/Delete. Note that 'namespace'
-	// can be gotten from ctx.
+	// KeyFunc returns the resource-relative key for a specific object in the
+	// collection. KeyFunc is called for Create/Update/Get/Delete. Note that
+	// 'namespace' can be gotten from ctx. For example, it returns
+	// "/pods/<namespace>/<name>" or "/persistentvolumes/<name>".
 	//
 	// KeyFunc and KeyRootFunc must be supplied together or not at all.
 	KeyFunc func(ctx context.Context, name string) (string, error)
+
+	// ReverseKeyFunc recovers an object's name and namespace from the
+	// resource-relative key produced by KeyFunc. It may be supplied with custom
+	// KeyRootFunc and KeyFunc implementations whose key format differs from the
+	// default "<resource-prefix>/<namespace>/<name>" or
+	// "<resource-prefix>/<name>" format.
+	//
+	// If custom key funcs are supplied without ReverseKeyFunc, storage
+	// features that need object identity from a key must fall back to decoding
+	// the stored object.
+	ReverseKeyFunc storage.ReverseKeyFunc
 
 	// ObjectNameFunc returns the name of an object or an error.
 	ObjectNameFunc func(obj runtime.Object) (string, error)
@@ -223,18 +241,37 @@ type Store struct {
 	// storageVersionHash as empty in the discovery document.
 	StorageVersioner runtime.GroupVersioner
 
+	// ReadinessCheckFunc checks if the storage is ready for accepting requests.
+	// The field is optional, if set needs to be thread-safe.
+	ReadinessCheckFunc func() error
+
 	// DestroyFunc cleans up clients used by the underlying Storage; optional.
 	// If set, DestroyFunc has to be implemented in thread-safe way and
 	// be prepared for being called more than once.
 	DestroyFunc func()
+
+	// corruptObjDeleter implements unsafe deletion flow to enable deletion
+	// of corrupt object(s), it makes an attempt to perform a normal
+	// deletion flow first, and if the normal deletion flow fails with a
+	// corrupt object error then it proceeds with the unsafe deletion
+	// of the object from the storage.
+	// NOTE: it skips precondition checks, finalizer constraints, and any
+	// after delete hook defined in 'AfterDelete' of the registry.
+	// WARNING: This may break the cluster if the resource has
+	// dependencies. Use when the cluster is broken, and there is no
+	// other viable option to repair the cluster.
+	corruptObjDeleter rest.GracefulDeleter
 }
 
 // Note: the rest.StandardStorage interface aggregates the common REST verbs
 var _ rest.StandardStorage = &Store{}
+var _ rest.StorageWithReadiness = &Store{}
 var _ rest.TableConvertor = &Store{}
 var _ GenericStore = &Store{}
 
 var _ rest.SingularNameProvider = &Store{}
+
+var _ rest.CorruptObjectDeleterProvider = &Store{}
 
 const (
 	OptimisticLockErrorMsg        = "the object has been modified; please apply your changes to the latest version and try again"
@@ -243,6 +280,7 @@ const (
 
 // NamespaceKeyRootFunc is the default function for constructing storage paths
 // to resource directories enforcing namespace rules.
+// prefix must start with "/" and must not end with "/".
 func NamespaceKeyRootFunc(ctx context.Context, prefix string) string {
 	key := prefix
 	ns, ok := genericapirequest.NamespaceFrom(ctx)
@@ -255,6 +293,7 @@ func NamespaceKeyRootFunc(ctx context.Context, prefix string) string {
 // NamespaceKeyFunc is the default function for constructing storage paths to
 // a resource relative to the given prefix enforcing namespace rules. If the
 // context does not contain a namespace, it errors.
+// prefix must start with "/" and must not end with "/".
 func NamespaceKeyFunc(ctx context.Context, prefix string, name string) (string, error) {
 	key := NamespaceKeyRootFunc(ctx, prefix)
 	ns, ok := genericapirequest.NamespaceFrom(ctx)
@@ -264,7 +303,7 @@ func NamespaceKeyFunc(ctx context.Context, prefix string, name string) (string, 
 	if len(name) == 0 {
 		return "", apierrors.NewBadRequest("Name parameter required.")
 	}
-	if msgs := path.IsValidPathSegmentName(name); len(msgs) != 0 {
+	if msgs := content.IsPathSegmentName(name); len(msgs) != 0 {
 		return "", apierrors.NewBadRequest(fmt.Sprintf("Name parameter invalid: %q: %s", name, strings.Join(msgs, ";")))
 	}
 	key = key + "/" + name
@@ -273,20 +312,133 @@ func NamespaceKeyFunc(ctx context.Context, prefix string, name string) (string, 
 
 // NoNamespaceKeyFunc is the default function for constructing storage paths
 // to a resource relative to the given prefix without a namespace.
+// prefix must start with "/" and must not end with "/".
 func NoNamespaceKeyFunc(ctx context.Context, prefix string, name string) (string, error) {
 	if len(name) == 0 {
 		return "", apierrors.NewBadRequest("Name parameter required.")
 	}
-	if msgs := path.IsValidPathSegmentName(name); len(msgs) != 0 {
+	if msgs := content.IsPathSegmentName(name); len(msgs) != 0 {
 		return "", apierrors.NewBadRequest(fmt.Sprintf("Name parameter invalid: %q: %s", name, strings.Join(msgs, ";")))
 	}
 	key := prefix + "/" + name
 	return key, nil
 }
 
+// NoNamespaceReverseKeyFunc returns a function that recovers a cluster-scoped
+// object's name from a resource-relative key formatted as
+// "<resourcePrefix>/<name>". resourcePrefix must start with "/" and must not
+// end with "/"; name must be non-empty and must not contain "/".
+func NoNamespaceReverseKeyFunc(resourcePrefix string) storage.ReverseKeyFunc {
+	keyPrefix := resourcePrefix + "/"
+	return func(key string) (name string, namespace string, err error) {
+		name, found := strings.CutPrefix(key, keyPrefix)
+		if !found {
+			return "", "", fmt.Errorf("key %q does not have resource prefix %q", key, resourcePrefix)
+		}
+		if name == "" || strings.Contains(name, "/") {
+			return "", "", fmt.Errorf("key %q must contain exactly one non-empty name segment after resource prefix %q", key, resourcePrefix)
+		}
+		return name, "", nil
+	}
+}
+
+// NamespaceReverseKeyFunc returns a function that recovers a namespaced
+// object's namespace and name from a resource-relative key formatted as
+// "<resourcePrefix>/<namespace>/<name>". resourcePrefix must start with "/"
+// and must not end with "/"; namespace and name must be non-empty and must not
+// contain "/".
+func NamespaceReverseKeyFunc(resourcePrefix string) storage.ReverseKeyFunc {
+	keyPrefix := resourcePrefix + "/"
+	return func(key string) (name string, namespace string, err error) {
+		instance, found := strings.CutPrefix(key, keyPrefix)
+		if !found {
+			return "", "", fmt.Errorf("key %q does not have resource prefix %q", key, resourcePrefix)
+		}
+		namespace, name, found = strings.Cut(instance, "/")
+		if !found || namespace == "" || name == "" || strings.Contains(name, "/") {
+			return "", "", fmt.Errorf("key %q must contain exactly two non-empty namespace and name segments after resource prefix %q", key, resourcePrefix)
+		}
+		return name, namespace, nil
+	}
+}
+
+type storeKeyFuncs struct {
+	// requestKeyRootFunc returns the resource-relative key prefix for list and
+	// watch requests, for example "/pods" or "/pods/<namespace>".
+	requestKeyRootFunc func(ctx context.Context) string
+	// requestKeyFunc returns the resource-relative key for a single object, for
+	// example "/pods/<namespace>/<name>" or "/persistentvolumes/<name>".
+	requestKeyFunc func(ctx context.Context, name string) (string, error)
+	// objectKeyFunc returns the same resource-relative key as requestKeyFunc,
+	// deriving namespace and name from object metadata for watch-cache callers.
+	objectKeyFunc func(obj runtime.Object) (string, error)
+	// reverseKeyFunc recovers object identity from the same resource-relative
+	// key domain produced by requestKeyFunc.
+	reverseKeyFunc storage.ReverseKeyFunc
+}
+
+func defaultStoreKeyFuncs(prefix string, isNamespaced bool) storeKeyFuncs {
+	if isNamespaced {
+		return newStoreKeyFuncs(
+			isNamespaced,
+			func(ctx context.Context) string {
+				return NamespaceKeyRootFunc(ctx, prefix)
+			},
+			func(ctx context.Context, name string) (string, error) {
+				return NamespaceKeyFunc(ctx, prefix, name)
+			},
+			NamespaceReverseKeyFunc(prefix),
+		)
+	}
+
+	return newStoreKeyFuncs(
+		isNamespaced,
+		func(ctx context.Context) string {
+			return prefix
+		},
+		func(ctx context.Context, name string) (string, error) {
+			return NoNamespaceKeyFunc(ctx, prefix, name)
+		},
+		NoNamespaceReverseKeyFunc(prefix),
+	)
+}
+
+func newStoreKeyFuncs(
+	isNamespaced bool,
+	requestKeyRootFunc func(ctx context.Context) string,
+	requestKeyFunc func(ctx context.Context, name string) (string, error),
+	reverseKeyFunc storage.ReverseKeyFunc,
+) storeKeyFuncs {
+	return storeKeyFuncs{
+		requestKeyRootFunc: requestKeyRootFunc,
+		requestKeyFunc:     requestKeyFunc,
+		objectKeyFunc: func(obj runtime.Object) (string, error) {
+			accessor, err := meta.Accessor(obj)
+			if err != nil {
+				return "", err
+			}
+
+			ctx := genericapirequest.NewContext()
+			if isNamespaced {
+				ctx = genericapirequest.WithNamespace(ctx, accessor.GetNamespace())
+			}
+			return requestKeyFunc(ctx, accessor.GetName())
+		},
+		reverseKeyFunc: reverseKeyFunc,
+	}
+}
+
 // New implements RESTStorage.New.
 func (e *Store) New() runtime.Object {
 	return e.NewFunc()
+}
+
+// ReadinessCheck checks if the storage is ready for accepting requests.
+func (e *Store) ReadinessCheck() error {
+	if e.ReadinessCheckFunc != nil {
+		return e.ReadinessCheckFunc()
+	}
+	return nil
 }
 
 // Destroy cleans up its resources on shutdown.
@@ -328,6 +480,11 @@ func (e *Store) GetDeleteStrategy() rest.RESTDeleteStrategy {
 	return e.DeleteStrategy
 }
 
+// GetCorruptObjDeleter returns the unsafe corrupt object deleter
+func (e *Store) GetCorruptObjDeleter() rest.GracefulDeleter {
+	return e.corruptObjDeleter
+}
+
 // List returns a list of items matching labels and field according to the
 // store's PredicateFunc.
 func (e *Store) List(ctx context.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
@@ -358,6 +515,13 @@ func (e *Store) ListPredicate(ctx context.Context, p storage.SelectionPredicate,
 	}
 	p.Limit = options.Limit
 	p.Continue = options.Continue
+	if utilfeature.DefaultFeatureGate.Enabled(features.ShardedListAndWatch) && options.ShardSelector != "" {
+		sel, err := sharding.Parse(options.ShardSelector)
+		if err != nil {
+			return nil, fmt.Errorf("invalid shard selector: %w", err)
+		}
+		p.ShardSelector = sel
+	}
 	list := e.NewListFunc()
 	qualifiedResource := e.qualifiedResourceFromContext(ctx)
 	storageOpts := storage.ListOptions{
@@ -392,11 +556,54 @@ func (e *Store) ListPredicate(ctx context.Context, p storage.SelectionPredicate,
 // finishNothing is a do-nothing FinishFunc.
 func finishNothing(context.Context, bool) {}
 
+// maxNameGenerationCreateAttempts is the maximum number of
+// times create will be attempted when generateName is used
+// and create attempts fails due to name conflict errors.
+// Each attempt uses a newly randomly generated name.
+// 8 was selected as the max because it is sufficient to generate
+// 1 million names per generateName prefix, with only a 0.1%
+// probability of any generated name conflicting with existing names.
+// Without retry, a 0.1% probability occurs at ~500
+// generated names and a 50% probability occurs at ~4500
+// generated names.
+const maxNameGenerationCreateAttempts = 8
+
 // Create inserts a new item according to the unique key from the object.
 // Note that registries may mutate the input object (e.g. in the strategy
 // hooks).  Tests which call this might want to call DeepCopy if they expect to
 // be able to examine the input and output objects for differences.
 func (e *Store) Create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
+	if needsNameGeneration(obj) {
+		return e.createWithGenerateNameRetry(ctx, obj, createValidation, options)
+	}
+
+	return e.create(ctx, obj, createValidation, options)
+}
+
+// needsNameGeneration returns true if the obj has a generateName but no name.
+func needsNameGeneration(obj runtime.Object) bool {
+	if objectMeta, err := meta.Accessor(obj); err == nil {
+		if len(objectMeta.GetGenerateName()) > 0 && len(objectMeta.GetName()) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// createWithGenerateNameRetry attempts to create obj up to maxNameGenerationCreateAttempts
+// when create fails due to a name conflict error. Each attempt randomly generates a new
+// name based on generateName.
+func (e *Store) createWithGenerateNameRetry(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (resultObj runtime.Object, err error) {
+	for i := 0; i < maxNameGenerationCreateAttempts; i++ {
+		resultObj, err = e.create(ctx, obj.DeepCopyObject(), createValidation, options)
+		if err == nil || !apierrors.IsAlreadyExists(err) {
+			return resultObj, err
+		}
+	}
+	return resultObj, err
+}
+
+func (e *Store) create(ctx context.Context, obj runtime.Object, createValidation rest.ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error) {
 	var finishCreate FinishFunc = finishNothing
 
 	// Init metadata as early as possible.
@@ -507,17 +714,38 @@ func ShouldDeleteDuringUpdate(ctx context.Context, key string, obj, existing run
 	return oldMeta.GetDeletionGracePeriodSeconds() == nil || *oldMeta.GetDeletionGracePeriodSeconds() == 0
 }
 
+func setRVFromNotFound(err error, lastKnown runtime.Object, returnDeletedObject bool) runtime.Object {
+	obj := lastKnown.DeepCopyObject()
+	accessor, aErr := meta.Accessor(obj)
+	if aErr != nil {
+		return obj
+	}
+	if returnDeletedObject {
+		// clear the resource version since we can't return an RV that corresponds to both the object content and the storage version
+		accessor.SetResourceVersion("")
+	} else {
+		if rv, ok := storage.ResourceVersion(err); ok && rv != "" {
+			accessor.SetResourceVersion(rv)
+		} else {
+			// clear the resource version since we don't know the storage version at this point
+			accessor.SetResourceVersion("")
+		}
+	}
+	return obj
+}
+
 // deleteWithoutFinalizers handles deleting an object ignoring its finalizer list.
 // Used for objects that are either been finalized or have never initialized.
 func (e *Store) deleteWithoutFinalizers(ctx context.Context, name, key string, obj runtime.Object, preconditions *storage.Preconditions, options *metav1.DeleteOptions) (runtime.Object, bool, error) {
 	out := e.NewFunc()
 	klog.V(6).InfoS("Going to delete object from registry, triggered by update", "object", klog.KRef(genericapirequest.NamespaceValue(ctx), name))
 	// Using the rest.ValidateAllObjectFunc because the request is an UPDATE request and has already passed the admission for the UPDATE verb.
-	if err := e.Storage.Delete(ctx, key, out, preconditions, rest.ValidateAllObjectFunc, dryrun.IsDryRun(options.DryRun), nil); err != nil {
+	if err := e.Storage.Delete(ctx, key, out, preconditions, rest.ValidateAllObjectFunc, dryrun.IsDryRun(options.DryRun), nil, storage.DeleteOptions{}); err != nil {
 		// Deletion is racy, i.e., there could be multiple update
 		// requests to remove all finalizers from the object, so we
 		// ignore the NotFound error.
 		if storage.IsNotFound(err) {
+			obj = setRVFromNotFound(err, obj, e.ReturnDeletedObject)
 			_, err := e.finalizeDelete(ctx, obj, true, options)
 			// clients are expecting an updated object if a PUT succeeded,
 			// but finalizeDelete returns a metav1.Status, so return
@@ -526,10 +754,15 @@ func (e *Store) deleteWithoutFinalizers(ctx context.Context, name, key string, o
 		}
 		return nil, false, storeerr.InterpretDeleteError(err, e.qualifiedResourceFromContext(ctx), name)
 	}
-	_, err := e.finalizeDelete(ctx, out, true, options)
-	// clients are expecting an updated object if a PUT succeeded, but
-	// finalizeDelete returns a metav1.Status, so return the object in
-	// the request instead.
+	// clients are expecting the updated object if a PUT succeeded. We preserve
+	// any other updates in 'obj' but update its resource version to match the
+	// actual deletion transaction.
+	if outAccessor, err := meta.Accessor(out); err == nil {
+		if objAccessor, err := meta.Accessor(obj); err == nil {
+			objAccessor.SetResourceVersion(outAccessor.GetResourceVersion())
+		}
+	}
+	_, err := e.finalizeDelete(ctx, obj, true, options)
 	return obj, false, err
 }
 
@@ -555,15 +788,18 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 	}
 
 	out := e.NewFunc()
+
+	// only ignore a not found error if this type allows creating on update, or we're forcing allowing create (like for server-side-apply)
+	ignoreNotFound := e.UpdateStrategy.AllowCreateOnUpdate(ctx) || forceAllowCreate
 	// deleteObj is only used in case a deletion is carried out
 	var deleteObj runtime.Object
-	err = e.Storage.GuaranteedUpdate(ctx, key, out, true, storagePreconditions, func(existing runtime.Object, res storage.ResponseMeta) (runtime.Object, *uint64, error) {
+	err = e.Storage.GuaranteedUpdate(ctx, key, out, ignoreNotFound, storagePreconditions, func(existing runtime.Object, res storage.ResponseMeta) (runtime.Object, *uint64, error) {
 		existingResourceVersion, err := e.Storage.Versioner().ObjectResourceVersion(existing)
 		if err != nil {
 			return nil, nil, err
 		}
 		if existingResourceVersion == 0 {
-			if !e.UpdateStrategy.AllowCreateOnUpdate() && !forceAllowCreate {
+			if !e.UpdateStrategy.AllowCreateOnUpdate(ctx) && !forceAllowCreate {
 				return nil, nil, apierrors.NewNotFound(qualifiedResource, name)
 			}
 		}
@@ -582,13 +818,17 @@ func (e *Store) Update(ctx context.Context, name string, objInfo rest.UpdatedObj
 		if err != nil {
 			return nil, nil, err
 		}
-		doUnconditionalUpdate := newResourceVersion == 0 && e.UpdateStrategy.AllowUnconditionalUpdate()
+		doUnconditionalUpdate := newResourceVersion == 0 && e.UpdateStrategy.AllowUnconditionalUpdate(ctx)
 
 		if existingResourceVersion == 0 {
 			// Init metadata as early as possible.
 			if objectMeta, err := meta.Accessor(obj); err != nil {
 				return nil, nil, err
 			} else {
+				// Wipe metadata on create-via-update and create-via-apply
+				// requests to match create behavior. Note that this happens
+				// AFTER preconditions are checked.
+				rest.WipeObjectMetaSystemFields(objectMeta)
 				rest.FillObjectMetaSystemFields(objectMeta)
 			}
 
@@ -843,12 +1083,12 @@ func shouldOrphanDependents(ctx context.Context, e *Store, accessor metav1.Objec
 	return defaultGCPolicy == rest.OrphanDependents
 }
 
-// shouldDeleteDependents returns true if the finalizer for foreground deletion should be set
+// shouldDeleteDependentsInForeground returns true if the finalizer for foreground deletion should be set
 // updated for FinalizerDeleteDependents. In the order of highest to lowest
 // priority, there are three factors affect whether to add/remove the
 // FinalizerDeleteDependents: options, existing finalizers of the object, and
 // e.DeleteStrategy.DefaultGarbageCollectionPolicy.
-func shouldDeleteDependents(ctx context.Context, e *Store, accessor metav1.Object, options *metav1.DeleteOptions) bool {
+func shouldDeleteDependentsInForeground(ctx context.Context, e *Store, accessor metav1.Object, options *metav1.DeleteOptions) bool {
 	// Get default GC policy from this REST object type
 	if gcStrategy, ok := e.DeleteStrategy.(rest.GarbageCollectionDeleteStrategy); ok && gcStrategy.DefaultGarbageCollectionPolicy(ctx) == rest.Unsupported {
 		// return false to indicate that we should NOT delete in foreground
@@ -897,7 +1137,7 @@ func deletionFinalizersForGarbageCollection(ctx context.Context, e *Store, acces
 		return false, []string{}
 	}
 	shouldOrphan := shouldOrphanDependents(ctx, e, accessor, options)
-	shouldDeleteDependentInForeground := shouldDeleteDependents(ctx, e, accessor, options)
+	shouldDeleteInForeground := shouldDeleteDependentsInForeground(ctx, e, accessor, options)
 	newFinalizers := []string{}
 
 	// first remove both finalizers, add them back if needed.
@@ -911,7 +1151,7 @@ func deletionFinalizersForGarbageCollection(ctx context.Context, e *Store, acces
 	if shouldOrphan {
 		newFinalizers = append(newFinalizers, metav1.FinalizerOrphanDependents)
 	}
-	if shouldDeleteDependentInForeground {
+	if shouldDeleteInForeground {
 		newFinalizers = append(newFinalizers, metav1.FinalizerDeleteDependents)
 	}
 
@@ -979,6 +1219,7 @@ func (e *Store) updateForGracefulDeletionAndFinalizers(ctx context.Context, name
 				return nil, err
 			}
 			if pendingGraceful {
+				lastExisting = existing
 				return nil, errAlreadyDeleting
 			}
 
@@ -1038,7 +1279,11 @@ func (e *Store) updateForGracefulDeletionAndFinalizers(ctx context.Context, name
 		// we should fall through and truly delete the object.
 		return nil, false, true, out, lastExisting
 	case errAlreadyDeleting:
-		out, err = e.finalizeDelete(ctx, in, true, options)
+		target := in
+		if lastExisting != nil {
+			target = lastExisting
+		}
+		out, err = e.finalizeDelete(ctx, target, true, options)
 		return err, false, false, out, lastExisting
 	default:
 		return storeerr.InterpretUpdateError(err, e.qualifiedResourceFromContext(ctx), name), false, false, out, lastExisting
@@ -1123,12 +1368,13 @@ func (e *Store) Delete(ctx context.Context, name string, deleteValidation rest.V
 	// delete immediately, or no graceful deletion supported
 	klog.V(6).InfoS("Going to delete object from registry", "object", klog.KRef(genericapirequest.NamespaceValue(ctx), name))
 	out = e.NewFunc()
-	if err := e.Storage.Delete(ctx, key, out, &preconditions, storage.ValidateObjectFunc(deleteValidation), dryrun.IsDryRun(options.DryRun), nil); err != nil {
+	if err := e.Storage.Delete(ctx, key, out, &preconditions, storage.ValidateObjectFunc(deleteValidation), dryrun.IsDryRun(options.DryRun), nil, storage.DeleteOptions{}); err != nil {
 		// Please refer to the place where we set ignoreNotFound for the reason
 		// why we ignore the NotFound error .
 		if storage.IsNotFound(err) && ignoreNotFound && lastExisting != nil {
 			// The lastExisting object may not be the last state of the object
 			// before its deletion, but it's the best approximation.
+			lastExisting = setRVFromNotFound(err, lastExisting, e.ReturnDeletedObject)
 			out, err := e.finalizeDelete(ctx, lastExisting, true, options)
 			return out, true, err
 		}
@@ -1162,7 +1408,6 @@ func (e *Store) DeleteCollection(ctx context.Context, deleteValidation rest.Vali
 
 	var items []runtime.Object
 
-	// TODO(wojtek-t): Decide if we don't want to start workers more opportunistically.
 	workersNumber := e.DeleteCollectionWorkers
 	if workersNumber < 1 {
 		workersNumber = 1
@@ -1183,7 +1428,7 @@ func (e *Store) DeleteCollection(ctx context.Context, deleteValidation rest.Vali
 	for i := 0; i < workersNumber; i++ {
 		go func() {
 			// panics don't cross goroutine boundaries
-			defer utilruntime.HandleCrash(func(panicReason interface{}) {
+			defer utilruntime.HandleCrashWithContext(ctx, func(_ context.Context, panicReason interface{}) {
 				errs <- fmt.Errorf("DeleteCollection goroutine panicked: %v", panicReason)
 			})
 			defer wg.Done()
@@ -1208,7 +1453,7 @@ func (e *Store) DeleteCollection(ctx context.Context, deleteValidation rest.Vali
 	}
 	// In case of all workers exit, notify distributor.
 	go func() {
-		defer utilruntime.HandleCrash(func(panicReason interface{}) {
+		defer utilruntime.HandleCrashWithContext(ctx, func(_ context.Context, panicReason interface{}) {
 			errs <- fmt.Errorf("DeleteCollection workers closer panicked: %v", panicReason)
 		})
 		wg.Wait()
@@ -1327,6 +1572,7 @@ func (e *Store) finalizeDelete(ctx context.Context, obj runtime.Object, runHooks
 		UID:   accessor.GetUID(),
 	}
 	status := &metav1.Status{Status: metav1.StatusSuccess, Details: details}
+	status.ResourceVersion = accessor.GetResourceVersion()
 	return status, nil
 }
 
@@ -1349,13 +1595,25 @@ func (e *Store) Watch(ctx context.Context, options *metainternalversion.ListOpti
 	if options != nil {
 		resourceVersion = options.ResourceVersion
 		predicate.AllowWatchBookmarks = options.AllowWatchBookmarks
+		if utilfeature.DefaultFeatureGate.Enabled(features.ShardedListAndWatch) && options.ShardSelector != "" {
+			sel, err := sharding.Parse(options.ShardSelector)
+			if err != nil {
+				return nil, fmt.Errorf("invalid shard selector: %w", err)
+			}
+			predicate.ShardSelector = sel
+		}
 	}
 	return e.WatchPredicate(ctx, predicate, resourceVersion, options.SendInitialEvents)
 }
 
 // WatchPredicate starts a watch for the items that matches.
 func (e *Store) WatchPredicate(ctx context.Context, p storage.SelectionPredicate, resourceVersion string, sendInitialEvents *bool) (watch.Interface, error) {
-	storageOpts := storage.ListOptions{ResourceVersion: resourceVersion, Predicate: p, Recursive: true, SendInitialEvents: sendInitialEvents}
+	storageOpts := storage.ListOptions{
+		ResourceVersion:   resourceVersion,
+		Predicate:         p,
+		Recursive:         true,
+		SendInitialEvents: sendInitialEvents,
+	}
 
 	// if we're not already namespace-scoped, see if the field selector narrows the scope of the watch
 	if requestNamespace, _ := genericapirequest.NamespaceFrom(ctx); len(requestNamespace) == 0 {
@@ -1472,7 +1730,7 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 		return err
 	}
 
-	opts, err := options.RESTOptions.GetRESTOptions(e.DefaultQualifiedResource)
+	opts, err := options.RESTOptions.GetRESTOptions(e.DefaultQualifiedResource, e.NewFunc())
 	if err != nil {
 		return err
 	}
@@ -1482,43 +1740,20 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 	if !strings.HasPrefix(prefix, "/") {
 		prefix = "/" + prefix
 	}
-	if prefix == "/" {
+	prefix = strings.TrimRight(prefix, "/")
+	if prefix == "" {
 		return fmt.Errorf("store for %s has an invalid prefix %q", e.DefaultQualifiedResource.String(), opts.ResourcePrefix)
 	}
 
-	// Set the default behavior for storage key generation
+	var keyFuncs storeKeyFuncs
 	if e.KeyRootFunc == nil && e.KeyFunc == nil {
-		if isNamespaced {
-			e.KeyRootFunc = func(ctx context.Context) string {
-				return NamespaceKeyRootFunc(ctx, prefix)
-			}
-			e.KeyFunc = func(ctx context.Context, name string) (string, error) {
-				return NamespaceKeyFunc(ctx, prefix, name)
-			}
-		} else {
-			e.KeyRootFunc = func(ctx context.Context) string {
-				return prefix
-			}
-			e.KeyFunc = func(ctx context.Context, name string) (string, error) {
-				return NoNamespaceKeyFunc(ctx, prefix, name)
-			}
-		}
+		keyFuncs = defaultStoreKeyFuncs(prefix, isNamespaced)
+	} else {
+		keyFuncs = newStoreKeyFuncs(isNamespaced, e.KeyRootFunc, e.KeyFunc, e.ReverseKeyFunc)
 	}
-
-	// We adapt the store's keyFunc so that we can use it with the StorageDecorator
-	// without making any assumptions about where objects are stored in etcd
-	keyFunc := func(obj runtime.Object) (string, error) {
-		accessor, err := meta.Accessor(obj)
-		if err != nil {
-			return "", err
-		}
-
-		if isNamespaced {
-			return e.KeyFunc(genericapirequest.WithNamespace(genericapirequest.NewContext(), accessor.GetNamespace()), accessor.GetName())
-		}
-
-		return e.KeyFunc(genericapirequest.NewContext(), accessor.GetName())
-	}
+	e.KeyRootFunc = keyFuncs.requestKeyRootFunc
+	e.KeyFunc = keyFuncs.requestKeyFunc
+	e.ReverseKeyFunc = keyFuncs.reverseKeyFunc
 
 	if e.DeleteCollectionWorkers == 0 {
 		e.DeleteCollectionWorkers = opts.DeleteCollectionWorkers
@@ -1542,7 +1777,8 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 		e.Storage.Storage, e.DestroyFunc, err = opts.Decorator(
 			opts.StorageConfig,
 			prefix,
-			keyFunc,
+			keyFuncs.objectKeyFunc,
+			keyFuncs.reverseKeyFunc,
 			e.NewFunc,
 			e.NewListFunc,
 			attrFunc,
@@ -1568,29 +1804,40 @@ func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
 			}
 		}
 	}
+	if e.Storage.Storage != nil {
+		e.ReadinessCheckFunc = e.Storage.Storage.ReadinessCheck
+	}
+
+	if utilfeature.DefaultFeatureGate.Enabled(features.AllowUnsafeMalformedObjectDeletion) {
+		e.corruptObjDeleter = NewCorruptObjectDeleter(e)
+	}
 
 	return nil
 }
 
 // startObservingCount starts monitoring given prefix and periodically updating metrics. It returns a function to stop collection.
 func (e *Store) startObservingCount(period time.Duration, objectCountTracker flowcontrolrequest.StorageObjectCountTracker) func() {
-	prefix := e.KeyRootFunc(genericapirequest.NewContext())
+	ctx := genericapirequest.NewContext()
+	prefix := e.KeyRootFunc(ctx)
 	resourceName := e.DefaultQualifiedResource.String()
 	klog.V(2).InfoS("Monitoring resource count at path", "resource", resourceName, "path", "<storage-prefix>/"+prefix)
 	stopCh := make(chan struct{})
 	go wait.JitterUntil(func() {
-		count, err := e.Storage.Count(prefix)
+		stats, err := e.Storage.Stats(ctx)
+		metrics.UpdateStoreStats(e.DefaultQualifiedResource, stats, err)
 		if err != nil {
 			klog.V(5).InfoS("Failed to update storage count metric", "err", err)
-			count = -1
+			return
 		}
 
-		metrics.UpdateObjectCount(resourceName, count)
 		if objectCountTracker != nil {
-			objectCountTracker.Set(resourceName, count)
+			objectCountTracker.Set(resourceName, stats)
 		}
 	}, period, resourceCountPollPeriodJitter, true, stopCh)
-	return func() { close(stopCh) }
+	return func() {
+		metrics.DeleteStoreStats(e.DefaultQualifiedResource)
+		close(stopCh)
+	}
 }
 
 func (e *Store) ConvertToTable(ctx context.Context, object runtime.Object, tableOptions runtime.Object) (*metav1.Table, error) {
