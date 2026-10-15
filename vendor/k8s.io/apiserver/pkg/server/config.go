@@ -508,9 +508,9 @@ func DefaultOpenAPIConfig(getDefinitions openapicommon.GetOpenAPIDefinitions, de
 				Description: "Default Response.",
 			},
 		},
-		GetOperationIDAndTags: apiopenapi.GetOperationIDAndTags,
-		GetDefinitionName:     defNamer.GetDefinitionName,
-		GetDefinitions:        getDefinitions,
+		GetOperationIDAndTagsFromRoute: apiopenapi.GetOperationIDAndTagsFromRoute,
+		GetDefinitionName:              defNamer.GetDefinitionName,
+		GetDefinitions:                 getDefinitions,
 	}
 }
 
@@ -528,9 +528,9 @@ func DefaultOpenAPIV3Config(getDefinitions openapicommon.GetOpenAPIDefinitions, 
 				Description: "Default Response.",
 			},
 		},
-		GetOperationIDAndTags: apiopenapi.GetOperationIDAndTags,
-		GetDefinitionName:     defNamer.GetDefinitionName,
-		GetDefinitions:        getDefinitions,
+		GetOperationIDAndTagsFromRoute: apiopenapi.GetOperationIDAndTagsFromRoute,
+		GetDefinitionName:              defNamer.GetDefinitionName,
+		GetDefinitions:                 getDefinitions,
 	}
 	defaultConfig.Definitions = getDefinitions(func(name string) spec.Ref {
 		defName, _ := defaultConfig.GetDefinitionName(name)
@@ -1069,9 +1069,7 @@ func DefaultBuildHandlerChain(apiHandler http.Handler, c *Config) http.Handler {
 
 	// WithTracing comes after authentication so we can allow authenticated
 	// clients to influence sampling.
-	if c.FeatureGate.Enabled(genericfeatures.APIServerTracing) {
-		handler = genericapifilters.WithTracing(handler, c.TracerProvider)
-	}
+	handler = genericapifilters.WithTracing(handler, c.TracerProvider)
 	failedHandler = filterlatency.TrackCompleted(failedHandler)
 	handler = filterlatency.TrackCompleted(handler)
 	handler = genericapifilters.WithAuthentication(handler, c.Authentication.Authenticator, failedHandler, c.Authentication.APIAudiences, c.Authentication.RequestHeaderConfig)

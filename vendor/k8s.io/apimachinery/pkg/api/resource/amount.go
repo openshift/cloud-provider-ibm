@@ -17,6 +17,7 @@ limitations under the License.
 package resource
 
 import (
+	"math"
 	"math/big"
 	"strconv"
 
@@ -25,12 +26,61 @@ import (
 
 // Scale is used for getting and setting the base-10 scaled value.
 // Base-2 scales are omitted for mathematical simplicity.
+//
+// Scale is the power-of-10 exponent. 1E2 has scale 2. 1E-2 has scale -2.
+// This is the opposite of inf.Scale which counts digits after the decimal
+// point (for inf.Scale, 1E2 has scale -2. 1E-2 has scale 2).
+//
 // See Quantity.ScaledValue for more details.
 type Scale int32
 
 // infScale adapts a Scale value to an inf.Scale value.
 func (s Scale) infScale() inf.Scale {
 	return inf.Scale(-s) // inf.Scale is upside-down
+}
+
+// canInfScale reports whether infScale is faithful for s. Scale is int32 and
+// infScale negates it, so math.MinInt32 is the one scale whose negation
+// overflows back to itself and cannot be represented as an inf.Scale.
+func (s Scale) canInfScale() bool {
+	return s != math.MinInt32
+}
+
+// canAlignInfScale reports whether a subtraction between scales s and other can
+// be represented on the inf.Dec fallback: both scales must be representable as
+// an inf.Scale, and their alignment delta must fit in int32 so aligning the two
+// operands there does not overflow. The delta is widened here so the check
+// itself does not overflow. It does not bound the cost of that alignment.
+func (s Scale) canAlignInfScale(other Scale) bool {
+	if !s.canInfScale() || !other.canInfScale() {
+		return false
+	}
+	delta := widenScale(s) - widenScale(other)
+	return delta >= -math.MaxInt32 && delta <= math.MaxInt32
+}
+
+// widenedScale is a Scale widened to int64, so it also holds a negated
+// inf.Scale and the difference of two scales without overflow.
+// Conversions should happen only via widenScale, widenInfScale and
+// narrowScale to ensure the sign is converted safely.
+type widenedScale int64
+
+// widenScale returns s as a widenedScale.
+func widenScale(s Scale) widenedScale {
+	return widenedScale(s)
+}
+
+// narrowScale returns s as a Scale. fits is false when s is outside
+// of the Scale range, in which case the result wraps must not be treated
+// as a valid value.
+func narrowScale(s widenedScale) (narrowed Scale, fits bool) {
+	return Scale(s), s >= math.MinInt32 && s <= math.MaxInt32
+}
+
+// widenInfScale returns the base-10 exponent of an inf.Dec with scale s.
+// This performs the negation required to switch from an inf.Scale to a Scale.
+func widenInfScale(s inf.Scale) widenedScale {
+	return -widenedScale(s)
 }
 
 const (
@@ -88,23 +138,44 @@ func (a int64Amount) AsInt64() (int64, bool) {
 }
 
 // AsScaledInt64 returns an int64 representing the value of this amount at the specified scale,
-// rounding up, or false if that would result in overflow. (1e20).AsScaledInt64(1) would result
-// in overflow because 1e19 is not representable as an int64. Note that setting a scale larger
-// than the current value may result in loss of precision - i.e. (1e-6).AsScaledInt64(0) would
-// return 1, because 0.000001 is rounded up to 1.
+// rounding away from zero. ok is false when the value overflows int64, in which case the result
+// saturates to mostNegative or mostPositive. (1e20).AsScaledInt64(1) overflows because 1e19 is not
+// representable as an int64. Setting a scale larger than the current value may lose precision:
+// (1e-6).AsScaledInt64(0) returns 1, because 0.000001 rounds away from zero to 1.
 func (a int64Amount) AsScaledInt64(scale Scale) (result int64, ok bool) {
-	if a.scale < scale {
-		result, _ = negativeScaleInt64(a.value, scale-a.scale)
+	if a.value == 0 {
+		return 0, true
+	}
+	// Widen first: the delta of two int32 scales can need 33 bits.
+	delta := a.widenedScale() - widenScale(scale)
+	if delta < 0 {
+		// Scaling down past 10^-log10MaxInt64 leaves only the rounding unit.
+		down, fits := narrowScale(-delta)
+		if !fits || down >= log10MaxInt64 {
+			if a.value < 0 {
+				return -1, true
+			}
+			return 1, true
+		}
+		result, _ = negativeScaleInt64(a.value, down)
 		return result, true
 	}
-	return positiveScaleInt64(a.value, a.scale-scale)
+	// Scaling up: 10^log10MaxInt64 already exceeds int64.
+	up, fits := narrowScale(delta)
+	if !fits || up >= log10MaxInt64 {
+		if a.value < 0 {
+			return mostNegative, false
+		}
+		return mostPositive, false
+	}
+	return positiveScaleInt64(a.value, up)
 }
 
 // AsDec returns an inf.Dec representation of this value.
 func (a int64Amount) AsDec() *inf.Dec {
 	var base inf.Dec
 	base.SetUnscaled(a.value)
-	base.SetScale(inf.Scale(-a.scale))
+	base.SetScale(a.scale.infScale())
 	return &base
 }
 
@@ -114,9 +185,15 @@ func (a int64Amount) Cmp(b int64Amount) int {
 	case a.scale == b.scale:
 		// compare only the unscaled portion
 	case a.scale > b.scale:
-		result, remainder, exact := divideByScaleInt64(b.value, a.scale-b.scale)
+		// Widen before subtracting: the difference of two int32 scales does not
+		// have to fit one, and a wrapped negative reaches a zero divisor.
+		diff, fits := narrowScale(widenScale(a.scale) - widenScale(b.scale))
+		if !fits || diff >= 18 {
+			return cmpDec(a.AsDec(), b.AsDec())
+		}
+		result, remainder, exact := divideByScaleInt64(b.value, diff)
 		if !exact {
-			return a.AsDec().Cmp(b.AsDec())
+			return cmpDec(a.AsDec(), b.AsDec())
 		}
 		if result == a.value {
 			switch {
@@ -130,9 +207,13 @@ func (a int64Amount) Cmp(b int64Amount) int {
 		}
 		b.value = result
 	default:
-		result, remainder, exact := divideByScaleInt64(a.value, b.scale-a.scale)
+		diff, fits := narrowScale(widenScale(b.scale) - widenScale(a.scale))
+		if !fits || diff >= 18 {
+			return cmpDec(a.AsDec(), b.AsDec())
+		}
+		result, remainder, exact := divideByScaleInt64(a.value, diff)
 		if !exact {
-			return a.AsDec().Cmp(b.AsDec())
+			return cmpDec(a.AsDec(), b.AsDec())
 		}
 		if result == b.value {
 			switch {
@@ -155,6 +236,39 @@ func (a int64Amount) Cmp(b int64Amount) int {
 	default:
 		return 1
 	}
+}
+
+// decimalExponentBounds brackets the e for which 10^(e-1) <= |c|*10^s < 10^e,
+// for a non-zero c. An n-bit magnitude has at least n/4 and at most n/3+1
+// decimal digits, so neither bound has to count them.
+func decimalExponentBounds(bitLen int, s widenedScale) (lo, hi widenedScale) {
+	n := widenedScale(bitLen)
+	return n/4 + s, n/3 + 1 + s
+}
+
+// cmpDec compares x and y. inf.Dec.Cmp aligns the two scales by writing their
+// difference out in digits, and a parsed exponent sets that difference, so
+// settle what the magnitudes already decide before reaching it.
+func cmpDec(x, y *inf.Dec) int {
+	xSign, ySign := x.Sign(), y.Sign()
+	switch {
+	case xSign != ySign:
+		if xSign > ySign {
+			return 1
+		}
+		return -1
+	case xSign == 0:
+		return 0
+	}
+	xLo, xHi := decimalExponentBounds(x.UnscaledBig().BitLen(), widenInfScale(x.Scale()))
+	yLo, yHi := decimalExponentBounds(y.UnscaledBig().BitLen(), widenInfScale(y.Scale()))
+	switch {
+	case xLo > yHi:
+		return xSign
+	case xHi < yLo:
+		return -xSign
+	}
+	return x.Cmp(y)
 }
 
 // Add adds two int64Amounts together, matching scales. It will return false and not mutate
@@ -198,8 +312,18 @@ func (a *int64Amount) Add(b int64Amount) bool {
 	return true
 }
 
-// Sub removes the value of b from the current amount, or returns false if underflow would result.
+// Sub removes b from a. It returns false without mutating a when this
+// subtraction cannot be performed safely on the int64 fast path and the caller
+// can represent the operands and their alignment in the decimal fallback.
 func (a *int64Amount) Sub(b int64Amount) bool {
+	if b.value == mostNegative && a.scale.canAlignInfScale(b.scale) {
+		// -b.value overflows int64, so leave a unchanged and let the caller fall
+		// back to inf.Dec. That fallback aligns both operands, so it is only
+		// correct when both scales and their alignment delta can be represented
+		// there; anything else stays on the int64 path and keeps its existing
+		// wrapped result.
+		return false
+	}
 	return a.Add(int64Amount{value: -b.value, scale: b.scale})
 }
 
@@ -249,6 +373,11 @@ func (a int64Amount) AsScale(scale Scale) (int64Amount, bool) {
 	}
 	result, exact := negativeScaleInt64(a.value, scale-a.scale)
 	return int64Amount{value: result, scale: scale}, exact
+}
+
+// widenedScale returns the base-10 scale exponent as a widenedScale.
+func (a int64Amount) widenedScale() widenedScale {
+	return widenScale(a.scale)
 }
 
 // AsCanonicalBytes accepts a buffer to write the base-10 string value of this field to, and returns
@@ -306,12 +435,19 @@ func (a infDecAmount) AsScale(scale Scale) (infDecAmount, bool) {
 	return infDecAmount{tmp}, tmp.Cmp(a.Dec) == 0
 }
 
+// widenedScale returns the base-10 scale exponent as a widenedScale.
+func (a infDecAmount) widenedScale() widenedScale {
+	return widenInfScale(a.Dec.Scale())
+}
+
 // AsCanonicalBytes accepts a buffer to write the base-10 string value of this field to, and returns
 // either that buffer or a larger buffer and the current exponent of the value. The value is adjusted
 // until the exponent is a multiple of 3 - i.e. 1.1e5 would return "110", 3.
 func (a infDecAmount) AsCanonicalBytes(out []byte) (result []byte, exponent int32) {
 	mantissa := a.Dec.UnscaledBig()
-	exponent = int32(-a.Dec.Scale())
+	// An inf.Scale of math.MinInt32 does not fit, and wraps.
+	scale, _ := narrowScale(a.widenedScale())
+	exponent = int32(scale)
 	amount := big.NewInt(0).Set(mantissa)
 	// move all factors of 10 into the exponent for easy reasoning
 	amount, times := removeBigIntFactors(amount, bigTen)
