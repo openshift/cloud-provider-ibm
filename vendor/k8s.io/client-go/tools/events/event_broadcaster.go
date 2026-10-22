@@ -240,7 +240,7 @@ func recordEvent(ctx context.Context, sink EventSink, event *eventsv1.Event) (*e
 		newEvent, err = sink.Patch(ctx, event, patch)
 	}
 	// Update can fail because the event may have been removed and it no longer exists.
-	if !isEventSeries || (isEventSeries && util.IsKeyNotFoundError(err)) {
+	if !isEventSeries || util.IsKeyNotFoundError(err) {
 		// Making sure that ResourceVersion is empty on creation
 		event.ResourceVersion = ""
 		newEvent, err = sink.Create(ctx, event)
@@ -328,7 +328,7 @@ func (e *eventBroadcasterImpl) StartStructuredLogging(verbosity klog.Level) func
 // To adjust verbosity, use the logger's V method (i.e. pass `logger.V(3)` instead of `logger`).
 // The returned function can be ignored or used to stop recording, if desired.
 func (e *eventBroadcasterImpl) StartLogging(logger klog.Logger) (func(), error) {
-	return e.StartEventWatcher(
+	return e.startEventWatcher(logger,
 		func(obj runtime.Object) {
 			event, ok := obj.(*eventsv1.Event)
 			if !ok {
@@ -342,12 +342,16 @@ func (e *eventBroadcasterImpl) StartLogging(logger klog.Logger) (func(), error) 
 // StartEventWatcher starts sending events received from this EventBroadcaster to the given event handler function.
 // The return value is used to stop recording
 func (e *eventBroadcasterImpl) StartEventWatcher(eventHandler func(event runtime.Object)) (func(), error) {
+	return e.startEventWatcher(klog.Background(), eventHandler)
+}
+
+func (e *eventBroadcasterImpl) startEventWatcher(logger klog.Logger, eventHandler func(event runtime.Object)) (func(), error) {
 	watcher, err := e.Watch()
 	if err != nil {
 		return nil, err
 	}
 	go func() {
-		defer utilruntime.HandleCrash()
+		defer utilruntime.HandleCrashWithLogger(logger)
 		for {
 			watchEvent, ok := <-watcher.ResultChan()
 			if !ok {
@@ -404,9 +408,17 @@ type eventBroadcasterAdapterImpl struct {
 
 // NewEventBroadcasterAdapter creates a wrapper around new and legacy broadcasters to simplify
 // migration of individual components to the new Event API.
+//
+//logcheck:context // NewEventBroadcasterAdapterWithContext should be used instead because record.NewBroadcaster is called and works better when a context is supplied (contextual logging, cancellation).
 func NewEventBroadcasterAdapter(client clientset.Interface) EventBroadcasterAdapter {
+	return NewEventBroadcasterAdapterWithContext(context.Background(), client)
+}
+
+// NewEventBroadcasterAdapterWithContext creates a wrapper around new and legacy broadcasters to simplify
+// migration of individual components to the new Event API.
+func NewEventBroadcasterAdapterWithContext(ctx context.Context, client clientset.Interface) EventBroadcasterAdapter {
 	eventClient := &eventBroadcasterAdapterImpl{}
-	if _, err := client.Discovery().ServerResourcesForGroupVersion(eventsv1.SchemeGroupVersion.String()); err == nil {
+	if _, err := client.Discovery().ServerResourcesForGroupVersionWithContext(ctx, eventsv1.SchemeGroupVersion.String()); err == nil {
 		eventClient.eventsv1Client = client.EventsV1()
 		eventClient.eventsv1Broadcaster = NewBroadcaster(&EventSinkImpl{Interface: eventClient.eventsv1Client})
 	}
@@ -414,7 +426,7 @@ func NewEventBroadcasterAdapter(client clientset.Interface) EventBroadcasterAdap
 	// we create it unconditionally because its overhead is minor and will simplify using usage
 	// patterns of this library in all components.
 	eventClient.coreClient = client.CoreV1()
-	eventClient.coreBroadcaster = record.NewBroadcaster()
+	eventClient.coreBroadcaster = record.NewBroadcaster(record.WithContext(ctx))
 	return eventClient
 }
 
