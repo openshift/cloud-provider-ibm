@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"slices"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -36,10 +37,10 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/endpoints/handlers/negotiation"
 	"k8s.io/apiserver/pkg/endpoints/handlers/responsewriters"
-	"k8s.io/apiserver/pkg/endpoints/metrics"
 	endpointsrequest "k8s.io/apiserver/pkg/endpoints/request"
-
-	klog "k8s.io/klog/v2"
+	"k8s.io/apiserver/pkg/storage"
+	"k8s.io/apiserver/pkg/util/apihelpers"
+	"k8s.io/klog/v2"
 )
 
 // watchEmbeddedEncoder performs encoding of the embedded object.
@@ -56,17 +57,21 @@ type watchEmbeddedEncoder struct {
 	tableOptions *metav1.TableOptions
 	scope        *RequestScope
 
+	// drop lists the field paths omitted from the encoded object.
+	drop []string
+
 	// identifier of the encoder, computed lazily
 	identifier runtime.Identifier
 }
 
-func newWatchEmbeddedEncoder(ctx context.Context, encoder runtime.Encoder, target *schema.GroupVersionKind, tableOptions *metav1.TableOptions, scope *RequestScope) *watchEmbeddedEncoder {
+func newWatchEmbeddedEncoder(ctx context.Context, encoder runtime.Encoder, target *schema.GroupVersionKind, tableOptions *metav1.TableOptions, drop []string, scope *RequestScope) *watchEmbeddedEncoder {
 	return &watchEmbeddedEncoder{
 		encoder:      encoder,
 		ctx:          ctx,
 		target:       target,
 		tableOptions: tableOptions,
 		scope:        scope,
+		drop:         drop,
 	}
 }
 
@@ -79,7 +84,7 @@ func (e *watchEmbeddedEncoder) Encode(obj runtime.Object, w io.Writer) error {
 }
 
 func (e *watchEmbeddedEncoder) doEncode(obj runtime.Object, w io.Writer) error {
-	result, err := doTransformObject(e.ctx, obj, e.tableOptions, e.target, e.scope)
+	result, err := doTransformObject(e.ctx, obj, e.tableOptions, e.target, e.drop, e.scope)
 	if err != nil {
 		utilruntime.HandleError(fmt.Errorf("failed to transform object %v: %v", reflect.TypeOf(obj), err))
 		result = obj
@@ -112,22 +117,26 @@ type watchEmbeddedEncoderIdentifier struct {
 	Target    string              `json:"target,omitempty"`
 	Options   metav1.TableOptions `json:"options,omitempty"`
 	NoHeaders bool                `json:"noHeaders,omitempty"`
+	Drop      []string            `json:"drop,omitempty"`
 }
 
 func (e *watchEmbeddedEncoder) embeddedIdentifier() runtime.Identifier {
-	if e.target == nil {
-		// If no conversion is performed, we effective only use
+	if e.target == nil && len(e.drop) == 0 {
+		// If no transformation is performed, we effective only use
 		// the embedded identifier.
 		return e.encoder.Identifier()
 	}
 	identifier := watchEmbeddedEncoderIdentifier{
 		Name:    "watch-embedded",
 		Encoder: string(e.encoder.Identifier()),
-		Target:  e.target.String(),
+		Drop:    e.drop,
 	}
-	if e.target.Kind == "Table" && e.tableOptions != nil {
-		identifier.Options = *e.tableOptions
-		identifier.NoHeaders = e.tableOptions.NoHeaders
+	if e.target != nil {
+		identifier.Target = e.target.String()
+		if e.target.Kind == "Table" && e.tableOptions != nil {
+			identifier.Options = *e.tableOptions
+			identifier.NoHeaders = e.tableOptions.NoHeaders
+		}
 	}
 
 	result, err := json.Marshal(identifier)
@@ -141,11 +150,11 @@ func (e *watchEmbeddedEncoder) embeddedIdentifier() runtime.Identifier {
 //
 // NOTE: watchEncoder is NOT thread-safe.
 type watchEncoder struct {
-	ctx             context.Context
-	kind            schema.GroupVersionKind
-	embeddedEncoder runtime.Encoder
-	encoder         runtime.Encoder
-	framer          io.Writer
+	ctx                  context.Context
+	groupVersionResource schema.GroupVersionResource
+	embeddedEncoder      runtime.Encoder
+	encoder              runtime.Encoder
+	framer               io.Writer
 
 	buffer      runtime.Splice
 	eventBuffer runtime.Splice
@@ -154,15 +163,15 @@ type watchEncoder struct {
 	identifiers               map[watch.EventType]runtime.Identifier
 }
 
-func newWatchEncoder(ctx context.Context, kind schema.GroupVersionKind, embeddedEncoder runtime.Encoder, encoder runtime.Encoder, framer io.Writer) *watchEncoder {
+func newWatchEncoder(ctx context.Context, gvr schema.GroupVersionResource, embeddedEncoder runtime.Encoder, encoder runtime.Encoder, framer io.Writer) *watchEncoder {
 	return &watchEncoder{
-		ctx:             ctx,
-		kind:            kind,
-		embeddedEncoder: embeddedEncoder,
-		encoder:         encoder,
-		framer:          framer,
-		buffer:          runtime.NewSpliceBuffer(),
-		eventBuffer:     runtime.NewSpliceBuffer(),
+		ctx:                  ctx,
+		groupVersionResource: gvr,
+		embeddedEncoder:      embeddedEncoder,
+		encoder:              encoder,
+		framer:               framer,
+		buffer:               runtime.NewSpliceBuffer(),
+		eventBuffer:          runtime.NewSpliceBuffer(),
 	}
 }
 
@@ -192,7 +201,6 @@ func (e *watchEncoder) doEncode(obj runtime.Object, event watch.Event, w io.Writ
 		Type:   string(event.Type),
 		Object: runtime.RawExtension{Raw: e.buffer.Bytes()},
 	}
-	metrics.WatchEventsSizes.WithContext(e.ctx).WithLabelValues(e.kind.Group, e.kind.Version, e.kind.Kind).Observe(float64(len(outEvent.Object.Raw)))
 
 	defer e.eventBuffer.Reset()
 	if err := e.encoder.Encode(outEvent, e.eventBuffer); err != nil {
@@ -245,9 +253,15 @@ func (e *watchEncoder) typeIdentifier(eventType watch.EventType) runtime.Identif
 }
 
 // doTransformResponseObject is used for handling all requests, including watch.
-func doTransformObject(ctx context.Context, obj runtime.Object, opts interface{}, target *schema.GroupVersionKind, scope *RequestScope) (runtime.Object, error) {
+func doTransformObject(ctx context.Context, obj runtime.Object, opts interface{}, target *schema.GroupVersionKind, drop []string, scope *RequestScope) (runtime.Object, error) {
 	if _, ok := obj.(*metav1.Status); ok {
 		return obj, nil
+	}
+
+	// Drop before converting, so Table and PartialObjectMetadata omit the
+	// fields too. The watchEmbeddedEncoder identifier accounts for drop.
+	if slices.Contains(drop, "metadata.managedFields") {
+		obj = dropManagedFields(obj)
 	}
 
 	switch {
@@ -270,7 +284,7 @@ func doTransformObject(ctx context.Context, obj runtime.Object, opts interface{}
 		return asTable(ctx, obj, options, scope, target.GroupVersion())
 
 	default:
-		accepted, _ := negotiation.MediaTypesForSerializer(metainternalversionscheme.Codecs)
+		accepted, _ := negotiation.MediaTypesForSerializer(apihelpers.GetMetaInternalVersionCodecs())
 		err := negotiation.NewNotAcceptableError(accepted)
 		return nil, err
 	}
@@ -304,7 +318,7 @@ func targetEncodingForTransform(scope *RequestScope, mediaType negotiation.Media
 	case target == nil:
 	case (target.Kind == "PartialObjectMetadata" || target.Kind == "PartialObjectMetadataList" || target.Kind == "Table") &&
 		(target.GroupVersion() == metav1beta1.SchemeGroupVersion || target.GroupVersion() == metav1.SchemeGroupVersion):
-		return *target, metainternalversionscheme.Codecs, true
+		return *target, apihelpers.GetMetaInternalVersionCodecs(), true
 	}
 	return scope.Kind, scope.Serializer, false
 }
@@ -331,7 +345,7 @@ func transformResponseObject(ctx context.Context, scope *RequestScope, req *http
 
 	var obj runtime.Object
 	do := func() {
-		obj, err = doTransformObject(ctx, result, options, mediaType.Convert, scope)
+		obj, err = doTransformObject(ctx, result, options, mediaType.Convert, mediaType.Drop, scope)
 	}
 	endpointsrequest.TrackTransformResponseObjectLatency(ctx, do)
 
@@ -381,14 +395,20 @@ func asTable(ctx context.Context, result runtime.Object, opts *metav1.TableOptio
 
 	for i := range table.Rows {
 		item := &table.Rows[i]
-		switch opts.IncludeObject {
-		case metav1.IncludeObject:
+
+		hasInitialEventsEndAnnotation, err := storage.HasInitialEventsEndBookmarkAnnotation(item.Object.Object)
+		if err != nil {
+			return nil, errors.NewInternalError(fmt.Errorf("unable to determine if the obj has the required annotation, err: %w", err))
+		}
+
+		switch {
+		case opts.IncludeObject == metav1.IncludeObject:
 			item.Object.Object, err = scope.Convertor.ConvertToVersion(item.Object.Object, scope.Kind.GroupVersion())
 			if err != nil {
 				return nil, err
 			}
 		// TODO: rely on defaulting for the value here?
-		case metav1.IncludeMetadata, "":
+		case opts.IncludeObject == metav1.IncludeMetadata, hasInitialEventsEndAnnotation, opts.IncludeObject == "":
 			m, err := meta.Accessor(item.Object.Object)
 			if err != nil {
 				return nil, err
@@ -397,7 +417,7 @@ func asTable(ctx context.Context, result runtime.Object, opts *metav1.TableOptio
 			partial := meta.AsPartialObjectMetadata(m)
 			partial.GetObjectKind().SetGroupVersionKind(groupVersion.WithKind("PartialObjectMetadata"))
 			item.Object.Object = partial
-		case metav1.IncludeNone:
+		case opts.IncludeObject == metav1.IncludeNone:
 			item.Object.Object = nil
 		default:
 			err = errors.NewBadRequest(fmt.Sprintf("unrecognized includeObject value: %q", opts.IncludeObject))

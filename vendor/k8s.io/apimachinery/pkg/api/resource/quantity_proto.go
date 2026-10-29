@@ -20,11 +20,7 @@ import (
 	"fmt"
 	"io"
 	"math/bits"
-
-	"github.com/gogo/protobuf/proto"
 )
-
-var _ proto.Sizer = &Quantity{}
 
 func (m *Quantity) Marshal() (data []byte, err error) {
 	size := m.Size()
@@ -80,6 +76,10 @@ func (m *Quantity) Size() (n int) {
 	_ = l
 
 	// BEGIN CUSTOM SIZE
+	// Deliberately uses String(), not CacheString(): Size() only measures the
+	// value, it must not mutate the Quantity being encoded. This means
+	// MarshalToSizedBuffer() recomputes the canonical string again, but that's
+	// the cost of not surprising callers with a mutating "read" path.
 	l = len(m.String())
 	// END CUSTOM SIZE
 

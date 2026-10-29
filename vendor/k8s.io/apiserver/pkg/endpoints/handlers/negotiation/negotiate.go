@@ -26,6 +26,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apiserver/pkg/features"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 )
 
 // MediaTypesForSerializer returns a list of media and stream media types for the server.
@@ -33,6 +35,10 @@ func MediaTypesForSerializer(ns runtime.NegotiatedSerializer) (mediaTypes, strea
 	for _, info := range ns.SupportedMediaTypes() {
 		mediaTypes = append(mediaTypes, info.MediaType)
 		if info.StreamSerializer != nil {
+			if utilfeature.DefaultFeatureGate.Enabled(features.CBORServingAndStorage) && info.MediaType == runtime.ContentTypeCBOR {
+				streamMediaTypes = append(streamMediaTypes, runtime.ContentTypeCBORSequence)
+				continue
+			}
 			// stream=watch is the existing mime-type parameter for watch
 			streamMediaTypes = append(streamMediaTypes, info.MediaType+";stream=watch")
 		}
@@ -162,6 +168,13 @@ type MediaTypeOptions struct {
 	// has set
 	Export bool
 
+	// profile controls the discovery profile (e.g., "local" for local (non peer-aggregated) discovery)
+	Profile string
+
+	// drop lists the field paths the client asked to omit from the response.
+	// "metadata.managedFields" is the only supported value.
+	Drop []string
+
 	// unrecognized is a list of all unrecognized keys
 	Unrecognized []string
 
@@ -220,6 +233,25 @@ func acceptMediaTypeOptions(params map[string]string, accepts *runtime.Serialize
 		// if specified, the pretty serializer will be used
 		case "pretty":
 			options.Pretty = v == "1"
+
+		// controls the discovery profile (eg local vs peer-aggregated)
+		case "profile":
+			options.Profile = v
+
+		// controls the fields omitted from the returned object, treated as
+		// unrecognized while the ManagedFieldsOptOut feature gate is disabled
+		case "drop":
+			if !utilfeature.DefaultFeatureGate.Enabled(features.ManagedFieldsOptOut) {
+				options.Unrecognized = append(options.Unrecognized, k)
+				continue
+			}
+			if len(v) == 0 {
+				continue
+			}
+			if v != "metadata.managedFields" {
+				return MediaTypeOptions{}, false
+			}
+			options.Drop = []string{v}
 
 		default:
 			options.Unrecognized = append(options.Unrecognized, k)
