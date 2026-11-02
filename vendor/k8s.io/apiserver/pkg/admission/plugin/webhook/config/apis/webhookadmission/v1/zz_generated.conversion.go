@@ -49,6 +49,8 @@ func RegisterConversions(s *runtime.Scheme) error {
 
 func autoConvert_v1_WebhookAdmission_To_webhookadmission_WebhookAdmission(in *WebhookAdmission, out *webhookadmission.WebhookAdmission, s conversion.Scope) error {
 	out.KubeConfigFile = in.KubeConfigFile
+	out.StaticManifestsDir = in.StaticManifestsDir
+	out.StaticOrder = webhookadmission.StaticOrder(in.StaticOrder)
 	return nil
 }
 
@@ -59,6 +61,8 @@ func Convert_v1_WebhookAdmission_To_webhookadmission_WebhookAdmission(in *Webhoo
 
 func autoConvert_webhookadmission_WebhookAdmission_To_v1_WebhookAdmission(in *webhookadmission.WebhookAdmission, out *WebhookAdmission, s conversion.Scope) error {
 	out.KubeConfigFile = in.KubeConfigFile
+	out.StaticManifestsDir = in.StaticManifestsDir
+	out.StaticOrder = StaticOrder(in.StaticOrder)
 	return nil
 }
 

@@ -2,13 +2,12 @@
 
 reviewers:
   - thockin
-  - smarterclayton
   - wojtek-t
   - deads2k
   - derekwaynecarr
   - caesarxuchao
-  - mikedanese
   - liggitt
   - janetkuo
-  - ncdc
   - dims
+emeritus_reviewers:
+  - ncdc

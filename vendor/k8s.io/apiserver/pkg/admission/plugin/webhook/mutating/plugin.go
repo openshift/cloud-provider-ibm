@@ -22,7 +22,10 @@ import (
 
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/admission/configuration"
+	"k8s.io/apiserver/pkg/admission/initializer"
 	"k8s.io/apiserver/pkg/admission/plugin/webhook/generic"
+	"k8s.io/apiserver/pkg/admission/plugin/webhook/manifest/source"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -48,6 +51,22 @@ type Plugin struct {
 }
 
 var _ admission.MutationInterface = &Plugin{}
+var _ initializer.WantsManifestLoaders = &Plugin{}
+
+// SetManifestLoaders provides the manifest load functions for scheme-based defaulting and validation.
+func (a *Plugin) SetManifestLoaders(loaders *initializer.ManifestLoaders) {
+	if loaders == nil || loaders.LoadMutatingWebhookManifests == nil {
+		return
+	}
+	loadFunc := loaders.LoadMutatingWebhookManifests
+	a.Webhook.SetStaticSourceFactory(func(manifestsDir string) (generic.ReloadableSource, error) {
+		src := source.NewMutatingSource(manifestsDir, a.Webhook.GetAPIServerID(), source.MutatingWebhookLoadFunc(loadFunc))
+		if err := src.LoadInitial(); err != nil {
+			return nil, err
+		}
+		return src, nil
+	})
+}
 
 // NewMutatingWebhook returns a generic admission webhook plugin.
 func NewMutatingWebhook(configFile io.Reader) (*Plugin, error) {
@@ -58,7 +77,6 @@ func NewMutatingWebhook(configFile io.Reader) (*Plugin, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return p, nil
 }
 
@@ -66,6 +84,13 @@ func NewMutatingWebhook(configFile io.Reader) (*Plugin, error) {
 func (a *Plugin) ValidateInitialization() error {
 	if err := a.Webhook.ValidateInitialization(); err != nil {
 		return err
+	}
+	// Logged so the effective order can be diffed across API servers: a staticOrder
+	// rolled out to only part of an HA control plane changes mutation order depending
+	// on which instance served the request. Without manifest-based webhooks there is
+	// nothing to merge, so the line would only be noise.
+	if staticManifestsDir := a.Webhook.GetStaticManifestsDir(); len(staticManifestsDir) > 0 {
+		klog.InfoS("Configured mutating webhook merge order", "plugin", PluginName, "staticManifestsDir", staticManifestsDir, "staticOrder", a.Webhook.GetStaticOrder())
 	}
 	return nil
 }

@@ -24,18 +24,18 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/golang/protobuf/proto"
 	openapi_v2 "github.com/google/gnostic-models/openapiv2"
 	"github.com/google/uuid"
 	"github.com/munnerz/goautoneg"
+	"google.golang.org/protobuf/proto"
 
 	klog "k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/cached"
 	"k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/common/restfuladapter"
+	"k8s.io/kube-openapi/pkg/internal/third_party/gziphandler"
 	"k8s.io/kube-openapi/pkg/validation/spec"
 )
 

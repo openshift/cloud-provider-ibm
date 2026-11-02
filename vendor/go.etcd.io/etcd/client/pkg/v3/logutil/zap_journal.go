@@ -13,7 +13,6 @@
 // limitations under the License.
 
 //go:build !windows
-// +build !windows
 
 package logutil
 
@@ -25,10 +24,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.etcd.io/etcd/client/pkg/v3/systemd"
-
 	"github.com/coreos/go-systemd/v22/journal"
 	"go.uber.org/zap/zapcore"
+
+	"go.etcd.io/etcd/client/pkg/v3/systemd"
 )
 
 // NewJournalWriter wraps "io.Writer" to redirect log output
@@ -36,6 +35,10 @@ import (
 // back to writing to the original writer.
 // The decode overhead is only <30µs per write.
 // Reference: https://github.com/coreos/pkg/blob/master/capnslog/journald_formatter.go
+//
+// Deprecated: NewJournalWriter will be removed in v3.8, so that client/pkg/v3
+// no longer depends on github.com/coreos/go-systemd/v22. Copy this file if you
+// need the writer, or use github.com/coreos/go-systemd/v22/journal directly.
 func NewJournalWriter(wr io.Writer) (io.Writer, error) {
 	return &journalWriter{Writer: wr}, systemd.DialJournal()
 }

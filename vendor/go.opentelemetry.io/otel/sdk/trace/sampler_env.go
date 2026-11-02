@@ -1,22 +1,10 @@
 // Copyright The OpenTelemetry Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
 
-package trace // import "go.opentelemetry.io/otel/sdk/trace"
+package trace
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -37,7 +25,7 @@ const (
 type errUnsupportedSampler string
 
 func (e errUnsupportedSampler) Error() string {
-	return fmt.Sprintf("unsupported sampler: %s", string(e))
+	return "unsupported sampler: " + string(e)
 }
 
 var (
@@ -50,7 +38,7 @@ type samplerArgParseError struct {
 }
 
 func (e samplerArgParseError) Error() string {
-	return fmt.Sprintf("parsing sampler argument: %s", e.parseErr.Error())
+	return "parsing sampler argument: " + e.parseErr.Error()
 }
 
 func (e samplerArgParseError) Unwrap() error {
@@ -58,14 +46,13 @@ func (e samplerArgParseError) Unwrap() error {
 }
 
 func samplerFromEnv() (Sampler, error) {
-	sampler, ok := os.LookupEnv(tracesSamplerKey)
-	if !ok {
+	sampler := strings.ToLower(strings.TrimSpace(os.Getenv(tracesSamplerKey)))
+	if sampler == "" {
 		return nil, nil
 	}
 
-	sampler = strings.ToLower(strings.TrimSpace(sampler))
-	samplerArg, hasSamplerArg := os.LookupEnv(tracesSamplerArgKey)
-	samplerArg = strings.TrimSpace(samplerArg)
+	samplerArg := strings.TrimSpace(os.Getenv(tracesSamplerArgKey))
+	hasSamplerArg := samplerArg != ""
 
 	switch sampler {
 	case samplerAlwaysOn:

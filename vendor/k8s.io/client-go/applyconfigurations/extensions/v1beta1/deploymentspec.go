@@ -23,21 +23,45 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// DeploymentSpecApplyConfiguration represents an declarative configuration of the DeploymentSpec type for use
+// DeploymentSpecApplyConfiguration represents a declarative configuration of the DeploymentSpec type for use
 // with apply.
+//
+// DeploymentSpec is the specification of the desired behavior of the Deployment.
 type DeploymentSpecApplyConfiguration struct {
-	Replicas                *int32                                    `json:"replicas,omitempty"`
-	Selector                *v1.LabelSelectorApplyConfiguration       `json:"selector,omitempty"`
-	Template                *corev1.PodTemplateSpecApplyConfiguration `json:"template,omitempty"`
-	Strategy                *DeploymentStrategyApplyConfiguration     `json:"strategy,omitempty"`
-	MinReadySeconds         *int32                                    `json:"minReadySeconds,omitempty"`
-	RevisionHistoryLimit    *int32                                    `json:"revisionHistoryLimit,omitempty"`
-	Paused                  *bool                                     `json:"paused,omitempty"`
-	RollbackTo              *RollbackConfigApplyConfiguration         `json:"rollbackTo,omitempty"`
-	ProgressDeadlineSeconds *int32                                    `json:"progressDeadlineSeconds,omitempty"`
+	// replicas is the number of desired pods. This is a pointer to distinguish between explicit
+	// zero and not specified. Defaults to 1.
+	Replicas *int32 `json:"replicas,omitempty"`
+	// selector is the label selector for pods. Existing ReplicaSets whose pods are
+	// selected by this will be the ones affected by this deployment.
+	Selector *v1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
+	// template describes the pods that will be created.
+	Template *corev1.PodTemplateSpecApplyConfiguration `json:"template,omitempty"`
+	// strategy is the deployment strategy to use to replace existing pods with new ones.
+	Strategy *DeploymentStrategyApplyConfiguration `json:"strategy,omitempty"`
+	// minReadySeconds is the minimum number of seconds for which a newly created pod should be ready
+	// without any of its container crashing, for it to be considered available.
+	// Defaults to 0 (pod will be considered available as soon as it is ready)
+	MinReadySeconds *int32 `json:"minReadySeconds,omitempty"`
+	// revisionHistoryLimit is the number of old ReplicaSets to retain to allow rollback.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	// This is set to the max value of int32 (i.e. 2147483647) by default, which
+	// means "retaining all old ReplicaSets".
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty"`
+	// paused indicates that the deployment is paused and will not be processed by the
+	// deployment controller.
+	Paused *bool `json:"paused,omitempty"`
+	// rollbackTo is the config this deployment is rolling back to. Will be cleared after rollback is done. it is DEPRECATED.
+	RollbackTo *RollbackConfigApplyConfiguration `json:"rollbackTo,omitempty"`
+	// progressDeadlineSeconds is the maximum time in seconds for a deployment to make progress before it
+	// is considered to be failed. The deployment controller will continue to
+	// process failed deployments and a condition with a ProgressDeadlineExceeded
+	// reason will be surfaced in the deployment status. Note that progress will
+	// not be estimated during the time a deployment is paused. This is set to
+	// the max value of int32 (i.e. 2147483647) by default, which means "no deadline".
+	ProgressDeadlineSeconds *int32 `json:"progressDeadlineSeconds,omitempty"`
 }
 
-// DeploymentSpecApplyConfiguration constructs an declarative configuration of the DeploymentSpec type for use with
+// DeploymentSpecApplyConfiguration constructs a declarative configuration of the DeploymentSpec type for use with
 // apply.
 func DeploymentSpec() *DeploymentSpecApplyConfiguration {
 	return &DeploymentSpecApplyConfiguration{}

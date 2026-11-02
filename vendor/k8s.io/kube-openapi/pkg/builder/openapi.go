@@ -105,20 +105,8 @@ func newOpenAPI(config *common.Config) openAPI {
 	}
 
 	if o.config.GetOperationIDAndTagsFromRoute == nil {
-		// Map the deprecated handler to the common interface, if provided.
-		if o.config.GetOperationIDAndTags != nil {
-			o.config.GetOperationIDAndTagsFromRoute = func(r common.Route) (string, []string, error) {
-				restfulRouteAdapter, ok := r.(*restfuladapter.RouteAdapter)
-				if !ok {
-					return "", nil, fmt.Errorf("config.GetOperationIDAndTags specified but route is not a restful v1 Route")
-				}
-
-				return o.config.GetOperationIDAndTags(restfulRouteAdapter.Route)
-			}
-		} else {
-			o.config.GetOperationIDAndTagsFromRoute = func(r common.Route) (string, []string, error) {
-				return r.OperationName(), nil, nil
-			}
+		o.config.GetOperationIDAndTagsFromRoute = func(r common.Route) (string, []string, error) {
+			return r.OperationName(), nil, nil
 		}
 	}
 
@@ -157,7 +145,8 @@ func (o *openAPI) finalizeSwagger() (*spec.Swagger, error) {
 
 func (o *openAPI) buildDefinitionRecursively(name string) error {
 	uniqueName, extensions := o.config.GetDefinitionName(name)
-	if _, ok := o.swagger.Definitions[uniqueName]; ok {
+	escapedName := common.EscapeJsonPointer(uniqueName)
+	if _, ok := o.swagger.Definitions[escapedName]; ok {
 		return nil
 	}
 	if item, ok := o.definitions[name]; ok {
@@ -179,7 +168,7 @@ func (o *openAPI) buildDefinitionRecursively(name string) error {
 				schema = v2Schema
 			}
 		}
-		o.swagger.Definitions[uniqueName] = schema
+		o.swagger.Definitions[escapedName] = schema
 		for _, v := range item.Dependencies {
 			if err := o.buildDefinitionRecursively(v); err != nil {
 				return err

@@ -1,16 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
-  - mikedanese
-  - dims
-  - wlan0
-  - andrewsykim
-  - cheftako
+  - sig-cloud-provider-leads
 reviewers:
+  - aojea
   - wojtek-t
   - deads2k
   - derekwaynecarr
-  - mikedanese
   - liggitt
   - sttts
   - dchen1107
@@ -23,6 +19,9 @@ reviewers:
   - jingxu97
   - wlan0
   - cheftako
+  - andrewsykim
+emeritus_approvers:
+  - dims
   - andrewsykim
 labels:
   - sig/cloud-provider

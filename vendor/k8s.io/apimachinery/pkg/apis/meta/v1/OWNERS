@@ -2,7 +2,6 @@
 
 reviewers:
   - thockin
-  - smarterclayton
   - wojtek-t
   - deads2k
   - caesarxuchao
@@ -11,6 +10,7 @@ reviewers:
   - luxas
   - janetkuo
   - justinsb
-  - ncdc
   - soltysh
   - dims
+emeritus_reviewers:
+  - ncdc
