@@ -1,3 +1,0 @@
-[submodule "cloud-provider-vpc-controller"]
-	path = cloud-provider-vpc-controller
-	url = https://github.com/openshift/cloud-provider-vpc-controller
