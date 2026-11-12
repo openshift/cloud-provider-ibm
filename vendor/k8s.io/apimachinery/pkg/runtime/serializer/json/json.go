@@ -34,17 +34,19 @@ import (
 
 // NewSerializer creates a JSON serializer that handles encoding versioned objects into the proper JSON form. If typer
 // is not nil, the object has the group, version, and kind fields set.
+//
 // Deprecated: use NewSerializerWithOptions instead.
 func NewSerializer(meta MetaFactory, creater runtime.ObjectCreater, typer runtime.ObjectTyper, pretty bool) *Serializer {
-	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{false, pretty, false})
+	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{false, pretty, false, false})
 }
 
 // NewYAMLSerializer creates a YAML serializer that handles encoding versioned objects into the proper YAML form. If typer
 // is not nil, the object has the group, version, and kind fields set. This serializer supports only the subset of YAML that
 // matches JSON, and will error if constructs are used that do not serialize to JSON.
+//
 // Deprecated: use NewSerializerWithOptions instead.
 func NewYAMLSerializer(meta MetaFactory, creater runtime.ObjectCreater, typer runtime.ObjectTyper) *Serializer {
-	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{true, false, false})
+	return NewSerializerWithOptions(meta, creater, typer, SerializerOptions{true, false, false, false})
 }
 
 // NewSerializerWithOptions creates a JSON/YAML serializer that handles encoding versioned objects into the proper JSON/YAML
@@ -70,6 +72,7 @@ func identifier(options SerializerOptions) runtime.Identifier {
 	}
 	identifier, err := json.Marshal(result)
 	if err != nil {
+		//nolint:logcheck // Should not be reached.
 		klog.Fatalf("Failed marshaling identifier for json Serializer: %v", err)
 	}
 	return runtime.Identifier(identifier)
@@ -93,6 +96,9 @@ type SerializerOptions struct {
 	// Strict: configures the Serializer to return strictDecodingError's when duplicate fields are present decoding JSON or YAML.
 	// Note that enabling this option is not as performant as the non-strict variant, and should not be used in fast paths.
 	Strict bool
+
+	// StreamingCollectionsEncoding enables encoding collection, one item at the time, drastically reducing memory needed.
+	StreamingCollectionsEncoding bool
 }
 
 // Serializer handles encoding versioned objects into the proper JSON form
@@ -241,6 +247,15 @@ func (s *Serializer) doEncode(obj runtime.Object, w io.Writer) error {
 		}
 		_, err = w.Write(data)
 		return err
+	}
+	if s.options.StreamingCollectionsEncoding {
+		ok, err := streamEncodeCollections(obj, w)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		}
 	}
 	encoder := json.NewEncoder(w)
 	return encoder.Encode(obj)

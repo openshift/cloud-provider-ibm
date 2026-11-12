@@ -19,10 +19,10 @@ package library
 import (
 	"regexp"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
-	"github.com/google/cel-go/interpreter"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/common/types"
+	"cel.dev/cel-go/common/types/ref"
+	"cel.dev/cel-go/interpreter"
 )
 
 // Regex provides a CEL function library extension of regex utility functions.
@@ -52,7 +52,15 @@ var regexLib = &regex{}
 type regex struct{}
 
 func (*regex) LibraryName() string {
-	return "k8s.regex"
+	return "kubernetes.regex"
+}
+
+func (*regex) Types() []*cel.Type {
+	return []*cel.Type{}
+}
+
+func (*regex) declarations() map[string][]cel.FunctionOpt {
+	return regexLibraryDecls
 }
 
 var regexLibraryDecls = map[string][]cel.FunctionOpt{

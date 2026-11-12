@@ -18,7 +18,6 @@ package app
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"math/rand"
 	"os"
@@ -42,6 +41,7 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	cloudprovider "k8s.io/cloud-provider"
 	cloudcontrollerconfig "k8s.io/cloud-provider/app/config"
+	configv1alpha "k8s.io/cloud-provider/config/v1alpha1"
 	"k8s.io/cloud-provider/names"
 	"k8s.io/cloud-provider/options"
 	cliflag "k8s.io/component-base/cli/flag"
@@ -49,7 +49,7 @@ import (
 	"k8s.io/component-base/configz"
 	"k8s.io/component-base/logs"
 	logsapi "k8s.io/component-base/logs/api/v1"
-	"k8s.io/component-base/metrics/features"
+	metricsfeatures "k8s.io/component-base/metrics/features"
 	controllersmetrics "k8s.io/component-base/metrics/prometheus/controllers"
 	"k8s.io/component-base/metrics/prometheus/slis"
 	"k8s.io/component-base/term"
@@ -66,7 +66,7 @@ import (
 )
 
 func init() {
-	utilruntime.Must(features.AddFeatureGates(utilfeature.DefaultMutableFeatureGate))
+	utilruntime.Must(metricsfeatures.AddFeatureGates(utilfeature.DefaultMutableFeatureGate))
 	utilruntime.Must(logsapi.AddFeatureGates(utilfeature.DefaultMutableFeatureGate))
 }
 
@@ -89,12 +89,18 @@ func NewCloudControllerManagerCommand(s *options.CloudControllerManagerOptions, 
 the cloud specific control loops shipped with Kubernetes.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			verflag.PrintAndExitIfRequested()
-			cliflag.PrintFlags(cmd.Flags())
 
+			// Activate logging as soon as possible, after that
+			// show flags with the final logging configuration.
 			if err := logsapi.ValidateAndApply(logOptions, utilfeature.DefaultFeatureGate); err != nil {
 				fmt.Fprintf(os.Stderr, "%v\n", err)
 				return err
 			}
+			cliflag.PrintFlags(cmd.Flags())
+
+			// Propagate feature gate state to the metrics subsystem. This must be called
+			// after feature gates are set and before any histogram metrics are registered.
+			metricsfeatures.ApplyFeatureGates(utilfeature.DefaultFeatureGate)
 
 			c, err := s.Config(ControllerNames(controllerInitFuncConstructors), ControllersDisabledByDefault.List(), controllerAliases, AllWebhooks, DisabledByDefaultWebhooks)
 			if err != nil {
@@ -130,14 +136,6 @@ the cloud specific control loops shipped with Kubernetes.`,
 	logsapi.AddFlags(logOptions, globalFlagSet)
 	globalflag.AddGlobalFlags(globalFlagSet, cmd.Name(), logs.SkipLoggingConfigurationFlags())
 
-	if flag.CommandLine.Lookup("cloud-provider-gce-lb-src-cidrs") != nil {
-		// hoist this flag from the global flagset to preserve the commandline until
-		// the gce cloudprovider is removed.
-		globalflag.Register(namedFlagSets.FlagSet("generic"), "cloud-provider-gce-lb-src-cidrs")
-	}
-	if flag.CommandLine.Lookup("cloud-provider-gce-l7lb-src-cidrs") != nil {
-		globalflag.Register(namedFlagSets.FlagSet("generic"), "cloud-provider-gce-l7lb-src-cidrs")
-	}
 	for _, f := range namedFlagSets.FlagSets {
 		fs.AddFlagSet(f)
 	}
@@ -173,11 +171,17 @@ func Run(c *cloudcontrollerconfig.CompletedConfig, cloud cloudprovider.Interface
 	c.EventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: c.Client.CoreV1().Events("")})
 	defer c.EventBroadcaster.Shutdown()
 
+	externalConfig := &configv1alpha.CloudControllerManagerConfiguration{}
+	if err := configv1alpha.Convert_config_CloudControllerManagerConfiguration_To_v1alpha1_CloudControllerManagerConfiguration(&c.ComponentConfig, externalConfig, nil); err != nil {
+		return fmt.Errorf("unable to convert configz: %w", err)
+	}
+	externalConfig.SetGroupVersionKind(configv1alpha.SchemeGroupVersion.WithKind("CloudControllerManagerConfiguration"))
+
 	// setup /configz endpoint
-	if cz, err := configz.New(ConfigzName); err == nil {
-		cz.Set(c.ComponentConfig)
-	} else {
-		klog.Errorf("unable to register configz: %v", err)
+	if cz, err := configz.New(ConfigzName); err != nil {
+		return fmt.Errorf("unable to register configz: %w", err)
+	} else if err := cz.Set(externalConfig); err != nil {
+		return fmt.Errorf("unable to set configz: %w", err)
 	}
 
 	// Setup any health checks we will want to use.
@@ -476,7 +480,10 @@ func CreateControllerContext(s *cloudcontrollerconfig.CompletedConfig, clientBui
 	versionedClient := clientBuilder.ClientOrDie("shared-informers")
 	sharedInformers := informers.NewSharedInformerFactory(versionedClient, ResyncPeriod(s)())
 
-	metadataClient := metadata.NewForConfigOrDie(clientBuilder.ConfigOrDie("metadata-informers"))
+	metadataClient, err := newMetadataClient(clientBuilder, "metadata-informers")
+	if err != nil {
+		return genericcontrollermanager.ControllerContext{}, fmt.Errorf("failed to create metadata client: %w", err)
+	}
 	metadataInformers := metadatainformer.NewSharedInformerFactory(metadataClient, ResyncPeriod(s)())
 
 	// If apiserver is not running we should wait for some time and fail only then. This is particularly
@@ -507,9 +514,22 @@ func CreateControllerContext(s *cloudcontrollerconfig.CompletedConfig, clientBui
 	return ctx, nil
 }
 
+// newMetadataClient builds a metadata client through the builder. Builders
+// from outside the tree may predate TypedClientBuilder, in which case the
+// deprecated config path is the only option.
+func newMetadataClient(clientBuilder clientbuilder.ControllerClientBuilder, name string) (metadata.Interface, error) {
+	if typed, ok := clientBuilder.(clientbuilder.TypedClientBuilder); ok {
+		return typed.MetadataClient(name)
+	}
+	config, err := clientBuilder.Config(name) //nolint:forbidigo,staticcheck // deprecated on purpose, see above
+	if err != nil {
+		return nil, err
+	}
+	return metadata.NewForConfig(config)
+}
+
 // ResyncPeriod returns a function which generates a duration each time it is
-// invoked; this is so that multiple controllers don't get into lock-step and all
-// hammer the apiserver with list requests simultaneously.
+// invoked; this is because that multiple controllers don't get into lock-step.
 func ResyncPeriod(c *cloudcontrollerconfig.CompletedConfig) func() time.Duration {
 	return func() time.Duration {
 		factor := rand.Float64() + 1

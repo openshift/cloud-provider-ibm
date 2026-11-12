@@ -17,7 +17,7 @@ limitations under the License.
 package openapi
 
 import (
-	"github.com/google/cel-go/common/types/ref"
+	"cel.dev/cel-go/common/types/ref"
 
 	apiservercel "k8s.io/apiserver/pkg/cel"
 	"k8s.io/apiserver/pkg/cel/common"
@@ -36,6 +36,9 @@ type SchemaOrBool struct {
 }
 
 func (sb *SchemaOrBool) Schema() common.Schema {
+	if sb.SchemaOrBool.Schema == nil {
+		return nil
+	}
 	return &Schema{Schema: sb.SchemaOrBool.Schema}
 }
 
@@ -77,6 +80,17 @@ func (s *Schema) Properties() map[string]common.Schema {
 		res[n] = &Schema{Schema: &s}
 	}
 	return res
+}
+
+func (s *Schema) HasProperties() bool {
+	return s.Schema.Properties != nil
+}
+
+func (s *Schema) Property(key string) (common.Schema, bool) {
+	if prop, ok := s.Schema.Properties[key]; ok {
+		return &Schema{Schema: &prop}, true
+	}
+	return nil, false
 }
 
 func (s *Schema) AdditionalProperties() common.SchemaOrBool {
@@ -153,7 +167,6 @@ func (s *Schema) Nullable() bool {
 func (s *Schema) AllOf() []common.Schema {
 	var res []common.Schema
 	for _, nestedSchema := range s.Schema.AllOf {
-		nestedSchema := nestedSchema
 		res = append(res, &Schema{&nestedSchema})
 	}
 	return res
@@ -162,7 +175,6 @@ func (s *Schema) AllOf() []common.Schema {
 func (s *Schema) AnyOf() []common.Schema {
 	var res []common.Schema
 	for _, nestedSchema := range s.Schema.AnyOf {
-		nestedSchema := nestedSchema
 		res = append(res, &Schema{&nestedSchema})
 	}
 	return res
@@ -171,7 +183,6 @@ func (s *Schema) AnyOf() []common.Schema {
 func (s *Schema) OneOf() []common.Schema {
 	var res []common.Schema
 	for _, nestedSchema := range s.Schema.OneOf {
-		nestedSchema := nestedSchema
 		res = append(res, &Schema{&nestedSchema})
 	}
 	return res

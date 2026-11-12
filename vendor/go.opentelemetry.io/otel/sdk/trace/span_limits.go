@@ -1,25 +1,18 @@
 // Copyright The OpenTelemetry Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// SPDX-License-Identifier: Apache-2.0
 
-package trace // import "go.opentelemetry.io/otel/sdk/trace"
+package trace
 
-import "go.opentelemetry.io/otel/sdk/internal/env"
+import "go.opentelemetry.io/otel/sdk/trace/internal/env"
 
 const (
 	// DefaultAttributeValueLengthLimit is the default maximum allowed
 	// attribute value length, unlimited.
 	DefaultAttributeValueLengthLimit = -1
+
+	// DefaultAttributeValueDepthLimit is the default maximum allowed depth for
+	// nested attribute values.
+	DefaultAttributeValueDepthLimit = 64
 
 	// DefaultAttributeCountLimit is the default maximum number of attributes
 	// a span can have.
@@ -46,11 +39,27 @@ const (
 type SpanLimits struct {
 	// AttributeValueLengthLimit is the maximum allowed attribute value length.
 	//
-	// This limit only applies to string and string slice attribute values.
-	// Any string longer than this value will be truncated to this length.
+	// This limit only applies to string, string slice, byte slice, slice, and
+	// map attribute values. Any string and byte slice longer than this value
+	// will be truncated to this length. For slice and map attribute values,
+	// the limit is applied recursively to contained values.
 	//
 	// Setting this to a negative value means no limit is applied.
 	AttributeValueLengthLimit int
+
+	// AttributeValueDepthLimit is the maximum allowed depth for an attribute
+	// value. Depth starts at one for the top-level value and increments when
+	// descending into an array element or map value. An array or map beyond this
+	// depth is replaced by an empty value.
+	//
+	// This limit applies to span, event, link, and instrumentation scope
+	// attributes processed by a TracerProvider. It does not apply to Resource
+	// attributes.
+	//
+	// Setting this to zero means the default limit is used.
+	//
+	// Setting this to a negative value means no limit is applied.
+	AttributeValueDepthLimit int
 
 	// AttributeCountLimit is the maximum allowed span attribute count. Any
 	// attribute added to a span once this limit is reached will be dropped.
@@ -97,11 +106,14 @@ type SpanLimits struct {
 	AttributePerLinkCountLimit int
 }
 
-// NewSpanLimits returns a SpanLimits with all limits set to the value their
-// corresponding environment variable holds, or the default if unset.
+// NewSpanLimits returns a SpanLimits with all limits set to their default.
+// Limits with a corresponding environment variable are set from the
+// environment when the variable is defined.
 //
 // • AttributeValueLengthLimit: OTEL_SPAN_ATTRIBUTE_VALUE_LENGTH_LIMIT
 // (default: unlimited)
+//
+// • AttributeValueDepthLimit: default 64 (no environment variable)
 //
 // • AttributeCountLimit: OTEL_SPAN_ATTRIBUTE_COUNT_LIMIT (default: 128)
 //
@@ -116,6 +128,7 @@ type SpanLimits struct {
 func NewSpanLimits() SpanLimits {
 	return SpanLimits{
 		AttributeValueLengthLimit:   env.SpanAttributeValueLength(DefaultAttributeValueLengthLimit),
+		AttributeValueDepthLimit:    DefaultAttributeValueDepthLimit,
 		AttributeCountLimit:         env.SpanAttributeCount(DefaultAttributeCountLimit),
 		EventCountLimit:             env.SpanEventCount(DefaultEventCountLimit),
 		LinkCountLimit:              env.SpanLinkCount(DefaultLinkCountLimit),

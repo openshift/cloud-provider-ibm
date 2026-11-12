@@ -19,9 +19,9 @@ package library
 import (
 	"net/url"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/common/types"
+	"cel.dev/cel-go/common/types/ref"
 
 	apiservercel "k8s.io/apiserver/pkg/cel"
 )
@@ -113,7 +113,15 @@ var urlsLib = &urls{}
 type urls struct{}
 
 func (*urls) LibraryName() string {
-	return "k8s.urls"
+	return "kubernetes.urls"
+}
+
+func (*urls) Types() []*cel.Type {
+	return []*cel.Type{apiservercel.URLType}
+}
+
+func (*urls) declarations() map[string][]cel.FunctionOpt {
+	return urlLibraryDecls
 }
 
 var urlLibraryDecls = map[string][]cel.FunctionOpt{

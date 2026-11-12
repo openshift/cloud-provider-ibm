@@ -17,16 +17,23 @@ limitations under the License.
 package rest
 
 import (
+	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
+	"github.com/munnerz/goautoneg"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	clientfeatures "k8s.io/client-go/features"
+	"k8s.io/client-go/tools/metrics"
 	"k8s.io/client-go/util/flowcontrol"
 )
 
@@ -69,6 +76,10 @@ type ClientContentConfig struct {
 	// Negotiator is used for obtaining encoders and decoders for multiple
 	// supported media types.
 	Negotiator runtime.ClientNegotiator
+	// DropManagedFields asks the server to omit metadata.managedFields from responses,
+	// and strips it from decoded objects when the server returns it anyway.
+	// It has no effect unless the ManagedFieldsOptOutClient feature gate is enabled.
+	DropManagedFields bool
 }
 
 // RESTClient imposes common Kubernetes API conventions on a set of resource paths.
@@ -85,10 +96,10 @@ type RESTClient struct {
 	versionedAPIPath string
 
 	// content describes how a RESTClient encodes and decodes responses.
-	content ClientContentConfig
+	content requestClientContentConfigProvider
 
 	// creates BackoffManager that is passed to requests.
-	createBackoffMgr func() BackoffManager
+	createBackoffMgr func() BackoffManagerWithContext
 
 	// rateLimiter is shared among all requests created by this client unless specifically
 	// overridden.
@@ -96,7 +107,7 @@ type RESTClient struct {
 
 	// warningHandler is shared among all requests created by this client.
 	// If not set, defaultWarningHandler is used.
-	warningHandler WarningHandler
+	warningHandler WarningHandlerWithContext
 
 	// Set specific behavior of the client.  If not set http.DefaultClient will be used.
 	Client *http.Client
@@ -105,9 +116,7 @@ type RESTClient struct {
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
 // such as Get, Put, Post, and Delete on specified paths.
 func NewRESTClient(baseURL *url.URL, versionedAPIPath string, config ClientContentConfig, rateLimiter flowcontrol.RateLimiter, client *http.Client) (*RESTClient, error) {
-	if len(config.ContentType) == 0 {
-		config.ContentType = "application/json"
-	}
+	metrics.EnsureRegistered()
 
 	base := *baseURL
 	if !strings.HasSuffix(base.Path, "/") {
@@ -119,12 +128,81 @@ func NewRESTClient(baseURL *url.URL, versionedAPIPath string, config ClientConte
 	return &RESTClient{
 		base:             &base,
 		versionedAPIPath: versionedAPIPath,
-		content:          config,
+		content:          requestClientContentConfigProvider{base: configureDropManagedFields(scrubCBORContentConfigIfDisabled(config))},
 		createBackoffMgr: readExpBackoffConfig,
 		rateLimiter:      rateLimiter,
-
-		Client: client,
+		Client:           client,
 	}, nil
+}
+
+func scrubCBORContentConfigIfDisabled(content ClientContentConfig) ClientContentConfig {
+	if clientfeatures.FeatureGates().Enabled(clientfeatures.ClientsAllowCBOR) {
+		content.Negotiator = clientNegotiatorWithCBORSequenceStreamDecoder{content.Negotiator}
+		return content
+	}
+
+	if mediatype, _, err := mime.ParseMediaType(content.ContentType); err == nil && mediatype == "application/cbor" {
+		content.ContentType = "application/json"
+	}
+
+	clauses := goautoneg.ParseAccept(content.AcceptContentTypes)
+	scrubbed := false
+	for i, clause := range clauses {
+		if clause.Type == "application" && clause.SubType == "cbor" {
+			scrubbed = true
+			clauses[i].SubType = "json"
+		}
+	}
+	if !scrubbed {
+		// No application/cbor in AcceptContentTypes, nothing more to do.
+		return content
+	}
+
+	content.AcceptContentTypes = formatAccept(clauses)
+
+	return content
+}
+
+func configureDropManagedFields(content ClientContentConfig) ClientContentConfig {
+	if content.DropManagedFields && !clientfeatures.FeatureGates().Enabled(clientfeatures.ManagedFieldsOptOutClient) {
+		content.DropManagedFields = false
+	}
+	if content.DropManagedFields {
+		// Servers that ignore the drop parameter still return managedFields.
+		content.Negotiator = clientNegotiatorDroppingManagedFields{content.Negotiator}
+	}
+	return content
+}
+
+func acceptDroppingManagedFields(accept string) string {
+	clauses := goautoneg.ParseAccept(accept)
+	for i := range clauses {
+		// Leave alone media types mime.FormatMediaType can't format, like the OpenAPI protobuf types.
+		if mime.FormatMediaType(clauses[i].Type+"/"+clauses[i].SubType, nil) == "" {
+			return accept
+		}
+		if clauses[i].Params == nil {
+			clauses[i].Params = make(map[string]string, 1)
+		}
+		clauses[i].Params["drop"] = "metadata.managedFields"
+	}
+	return formatAccept(clauses)
+}
+
+func formatAccept(clauses []goautoneg.Accept) string {
+	parts := make([]string, 0, len(clauses))
+	for _, clause := range clauses {
+		// ParseAccept does not store the parameter "q" in Params.
+		params := clause.Params
+		if clause.Q < 1 { // omit q=1, it's the default
+			if params == nil {
+				params = make(map[string]string, 1)
+			}
+			params["q"] = strconv.FormatFloat(clause.Q, 'g', 3, 32)
+		}
+		parts = append(parts, mime.FormatMediaType(fmt.Sprintf("%s/%s", clause.Type, clause.SubType), params))
+	}
+	return strings.Join(parts, ",")
 }
 
 // GetRateLimiter returns rate limiter for a given client, or nil if it's called on a nil client
@@ -138,7 +216,7 @@ func (c *RESTClient) GetRateLimiter() flowcontrol.RateLimiter {
 // readExpBackoffConfig handles the internal logic of determining what the
 // backoff policy is.  By default if no information is available, NoBackoff.
 // TODO Generalize this see #17727 .
-func readExpBackoffConfig() BackoffManager {
+func readExpBackoffConfig() BackoffManagerWithContext {
 	backoffBase := os.Getenv(envBackoffBase)
 	backoffDuration := os.Getenv(envBackoffDuration)
 
@@ -198,5 +276,157 @@ func (c *RESTClient) Delete() *Request {
 
 // APIVersion returns the APIVersion this RESTClient is expected to use.
 func (c *RESTClient) APIVersion() schema.GroupVersion {
-	return c.content.GroupVersion
+	config, _ := c.content.GetClientContentConfig()
+	return config.GroupVersion
+}
+
+// requestClientContentConfigProvider observes HTTP 415 (Unsupported Media Type) responses to detect
+// that the server does not understand CBOR. Once this has happened, future requests are forced to
+// use JSON so they can succeed. This is convenient for client users that want to prefer CBOR, but
+// also need to interoperate with older servers so requests do not permanently fail. The clients
+// will not default to using CBOR until at least all supported kube-apiservers have enable-CBOR
+// locked to true, so this path will be rarely taken. Additionally, all generated clients accessing
+// built-in kube resources are forced to protobuf, so those will not degrade to JSON.
+type requestClientContentConfigProvider struct {
+	base ClientContentConfig
+
+	// Becomes permanently true if a server responds with HTTP 415 (Unsupported Media Type) to a
+	// request with "Content-Type" header containing the CBOR media type.
+	sawUnsupportedMediaTypeForCBOR atomic.Bool
+}
+
+// GetClientContentConfig returns the ClientContentConfig that should be used for new requests by
+// this client and true if the request ContentType was selected by default.
+func (p *requestClientContentConfigProvider) GetClientContentConfig() (ClientContentConfig, bool) {
+	config := p.base
+
+	defaulted := config.ContentType == ""
+	if defaulted {
+		config.ContentType = "application/json"
+	}
+
+	if !clientfeatures.FeatureGates().Enabled(clientfeatures.ClientsAllowCBOR) {
+		return config, defaulted
+	}
+
+	if defaulted && clientfeatures.FeatureGates().Enabled(clientfeatures.ClientsPreferCBOR) {
+		config.ContentType = "application/cbor"
+	}
+
+	if sawUnsupportedMediaTypeForCBOR := p.sawUnsupportedMediaTypeForCBOR.Load(); !sawUnsupportedMediaTypeForCBOR {
+		return config, defaulted
+	}
+
+	if mediaType, _, _ := mime.ParseMediaType(config.ContentType); mediaType != runtime.ContentTypeCBOR {
+		return config, defaulted
+	}
+
+	// The effective ContentType is CBOR and the client has previously received an HTTP 415 in
+	// response to a CBOR request. Override ContentType to JSON.
+	config.ContentType = runtime.ContentTypeJSON
+	return config, defaulted
+}
+
+// UnsupportedMediaType reports that the server has responded to a request with HTTP 415 Unsupported
+// Media Type.
+func (p *requestClientContentConfigProvider) UnsupportedMediaType(requestContentType string) {
+	if !clientfeatures.FeatureGates().Enabled(clientfeatures.ClientsAllowCBOR) {
+		return
+	}
+
+	// This could be extended to consider the Content-Encoding request header, the Accept and
+	// Accept-Encoding response headers, the request method, and URI (as mentioned in
+	// https://www.rfc-editor.org/rfc/rfc9110.html#section-15.5.16). The request Content-Type
+	// header is sufficient to implement a blanket CBOR fallback mechanism.
+	requestContentType, _, _ = mime.ParseMediaType(requestContentType)
+	switch requestContentType {
+	case runtime.ContentTypeCBOR, string(types.ApplyCBORPatchType):
+		p.sawUnsupportedMediaTypeForCBOR.Store(true)
+	}
+}
+
+// clientNegotiatorWithCBORSequenceStreamDecoder is a ClientNegotiator that delegates to another
+// ClientNegotiator to select the appropriate Encoder or Decoder for a given media type. As a
+// special case, it will resolve "application/cbor-seq" (a CBOR Sequence, the concatenation of zero
+// or more CBOR data items) as an alias for "application/cbor" (exactly one CBOR data item) when
+// selecting a stream decoder.
+type clientNegotiatorWithCBORSequenceStreamDecoder struct {
+	negotiator runtime.ClientNegotiator
+}
+
+func (n clientNegotiatorWithCBORSequenceStreamDecoder) Encoder(contentType string, params map[string]string) (runtime.Encoder, error) {
+	return n.negotiator.Encoder(contentType, params)
+}
+
+func (n clientNegotiatorWithCBORSequenceStreamDecoder) Decoder(contentType string, params map[string]string) (runtime.Decoder, error) {
+	return n.negotiator.Decoder(contentType, params)
+}
+
+func (n clientNegotiatorWithCBORSequenceStreamDecoder) StreamDecoder(contentType string, params map[string]string) (runtime.Decoder, runtime.Serializer, runtime.Framer, error) {
+	if !clientfeatures.FeatureGates().Enabled(clientfeatures.ClientsAllowCBOR) {
+		return n.negotiator.StreamDecoder(contentType, params)
+	}
+
+	switch contentType {
+	case runtime.ContentTypeCBORSequence:
+		return n.negotiator.StreamDecoder(runtime.ContentTypeCBOR, params)
+	case runtime.ContentTypeCBOR:
+		// This media type is only appropriate for exactly one data item, not the zero or
+		// more events of a watch stream.
+		return nil, nil, nil, runtime.NegotiateError{ContentType: contentType, Stream: true}
+	default:
+		return n.negotiator.StreamDecoder(contentType, params)
+	}
+
+}
+
+type clientNegotiatorDroppingManagedFields struct {
+	negotiator runtime.ClientNegotiator
+}
+
+func (n clientNegotiatorDroppingManagedFields) Encoder(contentType string, params map[string]string) (runtime.Encoder, error) {
+	return n.negotiator.Encoder(contentType, params)
+}
+
+func (n clientNegotiatorDroppingManagedFields) Decoder(contentType string, params map[string]string) (runtime.Decoder, error) {
+	decoder, err := n.negotiator.Decoder(contentType, params)
+	if err != nil {
+		return nil, err
+	}
+	return decoderDroppingManagedFields{decoder}, nil
+}
+
+func (n clientNegotiatorDroppingManagedFields) StreamDecoder(contentType string, params map[string]string) (runtime.Decoder, runtime.Serializer, runtime.Framer, error) {
+	decoder, serializer, framer, err := n.negotiator.StreamDecoder(contentType, params)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return decoderDroppingManagedFields{decoder}, serializer, framer, nil
+}
+
+type decoderDroppingManagedFields struct {
+	decoder runtime.Decoder
+}
+
+func (d decoderDroppingManagedFields) Decode(data []byte, defaults *schema.GroupVersionKind, into runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
+	obj, gvk, err := d.decoder.Decode(data, defaults, into)
+	if err != nil {
+		return obj, gvk, err
+	}
+	if meta.IsListType(obj) {
+		_ = meta.EachListItem(obj, func(item runtime.Object) error {
+			omitManagedFields(item)
+			return nil
+		})
+	} else {
+		omitManagedFields(obj)
+	}
+	return obj, gvk, nil
+}
+
+func omitManagedFields(obj runtime.Object) {
+	// Objects without metadata, like Status, have no managedFields.
+	if acc, err := meta.Accessor(obj); err == nil {
+		acc.SetManagedFields(nil)
+	}
 }

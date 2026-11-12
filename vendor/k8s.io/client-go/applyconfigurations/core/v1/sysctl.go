@@ -18,14 +18,18 @@ limitations under the License.
 
 package v1
 
-// SysctlApplyConfiguration represents an declarative configuration of the Sysctl type for use
+// SysctlApplyConfiguration represents a declarative configuration of the Sysctl type for use
 // with apply.
+//
+// Sysctl defines a kernel parameter to be set
 type SysctlApplyConfiguration struct {
-	Name  *string `json:"name,omitempty"`
+	// name of a property to set
+	Name *string `json:"name,omitempty"`
+	// value of a property to set
 	Value *string `json:"value,omitempty"`
 }
 
-// SysctlApplyConfiguration constructs an declarative configuration of the Sysctl type for use with
+// SysctlApplyConfiguration constructs a declarative configuration of the Sysctl type for use with
 // apply.
 func Sysctl() *SysctlApplyConfiguration {
 	return &SysctlApplyConfiguration{}

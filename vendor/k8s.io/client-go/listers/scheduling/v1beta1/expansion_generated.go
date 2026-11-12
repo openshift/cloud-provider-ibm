@@ -18,6 +18,30 @@ limitations under the License.
 
 package v1beta1
 
+// CompositePodGroupListerExpansion allows custom methods to be added to
+// CompositePodGroupLister.
+type CompositePodGroupListerExpansion interface{}
+
+// CompositePodGroupNamespaceListerExpansion allows custom methods to be added to
+// CompositePodGroupNamespaceLister.
+type CompositePodGroupNamespaceListerExpansion interface{}
+
+// PodGroupListerExpansion allows custom methods to be added to
+// PodGroupLister.
+type PodGroupListerExpansion interface{}
+
+// PodGroupNamespaceListerExpansion allows custom methods to be added to
+// PodGroupNamespaceLister.
+type PodGroupNamespaceListerExpansion interface{}
+
 // PriorityClassListerExpansion allows custom methods to be added to
 // PriorityClassLister.
 type PriorityClassListerExpansion interface{}
+
+// WorkloadListerExpansion allows custom methods to be added to
+// WorkloadLister.
+type WorkloadListerExpansion interface{}
+
+// WorkloadNamespaceListerExpansion allows custom methods to be added to
+// WorkloadNamespaceLister.
+type WorkloadNamespaceListerExpansion interface{}

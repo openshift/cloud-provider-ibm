@@ -2,15 +2,14 @@
 
 reviewers:
   - thockin
-  - smarterclayton
   - wojtek-t
   - deads2k
   - derekwaynecarr
   - caesarxuchao
-  - mikedanese
   - liggitt
   - justinsb
-  - ncdc
   - dims
   - ingvagabund
   - enj
+emeritus_reviewers:
+  - ncdc

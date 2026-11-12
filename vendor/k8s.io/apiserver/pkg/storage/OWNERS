@@ -3,19 +3,20 @@
 approvers:
   - liggitt
   - wojtek-t
+  - serathius
 reviewers:
-  - smarterclayton
   - wojtek-t
   - deads2k
   - caesarxuchao
-  - mikedanese
   - liggitt
-  - ncdc
   - ingvagabund
   - enj
   - stevekuznetsov
   - MadhavJivrajani
+  - serathius
 emeritus_approvers:
   - xiang90
   - timothysc
   - lavalamp
+emeritus_reviewers:
+  - ncdc

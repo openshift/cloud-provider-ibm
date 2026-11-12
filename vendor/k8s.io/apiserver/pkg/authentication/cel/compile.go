@@ -19,7 +19,7 @@ package cel
 import (
 	"fmt"
 
-	"github.com/google/cel-go/cel"
+	"cel.dev/cel-go/cel"
 
 	"k8s.io/apimachinery/pkg/util/version"
 	apiservercel "k8s.io/apiserver/pkg/cel"
@@ -37,6 +37,12 @@ type compiler struct {
 	// The CEL variable is available to the expression.
 	// We have 2 environments, one for claims and one for user.
 	varEnvs map[string]*environment.EnvSet
+}
+
+// NewDefaultCompiler returns a new Compiler following the default compatibility version.
+// Note: the compiler construction depends on feature gates and the compatibility version to be initialized.
+func NewDefaultCompiler() Compiler {
+	return NewCompiler(environment.MustBaseEnvSet(environment.DefaultCompatibilityVersion()))
 }
 
 // NewCompiler returns a new Compiler.
@@ -106,6 +112,7 @@ func (c compiler) compile(expressionAccessor ExpressionAccessor, envVarName stri
 
 	return CompilationResult{
 		Program:            prog,
+		AST:                ast,
 		ExpressionAccessor: expressionAccessor,
 	}, nil
 }

@@ -39,6 +39,7 @@ option go_package = "k8s.io/api/autoscaling/v1";
 // should be set.
 message ContainerResourceMetricSource {
   // name is the name of the resource in question.
+  // +required
   optional string name = 1;
 
   // targetAverageUtilization is the target value of the average of the
@@ -51,9 +52,10 @@ message ContainerResourceMetricSource {
   // resource metric across all relevant pods, as a raw value (instead of as
   // a percentage of the request), similar to the "pods" metric source type.
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 3;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 3;
 
   // container is the name of the container in the pods of the scaling target.
+  // +required
   optional string container = 5;
 }
 
@@ -64,6 +66,7 @@ message ContainerResourceMetricSource {
 // normal per-pod metrics using the "pods" source.
 message ContainerResourceMetricStatus {
   // name is the name of the resource in question.
+  // +optional
   optional string name = 1;
 
   // currentAverageUtilization is the current value of the average of the
@@ -78,9 +81,11 @@ message ContainerResourceMetricStatus {
   // resource metric across all relevant pods, as a raw value (instead of as
   // a percentage of the request), similar to the "pods" metric source type.
   // It will always be set, regardless of the corresponding metric specification.
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 3;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 3;
 
   // container is the name of the container in the pods of the scaling taget
+  // +optional
   optional string container = 4;
 }
 
@@ -88,9 +93,13 @@ message ContainerResourceMetricStatus {
 // +structType=atomic
 message CrossVersionObjectReference {
   // kind is the kind of the referent; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+  // +required
+  // +k8s:beta(since: "1.38")=+k8s:required
   optional string kind = 1;
 
   // name is the name of the referent; More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+  // +required
+  // +k8s:beta(since: "1.38")=+k8s:required
   optional string name = 2;
 
   // apiVersion is the API version of the referent
@@ -103,22 +112,23 @@ message CrossVersionObjectReference {
 // messaging service, or QPS from loadbalancer running outside of cluster).
 message ExternalMetricSource {
   // metricName is the name of the metric in question.
+  // +required
   optional string metricName = 1;
 
   // metricSelector is used to identify a specific time series
   // within a given metric.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector metricSelector = 2;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector metricSelector = 2;
 
   // targetValue is the target value of the metric (as a quantity).
   // Mutually exclusive with TargetAverageValue.
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetValue = 3;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetValue = 3;
 
   // targetAverageValue is the target per-pod value of global metric (as a quantity).
   // Mutually exclusive with TargetValue.
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 4;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 4;
 }
 
 // ExternalMetricStatus indicates the current value of a global metric
@@ -126,29 +136,32 @@ message ExternalMetricSource {
 message ExternalMetricStatus {
   // metricName is the name of a metric used for autoscaling in
   // metric system.
+  // +optional
   optional string metricName = 1;
 
   // metricSelector is used to identify a specific time series
   // within a given metric.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector metricSelector = 2;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector metricSelector = 2;
 
   // currentValue is the current value of the metric (as a quantity)
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentValue = 3;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentValue = 3;
 
   // currentAverageValue is the current value of metric averaged over autoscaled pods.
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 4;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 4;
 }
 
 // configuration of a horizontal pod autoscaler.
+// +k8s:supportsSubresource="/status"
 message HorizontalPodAutoscaler {
-  // Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
+  // metadata is the standard object metadata. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
   // spec defines the behaviour of autoscaler. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
-  // +optional
+  // +required
   optional HorizontalPodAutoscalerSpec spec = 2;
 
   // status is the current information about the autoscaler.
@@ -160,15 +173,17 @@ message HorizontalPodAutoscaler {
 // a HorizontalPodAutoscaler at a certain point.
 message HorizontalPodAutoscalerCondition {
   // type describes the current condition
+  // +optional
   optional string type = 1;
 
-  // status is the status of the condition (True, False, Unknown)
+  // status is the status of the condition, one of True, False, Unknown.
+  // +optional
   optional string status = 2;
 
   // lastTransitionTime is the last time the condition transitioned from
   // one status to another
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastTransitionTime = 3;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.Time lastTransitionTime = 3;
 
   // reason is the reason for the condition's last transition.
   // +optional
@@ -178,13 +193,19 @@ message HorizontalPodAutoscalerCondition {
   // the transition
   // +optional
   optional string message = 5;
+
+  // observedGeneration represents the .metadata.generation that the condition was set based upon.
+  // For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+  // with respect to the current state of the instance.
+  // +optional
+  optional int64 observedGeneration = 6;
 }
 
 // list of horizontal pod autoscaler objects.
 message HorizontalPodAutoscalerList {
   // Standard list metadata.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
 
   // items is the list of horizontal pod autoscaler objects.
   repeated HorizontalPodAutoscaler items = 2;
@@ -192,8 +213,9 @@ message HorizontalPodAutoscalerList {
 
 // specification of a horizontal pod autoscaler.
 message HorizontalPodAutoscalerSpec {
-  // reference to scaled resource; horizontal pod autoscaler will learn the current resource consumption
+  // scaleTargetRef is the reference to scaled resource; horizontal pod autoscaler will learn the current resource consumption
   // and will set the desired number of pods by using its Scale subresource.
+  // +required
   optional CrossVersionObjectReference scaleTargetRef = 1;
 
   // minReplicas is the lower limit for the number of replicas to which the autoscaler
@@ -202,9 +224,15 @@ message HorizontalPodAutoscalerSpec {
   // metric is configured.  Scaling is active as long as at least one metric value is
   // available.
   // +optional
+  // +k8s:beta(since: "1.37")=+k8s:optional
+  // +k8s:beta(since: "1.37")=+k8s:ifEnabled(HPAScaleToZero)=+k8s:minimum=0
+  // +k8s:beta(since: "1.37")=+k8s:ifDisabled(HPAScaleToZero)=+k8s:minimum=1
   optional int32 minReplicas = 2;
 
   // maxReplicas is the upper limit for the number of pods that can be set by the autoscaler; cannot be smaller than MinReplicas.
+  // +required
+  // +k8s:beta(since: "1.37")=+k8s:required
+  // +k8s:beta(since: "1.37")=+k8s:minimum=1
   optional int32 maxReplicas = 3;
 
   // targetCPUUtilizationPercentage is the target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
@@ -222,12 +250,14 @@ message HorizontalPodAutoscalerStatus {
   // lastScaleTime is the last time the HorizontalPodAutoscaler scaled the number of pods;
   // used by the autoscaler to control how often the number of pods is changed.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastScaleTime = 2;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.Time lastScaleTime = 2;
 
   // currentReplicas is the current number of replicas of pods managed by this autoscaler.
+  // +optional
   optional int32 currentReplicas = 3;
 
   // desiredReplicas is the  desired number of replicas of pods managed by this autoscaler.
+  // +optional
   optional int32 desiredReplicas = 4;
 
   // currentCPUUtilizationPercentage is the current average CPU utilization over all pods, represented as a percentage of requested CPU,
@@ -241,8 +271,7 @@ message HorizontalPodAutoscalerStatus {
 message MetricSpec {
   // type is the type of metric source.  It should be one of "ContainerResource",
   // "External", "Object", "Pods" or "Resource", each mapping to a matching field in the object.
-  // Note: "ContainerResource" type is available on when the feature-gate
-  // HPAContainerMetrics is enabled
+  // +required
   optional string type = 1;
 
   // object refers to a metric describing a single kubernetes object
@@ -269,7 +298,6 @@ message MetricSpec {
   // current scale target (e.g. CPU or memory). Such metrics are built in to
   // Kubernetes, and have special scaling options on top of those available
   // to normal per-pod metrics using the "pods" source.
-  // This is an alpha feature and can be enabled by the HPAContainerMetrics feature flag.
   // +optional
   optional ContainerResourceMetricSource containerResource = 7;
 
@@ -284,10 +312,9 @@ message MetricSpec {
 
 // MetricStatus describes the last-read state of a single metric.
 message MetricStatus {
-  // type is the type of metric source.  It will be one of "ContainerResource",
+  // type is the type of metric source.  It should be one of "ContainerResource",
   // "External", "Object", "Pods" or "Resource", each corresponds to a matching field in the object.
-  // Note: "ContainerResource" type is available on when the feature-gate
-  // HPAContainerMetrics is enabled
+  // +optional
   optional string type = 1;
 
   // object refers to a metric describing a single kubernetes object
@@ -330,48 +357,54 @@ message MetricStatus {
 // kubernetes object (for example, hits-per-second on an Ingress object).
 message ObjectMetricSource {
   // target is the described Kubernetes object.
+  // +required
   optional CrossVersionObjectReference target = 1;
 
   // metricName is the name of the metric in question.
+  // +required
   optional string metricName = 2;
 
   // targetValue is the target value of the metric (as a quantity).
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetValue = 3;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetValue = 3;
 
   // selector is the string-encoded form of a standard kubernetes label selector for the given metric.
   // When set, it is passed as an additional parameter to the metrics server for more specific metrics scoping
   // When unset, just the metricName will be used to gather metrics.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 4;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 4;
 
   // averageValue is the target value of the average of the
   // metric across all relevant pods (as a quantity)
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity averageValue = 5;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity averageValue = 5;
 }
 
 // ObjectMetricStatus indicates the current value of a metric describing a
 // kubernetes object (for example, hits-per-second on an Ingress object).
 message ObjectMetricStatus {
   // target is the described Kubernetes object.
+  // +optional
   optional CrossVersionObjectReference target = 1;
 
   // metricName is the name of the metric in question.
+  // +optional
   optional string metricName = 2;
 
   // currentValue is the current value of the metric (as a quantity).
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentValue = 3;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentValue = 3;
 
   // selector is the string-encoded form of a standard kubernetes label selector for the given metric
   // When set in the ObjectMetricSource, it is passed as an additional parameter to the metrics server for more specific metrics scoping.
   // When unset, just the metricName will be used to gather metrics.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 4;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 4;
 
   // averageValue is the current value of the average of the
   // metric across all relevant pods (as a quantity)
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity averageValue = 5;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity averageValue = 5;
 }
 
 // PodsMetricSource indicates how to scale on a metric describing each pod in
@@ -380,34 +413,38 @@ message ObjectMetricStatus {
 // value.
 message PodsMetricSource {
   // metricName is the name of the metric in question
+  // +required
   optional string metricName = 1;
 
   // targetAverageValue is the target value of the average of the
   // metric across all relevant pods (as a quantity)
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 2;
+  // +required
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 2;
 
   // selector is the string-encoded form of a standard kubernetes label selector for the given metric
   // When set, it is passed as an additional parameter to the metrics server for more specific metrics scoping
   // When unset, just the metricName will be used to gather metrics.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 3;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 3;
 }
 
 // PodsMetricStatus indicates the current value of a metric describing each pod in
 // the current scale target (for example, transactions-processed-per-second).
 message PodsMetricStatus {
   // metricName is the name of the metric in question
+  // +optional
   optional string metricName = 1;
 
   // currentAverageValue is the current value of the average of the
   // metric across all relevant pods (as a quantity)
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 2;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 2;
 
   // selector is the string-encoded form of a standard kubernetes label selector for the given metric
   // When set in the PodsMetricSource, it is passed as an additional parameter to the metrics server for more specific metrics scoping.
   // When unset, just the metricName will be used to gather metrics.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 3;
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector selector = 3;
 }
 
 // ResourceMetricSource indicates how to scale on a resource metric known to
@@ -419,6 +456,7 @@ message PodsMetricStatus {
 // should be set.
 message ResourceMetricSource {
   // name is the name of the resource in question.
+  // +required
   optional string name = 1;
 
   // targetAverageUtilization is the target value of the average of the
@@ -431,7 +469,7 @@ message ResourceMetricSource {
   // resource metric across all relevant pods, as a raw value (instead of as
   // a percentage of the request), similar to the "pods" metric source type.
   // +optional
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 3;
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity targetAverageValue = 3;
 }
 
 // ResourceMetricStatus indicates the current value of a resource metric known to
@@ -441,6 +479,7 @@ message ResourceMetricSource {
 // normal per-pod metrics using the "pods" source.
 message ResourceMetricStatus {
   // name is the name of the resource in question.
+  // +optional
   optional string name = 1;
 
   // currentAverageUtilization is the current value of the average of the
@@ -455,14 +494,16 @@ message ResourceMetricStatus {
   // resource metric across all relevant pods, as a raw value (instead of as
   // a percentage of the request), similar to the "pods" metric source type.
   // It will always be set, regardless of the corresponding metric specification.
-  optional k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 3;
+  // +optional
+  optional .k8s.io.apimachinery.pkg.api.resource.Quantity currentAverageValue = 3;
 }
 
 // Scale represents a scaling request for a resource.
 message Scale {
-  // Standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
+  // metadata is the standard object metadata; More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata.
   // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
+  // +k8s:opaqueType
+  optional .k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
 
   // spec defines the behavior of the scale. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status.
   // +optional
@@ -477,12 +518,16 @@ message Scale {
 message ScaleSpec {
   // replicas is the desired number of instances for the scaled object.
   // +optional
+  // +k8s:beta(since: "1.37")=+k8s:optional
+  // +default=0
+  // +k8s:beta(since: "1.37")=+k8s:minimum=0
   optional int32 replicas = 1;
 }
 
 // ScaleStatus represents the current status of a scale subresource.
 message ScaleStatus {
   // replicas is the actual number of observed instances of the scaled object.
+  // +required
   optional int32 replicas = 1;
 
   // selector is the label query over pods that should match the replicas count. This is same

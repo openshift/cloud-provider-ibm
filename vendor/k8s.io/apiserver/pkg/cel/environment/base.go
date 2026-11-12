@@ -21,29 +21,37 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/checker"
-	"github.com/google/cel-go/ext"
-	"github.com/google/cel-go/interpreter"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/checker"
+	"cel.dev/cel-go/ext"
+	"cel.dev/cel-go/interpreter"
 	"golang.org/x/sync/singleflight"
 
 	"k8s.io/apimachinery/pkg/util/version"
 	celconfig "k8s.io/apiserver/pkg/apis/cel"
 	"k8s.io/apiserver/pkg/cel/library"
+	"k8s.io/apiserver/pkg/util/compatibility"
+	basecompatibility "k8s.io/component-base/compatibility"
 )
 
 // DefaultCompatibilityVersion returns a default compatibility version for use with EnvSet
 // that guarantees compatibility with CEL features/libraries/parameters understood by
-// an n-1 version
+// the api server min compatibility version
 //
-// This default will be set to no more than n-1 the current Kubernetes major.minor version.
+// This default will be set to no more than the current Kubernetes major.minor version.
 //
-// Note that a default version number less than n-1 indicates a wider range of version
-// compatibility than strictly required for rollback. A wide range of compatibility is
-// desirable because it means that CEL expressions are portable across a wider range
-// of Kubernetes versions.
+// Note that a default version number less than n-1 the current Kubernetes major.minor version
+// indicates a wider range of version compatibility than strictly required for rollback.
+// A wide range of compatibility is desirable because it means that CEL expressions are portable
+// across a wider range of Kubernetes versions.
+// A default version number equal to the current Kubernetes major.minor version
+// indicates fast forward CEL features that can be used when rollback is no longer needed.
 func DefaultCompatibilityVersion() *version.Version {
-	return version.MajorMinor(1, 28)
+	effectiveVer := compatibility.DefaultComponentGlobalsRegistry.EffectiveVersionFor(basecompatibility.DefaultKubeComponent)
+	if effectiveVer == nil {
+		effectiveVer = compatibility.DefaultBuildEffectiveVersion()
+	}
+	return effectiveVer.MinCompatibilityVersion()
 }
 
 var baseOpts = []VersionedOptions{
@@ -58,10 +66,21 @@ var baseOpts = []VersionedOptions{
 			// This is a relatively expensive operation.
 			cel.EagerlyValidateDeclarations(true),
 			cel.DefaultUTCTimeZone(true),
+			cel.CostModelVersion(0),
+			// cel-go v0.33.0 introduced a default limit of 100,000 AST nodes (including nodes
+			// created by macro expansion). Disable it to keep parsing behavior unchanged for
+			// existing expressions; expression size remains bounded by the parser's 100,000
+			// code point limit.
+			cel.ExpressionNodeLimit(-1),
+			// cel-go v0.30.0 made timestamp(string) accept only strict RFC 3339 strings, and v0.31.0
+			// started range checking numeric timezone offsets in the timestamp accessors. Restore the
+			// earlier parsing so that stored expressions with such timestamp literals still compile
+			// (ValidateTimestampLiterals applies to stored expressions) and previously accepted
+			// data keeps evaluating.
+			cel.StrictTimestampParsing(false),
 
-			library.URLs(),
-			library.Regex(),
-			library.Lists(),
+			UnversionedLib(library.URLs),
+			UnversionedLib(library.Regex),
 
 			// cel-go v0.17.7 change the cost of has() from 0 to 1, but also provided the CostEstimatorOptions option to preserve the old behavior, so we enabled it at the same time we bumped our cel version to v0.17.7.
 			// Since it is a regression fix, we apply it uniformly to all code use v0.17.7.
@@ -77,17 +96,24 @@ var baseOpts = []VersionedOptions{
 		},
 	},
 	{
+		IntroducedVersion: version.MajorMinor(1, 0),
+		RemovedVersion:    version.MajorMinor(1, 37),
+		EnvOptions: []cel.EnvOption{
+			library.Lists(library.ListsVersion(0)),
+		},
+	},
+	{
 		IntroducedVersion: version.MajorMinor(1, 27),
 		EnvOptions: []cel.EnvOption{
-			library.Authz(),
+			UnversionedLib(library.Authz),
 		},
 	},
 	{
 		IntroducedVersion: version.MajorMinor(1, 28),
 		EnvOptions: []cel.EnvOption{
 			cel.CrossTypeNumericComparisons(true),
-			cel.OptionalTypes(),
-			library.Quantity(),
+			cel.OptionalTypes(cel.OptionalTypesVersion(2)),
+			UnversionedLib(library.Quantity),
 		},
 	},
 	// add the new validator in 1.29
@@ -123,6 +149,90 @@ var baseOpts = []VersionedOptions{
 			ext.Sets(),
 		},
 	},
+	// IP Library
+	{
+		IntroducedVersion: version.MajorMinor(1, 30),
+		EnvOptions: []cel.EnvOption{
+			UnversionedLib(library.IP),
+		},
+	},
+	// CIDR Library v0
+	{
+		IntroducedVersion: version.MajorMinor(1, 30),
+		RemovedVersion:    version.MajorMinor(1, 38),
+		EnvOptions: []cel.EnvOption{
+			library.CIDR(library.CIDRVersion(0)),
+		},
+	},
+	// Format Library
+	{
+		IntroducedVersion: version.MajorMinor(1, 31),
+		EnvOptions: []cel.EnvOption{
+			UnversionedLib(library.Format),
+		},
+	},
+	// Authz selectors
+	{
+		IntroducedVersion: version.MajorMinor(1, 31),
+		EnvOptions: []cel.EnvOption{
+			UnversionedLib(library.AuthzSelectors),
+		},
+	},
+	// Two variable comprehensions
+	{
+		IntroducedVersion: version.MajorMinor(1, 32),
+		EnvOptions: []cel.EnvOption{
+			ext.TwoVarComprehensions(),
+		},
+	},
+	// Semver
+	{
+		IntroducedVersion: version.MajorMinor(1, 33),
+		EnvOptions: []cel.EnvOption{
+			library.SemverLib(library.SemverVersion(1)),
+		},
+	},
+	// List library
+	{
+		IntroducedVersion: version.MajorMinor(1, 34),
+		EnvOptions: []cel.EnvOption{
+			ext.Lists(ext.ListsVersion(3)),
+		},
+	},
+	{
+		IntroducedVersion: version.MajorMinor(1, 37),
+		EnvOptions: []cel.EnvOption{
+			library.Lists(library.ListsVersion(1)),
+		},
+	},
+	// CIDR Library v1
+	{
+		IntroducedVersion: version.MajorMinor(1, 38),
+		EnvOptions: []cel.EnvOption{
+			library.CIDR(library.CIDRVersion(1)),
+		},
+	},
+	StrictCostOpt,
+}
+
+var StrictCostOpt = VersionedOptions{
+	// This is to configure the cost calculation for extended libraries
+	IntroducedVersion: version.MajorMinor(1, 0),
+	ProgramOptions: []cel.ProgramOption{
+		cel.CostTracking(&library.CostEstimator{}),
+	},
+}
+
+// cacheBaseEnvs controls whether calls to MustBaseEnvSet are cached.
+// Defaults to true, may be disabled by calling DisableBaseEnvSetCachingForTests.
+var cacheBaseEnvs = true
+
+// DisableBaseEnvSetCachingForTests clears and disables base env caching.
+// This is only intended for unit tests exercising MustBaseEnvSet directly with different enablement options.
+// It does not clear other initialization paths that may cache results of calling MustBaseEnvSet.
+func DisableBaseEnvSetCachingForTests() {
+	cacheBaseEnvs = false
+	baseEnvs.Clear()
 }
 
 // MustBaseEnvSet returns the common CEL base environments for Kubernetes for Version, or panics
@@ -142,15 +252,18 @@ func MustBaseEnvSet(ver *version.Version) *EnvSet {
 		panic(fmt.Sprintf("version must contain an major and minor component, but got: %s", ver.String()))
 	}
 	key := strconv.FormatUint(uint64(ver.Major()), 10) + "." + strconv.FormatUint(uint64(ver.Minor()), 10)
+	var entry interface{}
 	if entry, ok := baseEnvs.Load(key); ok {
 		return entry.(*EnvSet)
 	}
-
-	entry, _, _ := baseEnvsSingleflight.Do(key, func() (interface{}, error) {
+	entry, _, _ = baseEnvsSingleflight.Do(key, func() (interface{}, error) {
 		entry := mustNewEnvSet(ver, baseOpts)
-		baseEnvs.Store(key, entry)
+		if cacheBaseEnvs {
+			baseEnvs.Store(key, entry)
+		}
 		return entry, nil
 	})
+
 	return entry.(*EnvSet)
 }
 
@@ -158,3 +271,20 @@ var (
 	baseEnvs             = sync.Map{}
 	baseEnvsSingleflight = &singleflight.Group{}
 )
+
+// UnversionedLib wraps library initialization calls like ext.Sets() or library.IP()
+// to force compilation errors if the call evolves to include a varadic variable option.
+//
+// This provides automatic detection of a problem that is hard to catch in review--
+// If a CEL library used in Kubernetes is unversioned and then become versioned, and we
+// fail to set a desired version, the libraries defaults to the latest version, changing
+// CEL environment without controlled rollout, bypassing the entire purpose of the base
+// environment.
+//
+// If usages of this function fail to compile: add version=1 argument to all call sites
+// that fail compilation while removing the UnversionedLib wrapper. Next, review
+// the changes in the library present in higher versions and, if needed, use VersionedOptions to
+// the base environment to roll out to a newer version safely.
+func UnversionedLib(initializer func() cel.EnvOption) cel.EnvOption {
+	return initializer()
+}

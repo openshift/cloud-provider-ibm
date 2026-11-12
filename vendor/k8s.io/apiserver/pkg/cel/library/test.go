@@ -19,9 +19,9 @@ package library
 import (
 	"math"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
-	"github.com/google/cel-go/common/types/ref"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/common/types"
+	"cel.dev/cel-go/common/types/ref"
 )
 
 // Test provides a test() function that returns true.
@@ -38,7 +38,7 @@ type testLib struct {
 }
 
 func (*testLib) LibraryName() string {
-	return "k8s.test"
+	return "kubernetes.test"
 }
 
 type TestOption func(*testLib) *testLib

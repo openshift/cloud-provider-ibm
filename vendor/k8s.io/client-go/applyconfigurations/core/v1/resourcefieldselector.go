@@ -22,15 +22,21 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// ResourceFieldSelectorApplyConfiguration represents an declarative configuration of the ResourceFieldSelector type for use
+// ResourceFieldSelectorApplyConfiguration represents a declarative configuration of the ResourceFieldSelector type for use
 // with apply.
+//
+// ResourceFieldSelector represents container resources (cpu, memory) and their output format
 type ResourceFieldSelectorApplyConfiguration struct {
-	ContainerName *string            `json:"containerName,omitempty"`
-	Resource      *string            `json:"resource,omitempty"`
-	Divisor       *resource.Quantity `json:"divisor,omitempty"`
+	// containerName is the name of the container: required for volumes, optional for env vars
+	ContainerName *string `json:"containerName,omitempty"`
+	// resource is the resource to select
+	Resource *string `json:"resource,omitempty"`
+	// divisor optionally indicates how the resource from the container should be scaled.
+	// If unset or 0, the resource is not scaled (divisor is treated as 1).
+	Divisor *resource.Quantity `json:"divisor,omitempty"`
 }
 
-// ResourceFieldSelectorApplyConfiguration constructs an declarative configuration of the ResourceFieldSelector type for use with
+// ResourceFieldSelectorApplyConfiguration constructs a declarative configuration of the ResourceFieldSelector type for use with
 // apply.
 func ResourceFieldSelector() *ResourceFieldSelectorApplyConfiguration {
 	return &ResourceFieldSelectorApplyConfiguration{}

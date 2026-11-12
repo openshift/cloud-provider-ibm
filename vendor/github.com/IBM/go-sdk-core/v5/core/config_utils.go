@@ -45,7 +45,9 @@ const (
 // passed in as "my_service", then configuration properties whose names begin with "MY_SERVICE_"
 // will be returned in the map.
 func GetServiceProperties(serviceName string) (serviceProps map[string]string, err error) {
-	return getServiceProperties(serviceName)
+	serviceProps, err = getServiceProperties(serviceName)
+	err = RepurposeSDKProblem(err, "get-props-error")
+	return
 }
 
 // getServiceProperties: This function will retrieve configuration properties for the specified service
@@ -57,8 +59,11 @@ func getServiceProperties(serviceName string) (serviceProps map[string]string, e
 
 	if serviceName == "" {
 		err = fmt.Errorf("serviceName was not specified")
+		err = SDKErrorf(err, "", "no-service-name", getComponentInfo())
 		return
 	}
+
+	GetLogger().Debug("Retrieving config properties for service '%s'\n", serviceName)
 
 	// First try to retrieve service properties from a credential file.
 	serviceProps = getServicePropertiesFromCredentialFile(serviceName)
@@ -72,6 +77,8 @@ func getServiceProperties(serviceName string) (serviceProps map[string]string, e
 	if serviceProps == nil {
 		serviceProps = getServicePropertiesFromVCAP(serviceName)
 	}
+
+	GetLogger().Debug("Retrieved %d properties\n", len(serviceProps))
 
 	return
 }
@@ -89,7 +96,7 @@ func getServicePropertiesFromCredentialFile(credentialKey string) map[string]str
 
 	// 1) ${IBM_CREDENTIALS_FILE}
 	envPath := os.Getenv(IBM_CREDENTIAL_FILE_ENVVAR)
-	if _, err := os.Stat(envPath); err == nil {
+	if _, err := os.Stat(envPath); err == nil { // #nosec G703
 		credentialFilePath = envPath
 	}
 
@@ -112,7 +119,7 @@ func getServicePropertiesFromCredentialFile(credentialKey string) map[string]str
 
 	// If we found a file to load, then load it.
 	if credentialFilePath != "" {
-		file, err := os.Open(credentialFilePath) // #nosec G304
+		file, err := os.Open(credentialFilePath) // #nosec G304 G703
 		if err != nil {
 			return nil
 		}
@@ -191,7 +198,7 @@ func parsePropertyStrings(credentialKey string, propertyStrings []string) map[st
 
 	props := make(map[string]string)
 	credentialKey = strings.ToUpper(credentialKey)
-	credentialKey = strings.Replace(credentialKey, "-", "_", -1)
+	credentialKey = strings.ReplaceAll(credentialKey, "-", "_")
 	credentialKey += "_"
 	for _, propertyString := range propertyStrings {
 

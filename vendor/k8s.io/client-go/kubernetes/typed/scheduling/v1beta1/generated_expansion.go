@@ -18,4 +18,10 @@ limitations under the License.
 
 package v1beta1
 
+type CompositePodGroupExpansion interface{}
+
+type PodGroupExpansion interface{}
+
 type PriorityClassExpansion interface{}
+
+type WorkloadExpansion interface{}

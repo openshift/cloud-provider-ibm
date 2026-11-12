@@ -2,17 +2,16 @@
 
 reviewers:
   - thockin
-  - smarterclayton
   - wojtek-t
   - deads2k
   - yujuhong
   - derekwaynecarr
   - caesarxuchao
-  - mikedanese
   - liggitt
   - saad-ali
   - janetkuo
   - pwittrock
-  - ncdc
   - dims
   - enj
+emeritus_reviewers:
+  - ncdc

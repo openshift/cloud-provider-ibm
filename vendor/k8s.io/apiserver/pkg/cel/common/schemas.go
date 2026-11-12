@@ -19,8 +19,8 @@ package common
 import (
 	"time"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/common/types"
 
 	apiservercel "k8s.io/apiserver/pkg/cel"
 	"k8s.io/kube-openapi/pkg/validation/spec"
@@ -55,8 +55,15 @@ func SchemaDeclType(s Schema, isResourceRoot bool) *apiservercel.DeclType {
 		//  `type(intOrStringField) == int ? intOrStringField < 5 : double(intOrStringField.replace('%', '')) < 0.5
 		//
 		dyn := apiservercel.NewSimpleTypeWithMinSize("dyn", cel.DynType, nil, 1) // smallest value for a serialized x-kubernetes-int-or-string is 0
-		// handle x-kubernetes-int-or-string by returning the max length/min serialized size of the largest possible string
-		dyn.MaxElements = maxRequestSizeBytes - 2
+
+		// If the schema has a maxlength constraint, bound the max elements based on the max length.
+		// Otherwise, fallback to the max request size.
+		if s.MaxLength() != nil {
+			dyn.MaxElements = estimateMaxElementsFromMaxLength(s)
+		} else {
+			dyn.MaxElements = estimateMaxStringLengthPerRequest(s)
+		}
+
 		return dyn
 	}
 
@@ -100,7 +107,8 @@ func SchemaDeclType(s Schema, isResourceRoot bool) *apiservercel.DeclType {
 			}
 			return nil
 		}
-		fields := make(map[string]*apiservercel.DeclField, len(s.Properties()))
+		props := s.Properties()
+		fields := make(map[string]*apiservercel.DeclField, len(props))
 
 		required := map[string]bool{}
 		if s.Required() != nil {
@@ -110,7 +118,7 @@ func SchemaDeclType(s Schema, isResourceRoot bool) *apiservercel.DeclType {
 		}
 		// an object will always be serialized at least as {}, so account for that
 		minSerializedSize := int64(2)
-		for name, prop := range s.Properties() {
+		for name, prop := range props {
 			var enumValues []interface{}
 			if prop.Enum() != nil {
 				for _, e := range prop.Enum() {
@@ -159,11 +167,7 @@ func SchemaDeclType(s Schema, isResourceRoot bool) *apiservercel.DeclType {
 
 		strWithMaxLength := apiservercel.NewSimpleTypeWithMinSize("string", cel.StringType, types.String(""), apiservercel.MinStringSize)
 		if s.MaxLength() != nil {
-			// multiply the user-provided max length by 4 in the case of an otherwise-untyped string
-			// we do this because the OpenAPIv3 spec indicates that maxLength is specified in runes/code points,
-			// but we need to reason about length for things like request size, so we use bytes in this code (and an individual
-			// unicode code point can be up to 4 bytes long)
-			strWithMaxLength.MaxElements = zeroIfNegative(*s.MaxLength()) * 4
+			strWithMaxLength.MaxElements = estimateMaxElementsFromMaxLength(s)
 		} else {
 			if len(s.Enum()) > 0 {
 				strWithMaxLength.MaxElements = estimateMaxStringEnumLength(s)
@@ -228,6 +232,7 @@ func WithTypeAndObjectMeta(s *spec.Schema) *spec.Schema {
 // must only be called on schemas of type "string" or x-kubernetes-int-or-string: true
 func estimateMaxStringLengthPerRequest(s Schema) int64 {
 	if s.IsXIntOrString() {
+		// handle x-kubernetes-int-or-string by returning the max length/min serialized size of the largest possible string
 		return maxRequestSizeBytes - 2
 	}
 	switch s.Format() {
@@ -271,4 +276,14 @@ func estimateMaxAdditionalPropertiesFromMinSize(minSize int64) int64 {
 	keyValuePairSize := minSize + 6
 	// subtract 2 to account for { and }
 	return (maxRequestSizeBytes - 2) / keyValuePairSize
+}
+
+// estimateMaxElementsFromMaxLength estimates the maximum number of elements for a string schema
+// that is bound with a maxLength constraint.
+func estimateMaxElementsFromMaxLength(s Schema) int64 {
+	// multiply the user-provided max length by 4 in the case of an otherwise-untyped string
+	// we do this because the OpenAPIv3 spec indicates that maxLength is specified in runes/code points,
+	// but we need to reason about length for things like request size, so we use bytes in this code (and an individual
+	// unicode code point can be up to 4 bytes long)
+	return zeroIfNegative(*s.MaxLength()) * 4
 }
